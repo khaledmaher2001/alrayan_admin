@@ -1,14 +1,13 @@
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/order_item.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/status_filter_list.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_states.dart';
+import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -25,6 +24,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
 
   Future<void> pagination() async {
     final cubit = context.read<GetOrdersCubit>();
+    final filterCubit = context.read<OrderStatusFilterCubit>();
     if (cubit.page < cubit.ordersModel!.data!.metadata!.totalPages! &&
         scrollController.position.maxScrollExtent == scrollController.position.pixels &&
         !isLoading) {
@@ -32,14 +32,18 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
       setState(() {
         cubit.page++;
       });
-      await cubit.getOrders(withLoading: false).then((value) {
-        setState(() {
-          isLoading = false;
-        });
-      });
+      await cubit
+          .getOrders(
+            withLoading: false,
+            status:filterCubit.status[filterCubit.selectedFilterIndex],
+          )
+          .then((value) {
+            setState(() {
+              isLoading = false;
+            });
+          });
     }
   }
-
 
   @override
   void initState() {
@@ -75,10 +79,13 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                             Expanded(
                               child: RefreshIndicator(
                                 onRefresh: () async {
-                                  await context.read<GetOrdersCubit>().getOrders();
+                                  await context.read<GetOrdersCubit>().getOrders(
+                                    status:context.read<OrderStatusFilterCubit>().status[context.read<OrderStatusFilterCubit>().selectedFilterIndex],
+                                  );
                                 },
                                 child: ListView.separated(
                                   controller: scrollController,
+                                  physics: const AlwaysScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     if (context.read<GetOrdersCubit>().ordersList.isNotEmpty) {
                                       return Column(

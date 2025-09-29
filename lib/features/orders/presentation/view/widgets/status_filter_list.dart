@@ -4,7 +4,6 @@ import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_states.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,7 +15,14 @@ class StatusFilterList extends StatefulWidget {
 }
 
 class _StatusFilterListState extends State<StatusFilterList> {
-  List<String?> status = [null, "pending", "confirmed", "shipped", "delivered", "cancelled"];
+  late OrderStatusFilterCubit cubit;
+
+  @override
+  void initState() {
+    cubit = context.read<OrderStatusFilterCubit>();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +38,11 @@ class _StatusFilterListState extends State<StatusFilterList> {
                 if (index == 0) SizedBox(width: AppConstants.width15(context)),
                 GestureDetector(
                   onTap: () {
-                    context.read<OrderStatusFilterCubit>().selectIndex(index: index);
-                    context.read<GetOrdersCubit>().getOrders(status: status[index]);
+                    if(cubit.selectedFilterIndex!=index){
+                      cubit.selectIndex(index: index);
+                      context.read<GetOrdersCubit>().getOrders(status: cubit.status[index]);
+                    }
+
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -42,31 +51,25 @@ class _StatusFilterListState extends State<StatusFilterList> {
                     ),
                     alignment: AlignmentDirectional.center,
                     decoration: BoxDecoration(
-                      color: context.read<OrderStatusFilterCubit>().selectedFilterIndex == index
-                          ? AppColors.primaryColor
-                          : Colors.transparent,
+                      color: cubit.selectedFilterIndex == index ? AppColors.primaryColor : Colors.transparent,
                       border: Border.all(
-                        color: context.read<OrderStatusFilterCubit>().selectedFilterIndex == index
-                            ? AppColors.primaryColor
-                            : Colors.grey.shade400,
+                        color: cubit.selectedFilterIndex == index ? AppColors.primaryColor : Colors.grey.shade400,
                       ),
                       borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
                     ),
                     child: Text(
-                      index == 0 ? "الكل" : AppConstants.getStatusText(status[index]),
-                      style: Styles.inter14500black(context).copyWith(
-                        color: context.read<OrderStatusFilterCubit>().selectedFilterIndex == index
-                            ? Colors.white
-                            : Colors.grey.shade700,
-                      ),
+                      index == 0 ? "الكل" : AppConstants.getStatusText(cubit.status[index]),
+                      style: Styles.inter14500black(
+                        context,
+                      ).copyWith(color: cubit.selectedFilterIndex == index ? Colors.white : Colors.grey.shade700),
                     ),
                   ),
                 ),
-                if (index == status.length - 1) SizedBox(width: AppConstants.width15(context)),
+                if (index == cubit.status.length - 1) SizedBox(width: AppConstants.width15(context)),
               ],
             ),
             separatorBuilder: (context, index) => SizedBox(width: AppConstants.width10(context)),
-            itemCount: status.length,
+            itemCount: cubit.status.length,
           );
         },
       ),

@@ -4,6 +4,8 @@ import 'package:bloc/bloc.dart';
 class OrderStatusFilterCubit extends Cubit<OrderStatusFilterStates> {
   OrderStatusFilterCubit() : super(OrderStatusFilterInitState());
 
+  List<String?> status = [null, "pending", "confirmed", "shipped", "delivered", "cancelled"];
+
   int selectedFilterIndex = 0;
 
   void selectIndex({required int index}) {
