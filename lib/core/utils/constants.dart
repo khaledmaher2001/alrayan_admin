@@ -1,10 +1,6 @@
 import 'dart:io';
-
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
-import 'colors/colors.dart';
 
 class AppConstants {
   static File? file;
@@ -62,21 +58,21 @@ class AppConstants {
   static Color getStatusColor(String? status) {
     switch (status) {
       case "pending": // لسه في الانتظار
-        return Colors.yellow.withOpacity(0.2);
+        return Colors.yellow.withValues(alpha: 0.2);
       case "confirmed": // تم التأكيد
-        return Colors.blue.withOpacity(0.2);
+        return Colors.blue.withValues(alpha: 0.2);
       case "processing": // الطلب بيتجهز
-        return Colors.orange.withOpacity(0.2);
+        return Colors.orange.withValues(alpha: 0.2);
       case "shipped": // تم الشحن
-        return Colors.purple.withOpacity(0.2);
+        return Colors.purple.withValues(alpha: 0.2);
       case "delivered": // تم التوصيل
-        return Colors.green.withOpacity(0.2);
+        return Colors.green.withValues(alpha: 0.2);
       case "cancelled": // تم الإلغاء
-        return Colors.red.withOpacity(0.2);
+        return Colors.red.withValues(alpha: 0.2);
       case "refunded": // تم الاسترجاع
-        return Colors.grey.withOpacity(0.2);
+        return Colors.grey.withValues(alpha: 0.2);
       default:
-        return Colors.grey.withOpacity(0.2);
+        return Colors.grey.withValues(alpha: 0.2);
     }
   }
 
@@ -125,67 +121,67 @@ class AppConstants {
     }
   }
 
-  static sp5(context) {
+  static double sp5(context) {
     var height = MediaQuery.of(context).size.height * .006;
     return height;
   }
 
-  static sp10(context) {
+  static double sp10(context) {
     var height = MediaQuery.of(context).size.height * .012;
     return height;
   }
 
-  static sp15(context) {
+  static double sp15(context) {
     var height = MediaQuery.of(context).size.height * .016;
     return height;
   }
 
-  static sp20(context) {
+  static double sp20(context) {
     var height = MediaQuery.of(context).size.height * .022;
     return height;
   }
 
-  static sp30(context) {
+  static double sp30(context) {
     var height = MediaQuery.of(context).size.height * .032;
     return height;
   }
 
-  static height5(context) {
+  static double height5(context) {
     var height = MediaQuery.of(context).size.height * .006;
     return height;
   }
 
-  static height10(context) {
+  static double height10(context) {
     var height = MediaQuery.of(context).size.height * .012;
     return height;
   }
 
-  static height15(context) {
+  static double height15(context) {
     var height = MediaQuery.of(context).size.height * .018;
     return height;
   }
 
-  static height20(context) {
+  static double height20(context) {
     var height = MediaQuery.of(context).size.height * .024;
     return height;
   }
 
-  static height30(context) {
+  static double height30(context) {
     var height = MediaQuery.of(context).size.height * .030;
     return height;
   }
 
-  static height55(context) {
+  static double height55(context) {
     var height = MediaQuery.of(context).size.height * .075;
     return height;
   }
 
-  static width5(context) {
+  static double width5(context) {
     var height = MediaQuery.of(context).size.height * .0075;
     return height;
   }
 
-  static width10(context) {
+  static double width10(context) {
     var height = MediaQuery.of(context).size.height * .015;
     return height;
   }
@@ -200,17 +196,17 @@ class AppConstants {
     return height;
   }
 
-  static width30(context) {
+  static double width30(context) {
     var height = MediaQuery.of(context).size.height * .036;
     return height;
   }
 
-  static width50(context) {
+  static double width50(context) {
     var height = MediaQuery.of(context).size.height * .056;
     return height;
   }
 
-  static height200(context) {
+  static double height200(context) {
     var height = MediaQuery.of(context).size.height * .4;
     return height;
   }

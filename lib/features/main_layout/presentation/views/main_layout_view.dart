@@ -1,7 +1,7 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/features/categories/presentation/view/categories_view.dart';
 import 'package:alrayan_admin/features/main_layout/presentation/views/widgets/bottom_nav_bar.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
+import 'package:alrayan_admin/features/orders/presentation/view/orders_view.dart';
 import 'package:alrayan_admin/features/products/presentation/views/products_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +19,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
   List<Widget> screens = [
     SizedBox(),
     CategoriesView(),
+    OrdersView(),
     ProductsView(),
     SizedBox(),
   ];

@@ -33,22 +33,20 @@ class CustomAppBar extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: "Inter",
-                    color: textColor ?? Colors.white,
-                    fontSize: MediaQuery.of(context).size.height * .018,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "Inter",
+                  color: textColor ?? Colors.white,
+                  fontSize: MediaQuery.of(context).size.height * .018,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           Align(
             alignment: AlignmentDirectional.centerStart,

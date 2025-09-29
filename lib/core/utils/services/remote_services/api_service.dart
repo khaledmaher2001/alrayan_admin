@@ -44,41 +44,6 @@ class ApiService {
     );
     return response;
   }
-  Future<Response> postDataWithImage({
-    required String endPoint,
-    bool sendAuthToken = false,
-    FormData? data,
-    required Map<String,dynamic> query,
-  }) async {
-    _dio.options.headers = {
-      "accept":"*/*",
-      "Content-Type": "multipart/form-data",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
-      if (sendAuthToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
-    var response = await _dio.post(
-      "${EndPoints.baseUrl}$endPoint",
-      data: data,
-      queryParameters: query,
-    );
-    return response;
-  }
-  Future<Response> postListData({
-    required String endPoint,
-    bool sendAuthToken = false,
-    List<Map<String, dynamic>>? data,
-  }) async {
-    _dio.options.headers = {
-      "Content-Type": "application/json",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
-    };
-    var response = await _dio.post(
-      "${EndPoints.baseUrl}$endPoint",
-      data: data,
-    );
-    return response;
-  }
 
   Future<Response> get({
     required String endPoint,
@@ -102,6 +67,8 @@ class ApiService {
   Future<Response> putData({
     required String endPoint,
     dynamic data,
+    dynamic query,
+
   }) async {
     _dio.options.headers = {
       "accept":"*/*",
@@ -112,6 +79,7 @@ class ApiService {
     var response = await _dio.put(
       '${EndPoints.baseUrl}$endPoint',
       data: data,
+      queryParameters: query
     );
     return response;
   }
@@ -125,7 +93,6 @@ class ApiService {
     Map<String, dynamic>? headers, void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress
   }) async {
-    print("TTTTTTTTTTTTTTTTTTTTTTT: ${CacheKeysManger.tokenStatus()}");
     _dio.options.headers = {
       "Accept":"application/json",
       "Content-Type": "application/json",

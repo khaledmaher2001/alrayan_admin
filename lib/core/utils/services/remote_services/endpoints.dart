@@ -20,5 +20,8 @@ class EndPoints {
   static const userNotification = "notifications/me";
   static String readNotification(id) => "notifications/$id/read";
 
+  static const orders = "orders";
+
+
 }
 
