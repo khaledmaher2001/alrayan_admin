@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
+import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -19,6 +20,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class AddZoneView extends StatefulWidget {
   const AddZoneView({super.key, this.zoneData});
+
   final Zone? zoneData;
 
   @override
@@ -29,9 +31,9 @@ class _AddZoneViewState extends State<AddZoneView> {
   GoogleMapController? _mapController;
   List<LatLng> polygonPoints = [];
   Set<Polygon> polygons = {};
-  var formKey=GlobalKey<FormState>();
-  TextEditingController zoneName=TextEditingController();
-  TextEditingController zoneCost=TextEditingController();
+  var formKey = GlobalKey<FormState>();
+  TextEditingController zoneName = TextEditingController();
+  TextEditingController zoneCost = TextEditingController();
 
   @override
   void dispose() {
@@ -92,11 +94,7 @@ class _AddZoneViewState extends State<AddZoneView> {
 
   Future<Map<String, dynamic>?> _saveZone() async {
     if (polygonPoints.length < 3) {
-      cherryToast(
-        text: "لازم على الأقل 3 نقاط علشان تعمل منطقة",
-        context: context,
-        isSuccess: false,
-      );
+      cherryToast(text: "لازم على الأقل 3 نقاط علشان تعمل منطقة", context: context, isSuccess: false);
       return null;
     }
 
@@ -108,38 +106,36 @@ class _AddZoneViewState extends State<AddZoneView> {
 
   @override
   void initState() {
-    if(widget.zoneData!=null){
-      zoneName.text=widget.zoneData!.name??"";
-      zoneCost.text=widget.zoneData!.shippingCost??"";
+    if (widget.zoneData != null) {
+      zoneName.text = widget.zoneData!.name ?? "";
+      zoneCost.text = widget.zoneData!.shippingCost ?? "";
 
       final coords = widget.zoneData!.polygon?.coordinates;
       if (coords != null && coords.isNotEmpty) {
-        // GeoJSON: coordinates[0] = list of points [lon, lat]
-        polygonPoints = coords.first
-            .map((point) => LatLng(point[1], point[0])) // LatLng(lat, lon)
-            .toList();
-
-        // تحديث الـ Polygon على الخريطة
+        polygonPoints = coords.first.map((point) => LatLng(point[1], point[0])).toList();
         updatePolygon();
       }
     }
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context)=>AddZoneCubit(getIt<ZonesRepoImpl>())),
-        BlocProvider(create: (context)=>EditZoneCubit(getIt<ZonesRepoImpl>())),
+        BlocProvider(create: (context) => AddZoneCubit(getIt<ZonesRepoImpl>())),
+        BlocProvider(create: (context) => EditZoneCubit(getIt<ZonesRepoImpl>())),
       ],
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: [
               SizedBox(height: AppConstants.height10(context)),
-              Text(widget.zoneData!=null?"تعديل المنطقة":"اضافة منطقة جديدة", textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+              Text(
+                widget.zoneData != null ? "تعديل المنطقة" : "اضافة منطقة جديدة",
+                textAlign: TextAlign.center,
+                style: Styles.inter18500Black(context),
+              ),
               SizedBox(height: AppConstants.height10(context)),
               Expanded(
                 child: Stack(
@@ -183,7 +179,7 @@ class _AddZoneViewState extends State<AddZoneView> {
                                   controller: zoneName,
                                   hintText: "ادخل اسم المنطقة",
                                   borderRadius: AppConstants.sp15(context),
-                                validationMsg: "يجب ادخال اسم المنطقة",
+                                  validationMsg: "يجب ادخال اسم المنطقة",
                                   fillColor: Colors.grey[100],
                                   isFilled: true,
                                   hasBorder: false,
@@ -211,11 +207,7 @@ class _AddZoneViewState extends State<AddZoneView> {
                                       context.read<GetZonesCubit>().getZones();
                                       NavigationUtils.navigateBack(context: context);
                                     } else if (addState is AddZoneErrorState) {
-                                      cherryToast(
-                                        text: addState.error,
-                                        context: context,
-                                        isSuccess: false,
-                                      );
+                                      cherryToast(text: addState.error, context: context, isSuccess: false);
                                     }
                                   },
                                   builder: (context, addState) {
@@ -226,29 +218,24 @@ class _AddZoneViewState extends State<AddZoneView> {
                                           context.read<GetZonesCubit>().getZones();
                                           NavigationUtils.navigateBack(context: context);
                                         } else if (editState is EditZoneErrorState) {
-                                          cherryToast(
-                                            text: editState.error,
-                                            context: context,
-                                            isSuccess: false,
-                                          );
+                                          cherryToast(text: editState.error, context: context, isSuccess: false);
                                         }
                                       },
                                       builder: (context, editState) {
                                         final isLoading =
-                                            addState is AddZoneLoadingState ||
-                                                editState is EditZoneLoadingState;
+                                            addState is AddZoneLoadingState || editState is EditZoneLoadingState;
                                         if (isLoading) {
-                                          return Center(child: const CircularProgressIndicator());
+                                          return const CustomLoadingItem();
                                         }
                                         return Row(
                                           children: [
                                             Expanded(
                                               child: DefaultButton(
-                                                onPress:  () async {
+                                                onPress: () async {
                                                   if (formKey.currentState!.validate()) {
                                                     if (widget.zoneData != null) {
                                                       _saveZone().then((polygon) async {
-                                                        if(polygon!=null){
+                                                        if (polygon != null) {
                                                           await context.read<EditZoneCubit>().editZone(
                                                             zoneId: widget.zoneData!.id!,
                                                             data: {
@@ -259,12 +246,10 @@ class _AddZoneViewState extends State<AddZoneView> {
                                                             },
                                                           );
                                                         }
-
                                                       });
-
                                                     } else {
                                                       _saveZone().then((polygon) async {
-                                                        if(polygon!=null){
+                                                        if (polygon != null) {
                                                           await context.read<AddZoneCubit>().addZone(
                                                             data: {
                                                               "name": zoneName.text,
@@ -274,12 +259,10 @@ class _AddZoneViewState extends State<AddZoneView> {
                                                             },
                                                           );
                                                         }
-
                                                       });
                                                     }
                                                   }
-                                                }
-                                                    ,
+                                                },
                                                 borderRadius: AppConstants.sp10(context),
                                                 text: widget.zoneData != null ? "تعديل المنطقة" : "حفظ المنطقة",
                                               ),
@@ -289,7 +272,7 @@ class _AddZoneViewState extends State<AddZoneView> {
                                               heroTag: "delete_last",
                                               tooltip: "مسح آخر نقطة",
                                               onPressed: removeLastPoint,
-                                              backgroundColor:AppColors.secondaryColor,
+                                              backgroundColor: AppColors.secondaryColor,
                                               child: Icon(Icons.undo, color: Colors.white),
                                             ),
                                           ],
@@ -304,7 +287,6 @@ class _AddZoneViewState extends State<AddZoneView> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -315,5 +297,3 @@ class _AddZoneViewState extends State<AddZoneView> {
     );
   }
 }
-
-

@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
+import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -78,7 +79,7 @@ class ZonesView extends StatelessWidget {
                         ),
                       );
                     } else {
-                      return const Center(child: CircularProgressIndicator());
+                      return const CustomLoadingItem();
                     }
                   },
                 ),
