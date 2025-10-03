@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:alrayan_admin/bloc_observer.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
 import 'package:alrayan_admin/features/auth/data/repo/auth_repo_impl.dart';
@@ -10,6 +9,10 @@ import 'package:alrayan_admin/features/notifications/data/repo/notifications_rep
 import 'package:alrayan_admin/features/products/data/repo/products_repo_impl.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/change_category/change_category_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
+import 'package:alrayan_admin/features/profile/data/repo/profile_repo/profile_repo_impl.dart';
+import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_cubit.dart';
+import 'package:alrayan_admin/features/zones/data/repo/zones_repo_impl.dart';
+import 'package:alrayan_admin/features/zones/presentation/view_model/get_zones/get_zones_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,6 +105,8 @@ class _AlRayanAdminState extends State<AlRayanAdmin> {
         BlocProvider(create: (context) => GetSubCategoriesCubit(getIt<CategoriesRepoImpl>())),
         BlocProvider(create: (context) => ChangeCategoryCubit()),
         BlocProvider(create: (context) => GetProductsCubit(getIt.get<ProductsRepoImpl>())..getProducts()),
+        BlocProvider(create: (context) => GetProfileCubit(getIt.get<ProfileRepoImpl>())..getProfile()),
+        BlocProvider(create: (context) => GetZonesCubit(getIt.get<ZonesRepoImpl>())..getZones(withLoading: true)),
       ],
       child: MaterialApp.router(
         title: "الريان أدمن",

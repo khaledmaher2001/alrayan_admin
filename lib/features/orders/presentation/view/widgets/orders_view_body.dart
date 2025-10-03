@@ -32,16 +32,13 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
       setState(() {
         cubit.page++;
       });
-      await cubit
-          .getOrders(
-            withLoading: false,
-            status:filterCubit.status[filterCubit.selectedFilterIndex],
-          )
-          .then((value) {
-            setState(() {
-              isLoading = false;
-            });
-          });
+      await cubit.getOrders(withLoading: false, status: filterCubit.status[filterCubit.selectedFilterIndex]).then((
+        value,
+      ) {
+        setState(() {
+          isLoading = false;
+        });
+      });
     }
   }
 
@@ -80,7 +77,9 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                               child: RefreshIndicator(
                                 onRefresh: () async {
                                   await context.read<GetOrdersCubit>().getOrders(
-                                    status:context.read<OrderStatusFilterCubit>().status[context.read<OrderStatusFilterCubit>().selectedFilterIndex],
+                                    status: context
+                                        .read<OrderStatusFilterCubit>()
+                                        .status[context.read<OrderStatusFilterCubit>().selectedFilterIndex],
                                   );
                                 },
                                 child: ListView.separated(

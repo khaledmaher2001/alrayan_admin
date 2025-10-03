@@ -94,7 +94,7 @@ class AddEditProductItem extends StatelessWidget {
                                   "supplier_price": supplierPrice.text,
                                   "price": price.text,
                                   "stock": stock.text,
-                                  "discount": discount.text.isEmpty ? 0 : discount.text,
+                                  "discount":discountType=="undefined"?0: discount.text.isEmpty ? 0 : discount.text,
                                   "main_category_id": categoryId,
                                   "sub_category_id": subCategoryId,
                                   "unit": unit.text,
@@ -102,7 +102,7 @@ class AddEditProductItem extends StatelessWidget {
                                       ? "fixed"
                                       : discountType == "نسبة مئوية"
                                       ? "percentage"
-                                      : null,
+                                      : "undefined",
                                   "isRecommended": isRecommended,
                                   if (context.read<SelectProductPhotosCubit>().productPhotos.isNotEmpty)
                                     "images": attachments,
@@ -169,7 +169,7 @@ class AddEditProductItem extends StatelessWidget {
                                       ? "fixed"
                                       : discountType == "نسبة مئوية"
                                       ? "percentage"
-                                      : null,
+                                      : "undefined",
                                   "isRecommended": isRecommended,
                                   if(context.read<SelectProductPhotosCubit>().productPhotos.isNotEmpty)
                                   "images": attachments,

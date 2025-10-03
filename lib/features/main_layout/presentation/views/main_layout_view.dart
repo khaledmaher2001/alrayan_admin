@@ -4,6 +4,7 @@ import 'package:alrayan_admin/features/main_layout/presentation/views/widgets/bo
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/orders_view.dart';
 import 'package:alrayan_admin/features/products/presentation/views/products_view.dart';
+import 'package:alrayan_admin/features/profile/presentation/view/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,7 +23,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     CategoriesView(),
     OrdersView(),
     ProductsView(),
-    SizedBox(),
+    ProfileView(),
   ];
 
   @override

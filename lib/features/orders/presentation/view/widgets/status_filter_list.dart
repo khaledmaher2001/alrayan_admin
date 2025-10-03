@@ -38,11 +38,10 @@ class _StatusFilterListState extends State<StatusFilterList> {
                 if (index == 0) SizedBox(width: AppConstants.width15(context)),
                 GestureDetector(
                   onTap: () {
-                    if(cubit.selectedFilterIndex!=index){
+                    if (cubit.selectedFilterIndex != index) {
                       cubit.selectIndex(index: index);
                       context.read<GetOrdersCubit>().getOrders(status: cubit.status[index]);
                     }
-
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(

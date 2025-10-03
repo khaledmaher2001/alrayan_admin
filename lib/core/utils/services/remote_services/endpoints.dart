@@ -12,6 +12,9 @@ class EndPoints {
   static const signUp = "auth/sign-up";
   static const resetPassword = 'auth/update-password';
   static const forgetPassword = 'auth/forget-password';
+  static const profile = "auth/get-me";
+  static const changePassword = "auth/update-password";
+
 
   static const categories = 'category';
   static const subCategories = 'sub-categories';
@@ -22,6 +25,10 @@ class EndPoints {
 
   static const orders = "orders";
   static const homeStatistics = "orders/dashboard";
+
+  static const zones = "zones";
+
+
 
 
 }

@@ -328,7 +328,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                       categoryId: context.read<SelectProductPhotosCubit>().mainCategoryId ?? 0,
                       subCategoryId: context.read<SelectProductPhotosCubit>().subCategoryId ?? 0,
                       discount: discount,
-                      discountType: discountType ?? "",
+                      discountType: discountType ?? "undefined",
                       isRecommended: isRecommended,
                       price: price,
                       stock: stock,
