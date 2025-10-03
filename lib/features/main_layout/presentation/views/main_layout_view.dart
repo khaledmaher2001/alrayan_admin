@@ -1,4 +1,5 @@
 import 'package:alrayan_admin/features/categories/presentation/view/categories_view.dart';
+import 'package:alrayan_admin/features/home/presentation/views/home_view.dart';
 import 'package:alrayan_admin/features/main_layout/presentation/views/widgets/bottom_nav_bar.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/orders_view.dart';
@@ -17,7 +18,7 @@ class MainLayoutView extends StatefulWidget {
 
 class _MainLayoutViewState extends State<MainLayoutView> {
   List<Widget> screens = [
-    SizedBox(),
+    HomeView(),
     CategoriesView(),
     OrdersView(),
     ProductsView(),

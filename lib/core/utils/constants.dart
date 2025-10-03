@@ -17,18 +17,12 @@ class AppConstants {
     switch (status) {
       case "pending":
         return "قيد الانتظار";
-      case "confirmed":
-        return "تم التأكيد";
-      case "processing":
-        return "جاري التجهيز";
       case "shipped":
         return "تم الشحن";
       case "delivered":
         return "تم التوصيل";
       case "cancelled":
         return "تم الإلغاء";
-      case "refunded":
-        return "تم استرجاع المبلغ";
       default:
         return "منتهي الصلاحية";
     }

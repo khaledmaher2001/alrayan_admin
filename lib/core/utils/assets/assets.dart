@@ -109,4 +109,10 @@ class AssetData {
   static const spin="assets/images/wheel_icons/spin.svg";
   static const backPattern="assets/images/wheel_icons/back_pattern.png";
 
+  // Admin Home
+  static const totalOrders="assets/images/admin_home/total_orders.svg";
+  static const totalCustomers="assets/images/admin_home/total_customers.svg";
+  static const totalMoney="assets/images/admin_home/total_money.svg";
+
+
 }

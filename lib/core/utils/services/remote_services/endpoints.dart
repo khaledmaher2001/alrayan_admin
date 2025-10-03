@@ -21,6 +21,7 @@ class EndPoints {
   static String readNotification(id) => "notifications/$id/read";
 
   static const orders = "orders";
+  static const homeStatistics = "orders/dashboard";
 
 
 }

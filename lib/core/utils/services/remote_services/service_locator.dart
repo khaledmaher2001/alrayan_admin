@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/features/auth/data/repo/auth_repo_impl.dart';
 import 'package:alrayan_admin/features/categories/data/repo/categories_repo_impl.dart';
+import 'package:alrayan_admin/features/home/data/repo/home_repo_impl.dart';
 import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
 import 'package:alrayan_admin/features/products/data/repo/products_repo_impl.dart';
 import 'package:dio/dio.dart';
@@ -17,4 +18,5 @@ void setup() {
   getIt.registerLazySingleton<ProductsRepoImpl>(() => ProductsRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<NotificationsRepoImpl>(() => NotificationsRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<OrdersRepoImpl>(() => OrdersRepoImpl(getIt.get<ApiService>()));
+  getIt.registerLazySingleton<HomeRepoImpl>(() => HomeRepoImpl(getIt.get<ApiService>()));
 }
