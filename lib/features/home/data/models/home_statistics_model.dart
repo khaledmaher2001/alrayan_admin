@@ -4,13 +4,17 @@ class HomeStatisticsModel {
   OrderStats? orderStats;
   ProductStats? productStats;
   Trends? trends;
+  List<TopCustomers>? topCustomers;
+  ReviewStats? reviewStats;
 
   HomeStatisticsModel(
       {this.overview,
         this.recentStats,
         this.orderStats,
         this.productStats,
-        this.trends});
+        this.trends,
+        this.topCustomers,
+        this.reviewStats});
 
   HomeStatisticsModel.fromJson(Map<String, dynamic> json) {
     overview = json['overview'] != null
@@ -27,6 +31,15 @@ class HomeStatisticsModel {
         : null;
     trends =
     json['trends'] != null ? new Trends.fromJson(json['trends']) : null;
+    if (json['topCustomers'] != null) {
+      topCustomers = <TopCustomers>[];
+      json['topCustomers'].forEach((v) {
+        topCustomers!.add(new TopCustomers.fromJson(v));
+      });
+    }
+    reviewStats = json['reviewStats'] != null
+        ? new ReviewStats.fromJson(json['reviewStats'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -45,6 +58,12 @@ class HomeStatisticsModel {
     }
     if (this.trends != null) {
       data['trends'] = this.trends!.toJson();
+    }
+    if (this.topCustomers != null) {
+      data['topCustomers'] = this.topCustomers!.map((v) => v.toJson()).toList();
+    }
+    if (this.reviewStats != null) {
+      data['reviewStats'] = this.reviewStats!.toJson();
     }
     return data;
   }
@@ -486,6 +505,101 @@ class MonthlyRevenue {
     data['month'] = this.month;
     data['revenue'] = this.revenue;
     data['orders'] = this.orders;
+    return data;
+  }
+}
+
+class TopCustomers {
+  int? userId;
+  String? fullName;
+  String? email;
+  String? phoneNumber;
+  int? orderCount;
+  dynamic totalSpent;
+  dynamic averageOrderValue;
+
+  TopCustomers(
+      {this.userId,
+        this.fullName,
+        this.email,
+        this.phoneNumber,
+        this.orderCount,
+        this.totalSpent,
+        this.averageOrderValue});
+
+  TopCustomers.fromJson(Map<String, dynamic> json) {
+    userId = json['userId'];
+    fullName = json['fullName'];
+    email = json['email'];
+    phoneNumber = json['phoneNumber'];
+    orderCount = json['orderCount'];
+    totalSpent = json['totalSpent'];
+    averageOrderValue = json['averageOrderValue'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['userId'] = this.userId;
+    data['fullName'] = this.fullName;
+    data['email'] = this.email;
+    data['phoneNumber'] = this.phoneNumber;
+    data['orderCount'] = this.orderCount;
+    data['totalSpent'] = this.totalSpent;
+    data['averageOrderValue'] = this.averageOrderValue;
+    return data;
+  }
+}
+
+class ReviewStats {
+  int? averageRating;
+  int? totalReviews;
+  RatingDistribution? ratingDistribution;
+
+  ReviewStats({this.averageRating, this.totalReviews, this.ratingDistribution});
+
+  ReviewStats.fromJson(Map<String, dynamic> json) {
+    averageRating = json['averageRating'];
+    totalReviews = json['totalReviews'];
+    ratingDistribution = json['ratingDistribution'] != null
+        ? new RatingDistribution.fromJson(json['ratingDistribution'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['averageRating'] = this.averageRating;
+    data['totalReviews'] = this.totalReviews;
+    if (this.ratingDistribution != null) {
+      data['ratingDistribution'] = this.ratingDistribution!.toJson();
+    }
+    return data;
+  }
+}
+
+class RatingDistribution {
+  int? i1;
+  int? i2;
+  int? i3;
+  int? i4;
+  int? i5;
+
+  RatingDistribution({this.i1, this.i2, this.i3, this.i4, this.i5});
+
+  RatingDistribution.fromJson(Map<String, dynamic> json) {
+    i1 = json['1'];
+    i2 = json['2'];
+    i3 = json['3'];
+    i4 = json['4'];
+    i5 = json['5'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['1'] = this.i1;
+    data['2'] = this.i2;
+    data['3'] = this.i3;
+    data['4'] = this.i4;
+    data['5'] = this.i5;
     return data;
   }
 }

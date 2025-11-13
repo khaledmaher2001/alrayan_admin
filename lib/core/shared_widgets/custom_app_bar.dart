@@ -59,10 +59,10 @@ class CustomAppBar extends StatelessWidget {
                       height: AppConstants.width20(context) * 2.2,
                       width: AppConstants.width20(context) * 2.2,
                       padding: EdgeInsets.all(AppConstants.sp5(context)),
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                      decoration:  BoxDecoration(shape: BoxShape.circle, color: AppColors.gray.withOpacity(.2)),
                       child: RotatedBox(
                         quarterTurns: 2,
-                        child: SvgPicture.asset(AssetData.back, color: AppColors.gray, fit: BoxFit.scaleDown),
+                        child: SvgPicture.asset(AssetData.back, color: Colors.black, fit: BoxFit.scaleDown),
                       ),
                     ),
                   )

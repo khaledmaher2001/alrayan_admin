@@ -27,6 +27,7 @@ class EndPoints {
   static const homeStatistics = "orders/dashboard";
 
   static const zones = "zones";
+  static const users = "user";
 
 
 

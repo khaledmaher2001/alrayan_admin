@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.9.0
@@ -57,6 +57,7 @@ dependencies:
   pretty_dio_logger:
   flutter_spinkit: ^5.2.1
   pie_chart: ^5.3.2
+  fl_chart: ^1.1.1
 
 
 

@@ -33,7 +33,7 @@ class ApiService {
     _dio.options.headers = {
       "Accept":"application/json",
       "Content-Type": "application/json",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      "lang":"ar",
       if (sendToken)
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };
@@ -53,7 +53,7 @@ class ApiService {
   }) async {
     _dio.options.headers = {
       "Content-Type": "application/json",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      "lang":"ar",
       if (sendToken)
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };
@@ -74,7 +74,7 @@ class ApiService {
       "accept":"*/*",
       "Content-Type": "application/json",
       "Authorization":"Bearer ${CacheKeysManger.tokenStatus()}",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      "lang":"ar",
     };
     var response = await _dio.put(
       '${EndPoints.baseUrl}$endPoint',
@@ -96,7 +96,7 @@ class ApiService {
     _dio.options.headers = {
       "Accept":"application/json",
       "Content-Type": "application/json",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      "lang":"ar",
       if (sendToken)
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };
@@ -117,7 +117,7 @@ class ApiService {
     _dio.options.headers = {
       "Accept":"application/json",
       "Content-Type": "application/json",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      "lang":"ar",
       if (sendToken)
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };

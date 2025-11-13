@@ -2,9 +2,7 @@ class AssetData {
   static const logo="assets/images/logo.png";
   static const nav="assets/images/nav.png";
   static const navCart="assets/images/nav_cart.svg";
-  static const confirmed="assets/images/confirmed.svg";
   static const processing="assets/images/processing.svg";
-  static const cancelled="assets/images/cancelled.svg";
   static const payment="assets/images/payment.svg";
   static const refunded="assets/images/refunded.svg";
   static const onboarding1="assets/images/onboarding1.png";
@@ -56,7 +54,6 @@ class AssetData {
   static const language="assets/images/language-square.svg";
   static const logout="assets/images/logout.svg";
   static const privacy="assets/images/account_privacy.svg";
-  static const orders="assets/images/truck-fast.svg";
   static const tickSquare="assets/images/tick-square.svg";
   static const editPhoto="assets/images/edit_photo.svg";
   static const heartFav="assets/images/heart_fav.svg";
@@ -80,6 +77,8 @@ class AssetData {
   static const inProgress="assets/images/in_progress.svg";
   static const location="assets/images/location.svg";
   static const mapZone="assets/images/map_zone.json";
+  static const checked="assets/images/checked.svg";
+  static const uncheck="assets/images/uncheck.svg";
 
 
   //Account Icons
@@ -113,6 +112,11 @@ class AssetData {
   static const totalOrders="assets/images/admin_home/total_orders.svg";
   static const totalCustomers="assets/images/admin_home/total_customers.svg";
   static const totalMoney="assets/images/admin_home/total_money.svg";
+  static const cancelled="assets/images/admin_home/cancelled.svg";
+  static const confirmed="assets/images/admin_home/confirmed.svg";
+  static const orders="assets/images/admin_home/orders.svg";
+  static const coupons="assets/images/admin_home/coupons.svg";
+  static const accountStatus="assets/images/admin_home/account_status.svg";
 
 
 }

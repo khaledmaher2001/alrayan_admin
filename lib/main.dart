@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:alrayan_admin/bloc_observer.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
+import 'package:alrayan_admin/features/all_users/data/repo/all_users_repo_impl.dart';
+import 'package:alrayan_admin/features/all_users/presentation/view_models/get_all_users/get_all_users_cubit.dart';
 import 'package:alrayan_admin/features/auth/data/repo/auth_repo_impl.dart';
 import 'package:alrayan_admin/features/categories/data/repo/categories_repo_impl.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/get_categories/get_categories_cubit.dart';
@@ -28,6 +30,7 @@ import 'core/utils/theme/app_theme.dart';
 import 'features/auth/presentation/view_model/forget_password/forget_password_cubit.dart';
 import 'features/auth/presentation/view_model/get_settings/get_settings_cubit.dart';
 import 'features/auth/presentation/view_model/reset_password/reset_password_cubit.dart';
+import 'features/coupons/presentation/views/view_model/create_coupon_assets/create_coupon_assets_cubit.dart';
 import 'features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'features/notifications/presenatation/view_model/get_notifications/get_notifications_cubit.dart';
 
@@ -92,7 +95,13 @@ class _AlRayanAdminState extends State<AlRayanAdmin> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => ChangeNavBarStatusCubit()),
+        BlocProvider(create: (context) => CreateCouponAssetsCubit()),
+
         BlocProvider(create: (context) => LoginCubit(getIt.get<AuthRepoImpl>())),
+        BlocProvider(create: (context) => GetAllUsersCubit(getIt.get<AllUsersRepoImpl>())..getAllUsers(data: {
+          'page': 1,
+          'limit': 12,
+        })),
         BlocProvider(create: (context) => RegisterCubit(getIt.get<AuthRepoImpl>())),
         BlocProvider(create: (context) => ForgetPasswordCubit(getIt.get<AuthRepoImpl>())),
         BlocProvider(create: (context) => ResetPasswordCubit(getIt.get<AuthRepoImpl>())),

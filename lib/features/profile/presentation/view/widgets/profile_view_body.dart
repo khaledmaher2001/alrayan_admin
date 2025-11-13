@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/create_coupon_view.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/profile/presentation/view/change_password_view.dart';
 import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_cubit.dart';
@@ -34,7 +35,6 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
         Column(
           children: [
             SizedBox(height: AppConstants.height10(context)),
-
             Padding(
               padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
               child: BlocBuilder<GetProfileCubit, GetProfileStates>(
@@ -125,10 +125,10 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                     SizedBox(height: AppConstants.height20(context)),
                     AccountItem(
                       onTap: () {
-                        // NavigationUtils.navigateTo(
-                        //   context: context,
-                        //   destinationScreen: const CouponsView(),
-                        // );
+                        NavigationUtils.navigateTo(
+                          context: context,
+                          destinationScreen: const CreateCouponView(),
+                        );
                       },
                       title: "my_coupons".tr(),
                       icon: AssetData.accountCoupons,
