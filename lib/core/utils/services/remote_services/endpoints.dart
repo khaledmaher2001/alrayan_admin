@@ -29,6 +29,10 @@ class EndPoints {
   static const zones = "zones";
   static const users = "user";
 
+  static const coupons = "coupons";
+
+
+
 
 
 

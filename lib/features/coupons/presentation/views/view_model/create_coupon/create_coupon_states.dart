@@ -1,17 +1,17 @@
-abstract class EditCategoryStates {}
+abstract class CreateCouponStates {}
 
-class EditCategoryInitState extends EditCategoryStates {}
+class CreateCouponInitState extends CreateCouponStates {}
 
-class EditCategoryLoadingState extends EditCategoryStates {}
+class CreateCouponLoadingState extends CreateCouponStates {}
 
-class EditCategorySuccessState extends EditCategoryStates {
+class CreateCouponSuccessState extends CreateCouponStates {
   final String message;
 
-  EditCategorySuccessState({required this.message});
+  CreateCouponSuccessState({required this.message});
 }
 
-class EditCategoryErrorState extends EditCategoryStates {
+class CreateCouponErrorState extends CreateCouponStates {
   final String error;
 
-  EditCategoryErrorState({required this.error});
+  CreateCouponErrorState({required this.error});
 }

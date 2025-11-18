@@ -1,20 +1,26 @@
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
+import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
+import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
+import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
+import 'package:alrayan_admin/features/coupons/data/repo/coupons_repo_impl.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_cubit.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_states.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/widgets/custom_coupon_field.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_category_bottom_sheet.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_product_bottom_sheet.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_users_bottom_sheet.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import '../../../../../../core/shared_widgets/custom_dropdown_formfield.dart';
 import '../../../../../../core/shared_widgets/default_text_form_field.dart';
 import '../../../../../../core/utils/colors/colors.dart';
 import '../../../../../../core/utils/constants.dart';
 import '../../../../../../core/utils/text_styles/styles.dart';
-import '../../../../all_users/presentation/view_models/get_all_users/get_all_users_cubit.dart';
 import '../view_model/create_coupon_assets/create_coupon_assets_cubit.dart';
 
 class CreateCouponViewBody extends StatefulWidget {
@@ -25,9 +31,12 @@ class CreateCouponViewBody extends StatefulWidget {
 }
 
 class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
+  late CreateCouponAssetsCubit couponAssetsCubit;
+
   @override
   void initState() {
-    context.read<CreateCouponAssetsCubit>().clearAllData();
+    couponAssetsCubit = context.read<CreateCouponAssetsCubit>();
+    couponAssetsCubit.clearAllData();
     super.initState();
   }
 
@@ -43,17 +52,13 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
             builder: (context, state) {
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppConstants.width20(context),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Form(
-                          key: context
-                              .read<CreateCouponAssetsCubit>()
-                              .createCouponFormKey,
+                          key: couponAssetsCubit.createCouponFormKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -62,42 +67,27 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        "مستخدمين الكوبون",
-                                        style: Styles.inter14600black(context),
-                                      ),
+                                      Text("مستخدمين الكوبون", style: Styles.inter14600black(context)),
                                       Text(
                                         "*",
-                                        style: Styles.inter14600black(
-                                          context,
-                                        ).copyWith(color: AppColors.redColor),
+                                        style: Styles.inter14600black(context).copyWith(color: AppColors.redColor),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                    height: AppConstants.height5(context),
-                                  ),
+                                  SizedBox(height: AppConstants.height5(context)),
                                   CustomDropDownButton(
                                     hintText: "اختر المستخدمين",
                                     items: ['كل المستخدمين', 'مستخدمين محددين'],
                                     borderRadius: AppConstants.sp10(context),
                                     hasBorder: true,
-                                    height:
-                                        MediaQuery.of(context).size.height *
-                                        .06,
+                                    height: MediaQuery.of(context).size.height * .06,
                                     onChanged: (v) {
                                       switch (v) {
                                         case 'كل المستخدمين':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectUsersType(type: "all");
+                                          couponAssetsCubit.selectUsersType(type: "all");
                                           break;
                                         case 'مستخدمين محددين':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectUsersType(
-                                                type: "specific_users",
-                                              );
+                                          couponAssetsCubit.selectUsersType(type: "specific_users");
                                           break;
                                       }
                                     },
@@ -111,232 +101,125 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   ),
                                 ],
                               ),
-                              if (context
-                                      .read<CreateCouponAssetsCubit>()
-                                      .usersType ==
-                                  "specific_users")
+                              if (context.read<CreateCouponAssetsCubit>().usersType == "specific_users")
                                 Column(
                                   children: [
-                                    SizedBox(
-                                      height: AppConstants.height15(context),
-                                    ),
+                                    SizedBox(height: AppConstants.height15(context)),
                                     Row(
                                       children: [
                                         Expanded(
                                           child: Text(
                                             "المستخدمين التي تم اختيارها",
-                                            style: Styles.inter14600black(
-                                              context,
-                                            ),
+                                            style: Styles.inter14600black(context),
                                           ),
                                         ),
-                                        if (context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedUsers
-                                            .isNotEmpty) ...[
-                                          SizedBox(
-                                            width: AppConstants.width20(
-                                              context,
-                                            ),
-                                          ),
+                                        if (context.read<CreateCouponAssetsCubit>().selectedUsers.isNotEmpty) ...[
+                                          SizedBox(width: AppConstants.width20(context)),
                                           InkWell(
                                             onTap: () {
-                                              SelectUsersBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectUsersBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp5(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp5(context)),
                                               decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp5(context),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
                                                 color: AppColors.secondaryColor,
                                               ),
                                               child: SvgPicture.asset(
                                                 AssetData.addCircle,
-                                                width:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    .06,
+                                                width: MediaQuery.of(context).size.width * .06,
                                               ),
                                             ),
                                           ),
                                         ],
                                       ],
                                     ),
-                                    SizedBox(
-                                      height: AppConstants.height10(context),
-                                    ),
-                                    context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedUsers
-                                            .isEmpty
+                                    SizedBox(height: AppConstants.height10(context)),
+                                    couponAssetsCubit.selectedUsers.isEmpty
                                         ? InkWell(
                                             onTap: () {
-                                              SelectUsersBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectUsersBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp20(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp20(context)),
                                               decoration: BoxDecoration(
                                                 color: Color(0xffF7F7F8),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp10(
-                                                        context,
-                                                      ),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                               ),
                                               child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  SvgPicture.asset(
-                                                    AssetData.addCircle,
-                                                    color: AppColors.gray,
-                                                  ),
-                                                  Text(
-                                                    "اضافة المستخدمين",
-                                                    style:
-                                                        Styles.inter14600gray(
-                                                          context,
-                                                        ),
-                                                  ),
+                                                  SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
+                                                  Text("اضافة المستخدمين", style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
                                           )
                                         : SizedBox(
-                                            height:
-                                                MediaQuery.of(
-                                                  context,
-                                                ).size.height *
-                                                .12,
+                                            height: MediaQuery.of(context).size.height * .12,
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
-                                              itemCount: context
-                                                  .read<
-                                                    CreateCouponAssetsCubit
-                                                  >()
-                                                  .selectedUsers
-                                                  .length,
+                                              itemCount: couponAssetsCubit.selectedUsers.length,
                                               itemBuilder: (BuildContext context, int index) {
                                                 return Column(
                                                   children: [
                                                     CircleAvatar(
-                                                      radius:
-                                                          MediaQuery.of(
-                                                            context,
-                                                          ).size.width *
-                                                          0.065,
+                                                      radius: MediaQuery.of(context).size.width * 0.065,
                                                       // نصف عرض الصورة القديمة
                                                       backgroundColor:
-                                                          Colors
-                                                              .primaries[index %
-                                                              Colors
-                                                                  .primaries
-                                                                  .length],
+                                                          Colors.primaries[index % Colors.primaries.length],
                                                       // لون عشوائي لكل يوزر
                                                       child: Text(
                                                         (context
-                                                                    .read<
-                                                                      CreateCouponAssetsCubit
-                                                                    >()
+                                                                    .read<CreateCouponAssetsCubit>()
                                                                     .selectedUsers[index]
                                                                     .fullName ??
                                                                 '')
                                                             .split(' ')
                                                             .take(2)
-                                                            .map(
-                                                              (e) =>
-                                                                  e.isNotEmpty
-                                                                  ? e[0]
-                                                                  : '',
-                                                            )
+                                                            .map((e) => e.isNotEmpty ? e[0] : '')
                                                             .join()
                                                             .toUpperCase(),
                                                         // أول حرفين من الاسم
                                                         style: TextStyle(
                                                           color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          fontWeight: FontWeight.bold,
                                                           fontSize: 16,
                                                         ),
                                                       ),
                                                     ),
-                                                    SizedBox(
-                                                      height:
-                                                          AppConstants.height5(
-                                                            context,
-                                                          ),
-                                                    ),
+                                                    SizedBox(height: AppConstants.height5(context)),
                                                     Row(
                                                       children: [
                                                         Text(
                                                           context
-                                                              .read<
-                                                                CreateCouponAssetsCubit
-                                                              >()
+                                                              .read<CreateCouponAssetsCubit>()
                                                               .selectedUsers[index]
                                                               .fullName!,
-                                                          style:
-                                                              Styles.inter16500black(
-                                                                context,
-                                                              ),
+                                                          style: Styles.inter16500black(context),
                                                         ),
                                                         Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                                           child: InkWell(
                                                             onTap: () {
-                                                              context
-                                                                  .read<
-                                                                    CreateCouponAssetsCubit
-                                                                  >()
-                                                                  .removeUser(
-                                                                    instance: context
-                                                                        .read<
-                                                                          CreateCouponAssetsCubit
-                                                                        >()
-                                                                        .selectedUsers[index],
-                                                                  );
+                                                              couponAssetsCubit.removeUser(
+                                                                instance: context
+                                                                    .read<CreateCouponAssetsCubit>()
+                                                                    .selectedUsers[index],
+                                                              );
                                                             },
                                                             child: Container(
-                                                              padding: EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                      context,
-                                                                    ) /
-                                                                    2,
-                                                              ),
+                                                              padding: EdgeInsets.all(AppConstants.sp5(context) / 2),
                                                               decoration: BoxDecoration(
-                                                                color: AppColors
-                                                                    .redColor,
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      AppConstants.sp5(
-                                                                        context,
-                                                                      ),
-                                                                    ),
+                                                                color: AppColors.redColor,
+                                                                borderRadius: BorderRadius.circular(
+                                                                  AppConstants.sp5(context),
+                                                                ),
                                                               ),
-                                                              child:
-                                                                  SvgPicture.asset(
-                                                                    AssetData
-                                                                        .delete,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
+                                                              child: SvgPicture.asset(
+                                                                AssetData.delete,
+                                                                color: Colors.white,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
@@ -345,18 +228,9 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                   ],
                                                 );
                                               },
-                                              separatorBuilder:
-                                                  (
-                                                    BuildContext context,
-                                                    int index,
-                                                  ) {
-                                                    return SizedBox(
-                                                      width:
-                                                          AppConstants.width10(
-                                                            context,
-                                                          ),
-                                                    );
-                                                  },
+                                              separatorBuilder: (BuildContext context, int index) {
+                                                return SizedBox(width: AppConstants.width10(context));
+                                              },
                                             ),
                                           ),
                                   ],
@@ -367,21 +241,14 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        "نوع الكوبون",
-                                        style: Styles.inter14600black(context),
-                                      ),
+                                      Text("نوع الكوبون", style: Styles.inter14600black(context)),
                                       Text(
                                         "*",
-                                        style: Styles.inter14600black(
-                                          context,
-                                        ).copyWith(color: AppColors.redColor),
+                                        style: Styles.inter14600black(context).copyWith(color: AppColors.redColor),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                    height: AppConstants.height5(context),
-                                  ),
+                                  SizedBox(height: AppConstants.height5(context)),
                                   CustomDropDownButton(
                                     hintText: "نوع كوبون الخصم",
                                     items: [
@@ -393,45 +260,23 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     ],
                                     borderRadius: AppConstants.sp10(context),
                                     hasBorder: true,
-                                    height:
-                                        MediaQuery.of(context).size.height *
-                                        .06,
+                                    height: MediaQuery.of(context).size.height * .06,
                                     onChanged: (v) {
                                       switch (v) {
                                         case 'شحن مجاني':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectCouponType(
-                                                type: "free_shipping",
-                                              );
+                                          couponAssetsCubit.selectCouponType(type: "free_shipping");
                                           break;
                                         case 'خصم نسبة مئوية':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectCouponType(
-                                                type: "percentage",
-                                              );
+                                          couponAssetsCubit.selectCouponType(type: "percentage");
                                           break;
                                         case 'خصم قيمة ثابتة بالجنية':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectCouponType(
-                                                type: "fixed_amount",
-                                              );
+                                          couponAssetsCubit.selectCouponType(type: "fixed_amount");
                                           break;
                                         case 'خصم علي منتج معين':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectCouponType(
-                                                type: "product_specific",
-                                              );
+                                          couponAssetsCubit.selectCouponType(type: "product_specific");
                                           break;
                                         case 'خصم علي قسم معين':
-                                          context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .selectCouponType(
-                                                type: "category_specific",
-                                              );
+                                          couponAssetsCubit.selectCouponType(type: "category_specific");
                                           break;
                                       }
                                     },
@@ -445,121 +290,66 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   ),
                                 ],
                               ),
-                              if (context
-                                      .read<CreateCouponAssetsCubit>()
-                                      .couponType ==
-                                  "product_specific")
+                              if (context.read<CreateCouponAssetsCubit>().couponType == "product_specific")
                                 Column(
                                   children: [
-                                    SizedBox(
-                                      height: AppConstants.height15(context),
-                                    ),
+                                    SizedBox(height: AppConstants.height15(context)),
                                     Row(
                                       children: [
                                         Expanded(
                                           child: Text(
                                             "المنتجات التي تم اختيارها",
-                                            style: Styles.inter14600black(
-                                              context,
-                                            ),
+                                            style: Styles.inter14600black(context),
                                           ),
                                         ),
-                                        if (context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedProducts
-                                            .isNotEmpty) ...[
-                                          SizedBox(
-                                            width: AppConstants.width20(
-                                              context,
-                                            ),
-                                          ),
+                                        if (context.read<CreateCouponAssetsCubit>().selectedProducts.isNotEmpty) ...[
+                                          SizedBox(width: AppConstants.width20(context)),
                                           InkWell(
                                             onTap: () {
-                                              SelectProductBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectProductBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp5(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp5(context)),
                                               decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp5(context),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
                                                 color: AppColors.secondaryColor,
                                               ),
                                               child: SvgPicture.asset(
                                                 AssetData.addCircle,
-                                                width:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    .06,
+                                                width: MediaQuery.of(context).size.width * .06,
                                               ),
                                             ),
                                           ),
                                         ],
                                       ],
                                     ),
-                                    SizedBox(
-                                      height: AppConstants.height10(context),
-                                    ),
-                                    context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedProducts
-                                            .isEmpty
+                                    SizedBox(height: AppConstants.height10(context)),
+                                    couponAssetsCubit.selectedProducts.isEmpty
                                         ? InkWell(
                                             onTap: () {
-                                              SelectProductBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectProductBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp20(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp20(context)),
                                               decoration: BoxDecoration(
                                                 color: Color(0xffF7F7F8),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp10(
-                                                        context,
-                                                      ),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                               ),
                                               child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  SvgPicture.asset(
-                                                    AssetData.addCircle,
-                                                    color: AppColors.gray,
-                                                  ),
-                                                  Text(
-                                                    "اضافة المنتجات",
-                                                    style:
-                                                        Styles.inter14600gray(
-                                                          context,
-                                                        ),
-                                                  ),
+                                                  SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
+                                                  Text("اضافة المنتجات", style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
                                           )
                                         : SizedBox(
-                                            height:
-                                                MediaQuery.of(
-                                                  context,
-                                                ).size.height *
-                                                .12,
+                                            height: MediaQuery.of(context).size.height * .12,
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: context
-                                                  .read<
-                                                    CreateCouponAssetsCubit
-                                                  >()
+                                                  .read<CreateCouponAssetsCubit>()
                                                   .selectedProducts
                                                   .length,
                                               itemBuilder: (BuildContext context, int index) {
@@ -568,248 +358,128 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                     Stack(
                                                       children: [
                                                         Container(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                                           decoration: BoxDecoration(
-                                                            color: AppColors
-                                                                .gray
-                                                                .withOpacity(
-                                                                  .3,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  AppConstants.sp10(
-                                                                    context,
-                                                                  ),
-                                                                ),
+                                                            color: AppColors.gray.withOpacity(.3),
+                                                            borderRadius: BorderRadius.circular(
+                                                              AppConstants.sp10(context),
+                                                            ),
                                                           ),
                                                           child: DefaultCachedNetworkImage(
                                                             imageUrl: context
-                                                                .read<
-                                                                  CreateCouponAssetsCubit
-                                                                >()
+                                                                .read<CreateCouponAssetsCubit>()
                                                                 .selectedProducts[index]
                                                                 .images!
                                                                 .first
                                                                 .attach,
-                                                            imageWidth:
-                                                                MediaQuery.of(
-                                                                  context,
-                                                                ).size.width *
-                                                                .15,
-                                                            imageHeight:
-                                                                MediaQuery.of(
-                                                                  context,
-                                                                ).size.width *
-                                                                .15,
+                                                            imageWidth: MediaQuery.of(context).size.width * .15,
+                                                            imageHeight: MediaQuery.of(context).size.width * .15,
                                                           ),
                                                         ),
                                                         Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                                           child: InkWell(
                                                             onTap: () {
-                                                              context
-                                                                  .read<
-                                                                    CreateCouponAssetsCubit
-                                                                  >()
-                                                                  .removeProduct(
-                                                                    instance: context
-                                                                        .read<
-                                                                          CreateCouponAssetsCubit
-                                                                        >()
-                                                                        .selectedProducts[index],
-                                                                  );
+                                                              couponAssetsCubit.removeProduct(
+                                                                instance: context
+                                                                    .read<CreateCouponAssetsCubit>()
+                                                                    .selectedProducts[index],
+                                                              );
                                                             },
                                                             child: Container(
-                                                              padding: EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                      context,
-                                                                    ) /
-                                                                    2,
-                                                              ),
+                                                              padding: EdgeInsets.all(AppConstants.sp5(context) / 2),
                                                               decoration: BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      AppConstants.sp5(
-                                                                        context,
-                                                                      ),
-                                                                    ),
+                                                                color: Colors.white,
+                                                                borderRadius: BorderRadius.circular(
+                                                                  AppConstants.sp5(context),
+                                                                ),
                                                               ),
-                                                              child:
-                                                                  SvgPicture.asset(
-                                                                    AssetData
-                                                                        .delete,
-                                                                  ),
+                                                              child: SvgPicture.asset(AssetData.delete),
                                                             ),
                                                           ),
                                                         ),
                                                       ],
                                                     ),
-                                                    SizedBox(
-                                                      height:
-                                                          AppConstants.height5(
-                                                            context,
-                                                          ),
-                                                    ),
+                                                    SizedBox(height: AppConstants.height5(context)),
                                                     Text(
                                                       context
-                                                              .read<
-                                                                CreateCouponAssetsCubit
-                                                              >()
+                                                              .read<CreateCouponAssetsCubit>()
                                                               .selectedProducts[index]
                                                               .name!
                                                               .ar ??
                                                           '',
-                                                      style:
-                                                          Styles.inter16500black(
-                                                            context,
-                                                          ),
+                                                      style: Styles.inter16500black(context),
                                                     ),
                                                   ],
                                                 );
                                               },
-                                              separatorBuilder:
-                                                  (
-                                                    BuildContext context,
-                                                    int index,
-                                                  ) {
-                                                    return SizedBox(
-                                                      width:
-                                                          AppConstants.width10(
-                                                            context,
-                                                          ),
-                                                    );
-                                                  },
+                                              separatorBuilder: (BuildContext context, int index) {
+                                                return SizedBox(width: AppConstants.width10(context));
+                                              },
                                             ),
                                           ),
                                   ],
                                 ),
-                              if (context
-                                      .read<CreateCouponAssetsCubit>()
-                                      .couponType ==
-                                  "category_specific")
+                              if (context.read<CreateCouponAssetsCubit>().couponType == "category_specific")
                                 Column(
                                   children: [
-                                    SizedBox(
-                                      height: AppConstants.height15(context),
-                                    ),
+                                    SizedBox(height: AppConstants.height15(context)),
                                     Row(
                                       children: [
                                         Expanded(
                                           child: Text(
                                             "الاقسام التي تم اختيارها",
-                                            style: Styles.inter14600black(
-                                              context,
-                                            ),
+                                            style: Styles.inter14600black(context),
                                           ),
                                         ),
-                                        if (context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedCategories
-                                            .isNotEmpty) ...[
-                                          SizedBox(
-                                            width: AppConstants.width20(
-                                              context,
-                                            ),
-                                          ),
+                                        if (context.read<CreateCouponAssetsCubit>().selectedCategories.isNotEmpty) ...[
+                                          SizedBox(width: AppConstants.width20(context)),
                                           InkWell(
                                             onTap: () {
-                                              SelectCategoriesBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectCategoriesBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp5(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp5(context)),
                                               decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp5(context),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
                                                 color: AppColors.secondaryColor,
                                               ),
                                               child: SvgPicture.asset(
                                                 AssetData.addCircle,
-                                                width:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    .06,
+                                                width: MediaQuery.of(context).size.width * .06,
                                               ),
                                             ),
                                           ),
                                         ],
                                       ],
                                     ),
-                                    SizedBox(
-                                      height: AppConstants.height10(context),
-                                    ),
-                                    context
-                                            .read<CreateCouponAssetsCubit>()
-                                            .selectedCategories
-                                            .isEmpty
+                                    SizedBox(height: AppConstants.height10(context)),
+                                    couponAssetsCubit.selectedCategories.isEmpty
                                         ? InkWell(
                                             onTap: () {
-                                              SelectCategoriesBottomSheet.show(
-                                                context,
-                                              );
+                                              SelectCategoriesBottomSheet.show(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.all(
-                                                AppConstants.sp20(context),
-                                              ),
+                                              padding: EdgeInsets.all(AppConstants.sp20(context)),
                                               decoration: BoxDecoration(
                                                 color: Color(0xffF7F7F8),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppConstants.sp10(
-                                                        context,
-                                                      ),
-                                                    ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                               ),
                                               child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  SvgPicture.asset(
-                                                    AssetData.addCircle,
-                                                    color: AppColors.gray,
-                                                  ),
-                                                  Text(
-                                                    "اضافة الاقسام",
-                                                    style:
-                                                        Styles.inter14600gray(
-                                                          context,
-                                                        ),
-                                                  ),
+                                                  SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
+                                                  Text("اضافة الاقسام", style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
                                           )
                                         : SizedBox(
-                                            height:
-                                                MediaQuery.of(
-                                                  context,
-                                                ).size.height *
-                                                .12,
+                                            height: MediaQuery.of(context).size.height * .12,
                                             child: ListView.separated(
                                               scrollDirection: Axis.horizontal,
                                               itemCount: context
-                                                  .read<
-                                                    CreateCouponAssetsCubit
-                                                  >()
+                                                  .read<CreateCouponAssetsCubit>()
                                                   .selectedCategories
                                                   .length,
                                               itemBuilder: (BuildContext context, int index) {
@@ -818,581 +488,210 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                     Stack(
                                                       children: [
                                                         Container(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                                           decoration: BoxDecoration(
-                                                            color: AppColors
-                                                                .gray
-                                                                .withOpacity(
-                                                                  .3,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  AppConstants.sp10(
-                                                                    context,
-                                                                  ),
-                                                                ),
+                                                            color: AppColors.gray.withOpacity(.3),
+                                                            borderRadius: BorderRadius.circular(
+                                                              AppConstants.sp10(context),
+                                                            ),
                                                           ),
                                                           child: ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  AppConstants.sp10(
-                                                                    context,
-                                                                  ),
-                                                                ),
+                                                            borderRadius: BorderRadius.circular(
+                                                              AppConstants.sp10(context),
+                                                            ),
                                                             child: DefaultCachedNetworkImage(
                                                               imageUrl: context
-                                                                  .read<
-                                                                    CreateCouponAssetsCubit
-                                                                  >()
+                                                                  .read<CreateCouponAssetsCubit>()
                                                                   .selectedCategories[index]
                                                                   .icon,
-                                                              imageWidth:
-                                                                  MediaQuery.of(
-                                                                    context,
-                                                                  ).size.width *
-                                                                  .15,
-                                                              imageHeight:
-                                                                  MediaQuery.of(
-                                                                    context,
-                                                                  ).size.width *
-                                                                  .15,
+                                                              imageWidth: MediaQuery.of(context).size.width * .15,
+                                                              imageHeight: MediaQuery.of(context).size.width * .15,
                                                             ),
                                                           ),
                                                         ),
                                                         Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                                           child: InkWell(
                                                             onTap: () {
-                                                              context
-                                                                  .read<
-                                                                    CreateCouponAssetsCubit
-                                                                  >()
-                                                                  .removeCategories(
-                                                                    instance: context
-                                                                        .read<
-                                                                          CreateCouponAssetsCubit
-                                                                        >()
-                                                                        .selectedCategories[index],
-                                                                  );
+                                                              couponAssetsCubit.removeCategories(
+                                                                instance: context
+                                                                    .read<CreateCouponAssetsCubit>()
+                                                                    .selectedCategories[index],
+                                                              );
                                                             },
                                                             child: Container(
-                                                              padding: EdgeInsets.all(
-                                                                AppConstants.sp5(
-                                                                      context,
-                                                                    ) /
-                                                                    2,
-                                                              ),
+                                                              padding: EdgeInsets.all(AppConstants.sp5(context) / 2),
                                                               decoration: BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      AppConstants.sp5(
-                                                                        context,
-                                                                      ),
-                                                                    ),
+                                                                color: Colors.white,
+                                                                borderRadius: BorderRadius.circular(
+                                                                  AppConstants.sp5(context),
+                                                                ),
                                                               ),
-                                                              child:
-                                                                  SvgPicture.asset(
-                                                                    AssetData
-                                                                        .delete,
-                                                                  ),
+                                                              child: SvgPicture.asset(AssetData.delete),
                                                             ),
                                                           ),
                                                         ),
                                                       ],
                                                     ),
-                                                    SizedBox(
-                                                      height:
-                                                          AppConstants.height5(
-                                                            context,
-                                                          ),
-                                                    ),
+                                                    SizedBox(height: AppConstants.height5(context)),
                                                     Text(
                                                       context
-                                                              .read<
-                                                                CreateCouponAssetsCubit
-                                                              >()
+                                                              .read<CreateCouponAssetsCubit>()
                                                               .selectedCategories[index]
                                                               .name!
                                                               .ar ??
                                                           '',
-                                                      style:
-                                                          Styles.inter16500black(
-                                                            context,
-                                                          ),
+                                                      style: Styles.inter16500black(context),
                                                     ),
                                                   ],
                                                 );
                                               },
-                                              separatorBuilder:
-                                                  (
-                                                    BuildContext context,
-                                                    int index,
-                                                  ) {
-                                                    return SizedBox(
-                                                      width:
-                                                          AppConstants.width10(
-                                                            context,
-                                                          ),
-                                                    );
-                                                  },
+                                              separatorBuilder: (BuildContext context, int index) {
+                                                return SizedBox(width: AppConstants.width10(context));
+                                              },
                                             ),
                                           ),
                                   ],
                                 ),
                               SizedBox(height: AppConstants.height15(context)),
                               Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "تاريخ البداية",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                              Styles.inter14600black(
-                                                context,
-                                              ).copyWith(
-                                                color: AppColors.redColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: AppConstants.height5(context),),
-                                        DefaultTextFormField(
-                                          textInputType: TextInputType.text,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .dateController,
-                                          readOnly: true,
-                                          fillColor: const Color(0xffF7F7F8),
-                                          hintText: "تاريخ البداية",
-                                          suffixIcon: GestureDetector(
-                                            child: Icon(
-                                              Icons.calendar_month,
-                                              color: Colors.grey.shade300,
-                                            ),
-                                          ),
-                                          validation: (String? value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "يجب ادخال هذا الحقل";
-                                            }
-                                            return null;
-                                          },
-                                          onTap: () async {
-                                            final DateTime? picked =
-                                                await showDatePicker(
-                                                  context: context,
-                                                  initialDate:
-                                                      context
-                                                          .read<
-                                                            CreateCouponAssetsCubit
-                                                          >()
-                                                          .selectedDate ??
-                                                      DateTime.now(),
-                                                  firstDate: DateTime(1920),
-                                                  lastDate: DateTime.now(),
-                                                );
-                                            if (picked != null &&
-                                                picked !=
-                                                    context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .selectedDate) {
-                                              setState(() {
-                                                context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .selectedDate =
-                                                    picked;
-                                                context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .dateController
-                                                        .text =
-                                                    '${context.read<CreateCouponAssetsCubit>().selectedDate!.year} / ${context.read<CreateCouponAssetsCubit>().selectedDate!.month} / ${context.read<CreateCouponAssetsCubit>().selectedDate!.day}';
-                                              });
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(width: AppConstants.width20(context),),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "تاريخ الانتهاء",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                              Styles.inter14600black(
-                                                context,
-                                              ).copyWith(
-                                                color: AppColors.redColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: AppConstants.height5(context),
-                                        ),
-                                        DefaultTextFormField(
-                                          textInputType: TextInputType.text,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .dateController,
-                                          readOnly: true,
-                                          fillColor: const Color(0xffF7F7F8),
-                                          hintText: "تاريخ الانتهاء",
-                                          suffixIcon: GestureDetector(
-                                            child: Icon(
-                                              Icons.calendar_month,
-                                              color: Colors.grey.shade300,
-                                            ),
-                                          ),
-                                          validation: (String? value) {
-                                            if (value == null || value.isEmpty) {
-                                              return "يجب ادخال هذا الحقل";
-                                            }
-                                            return null;
-                                          },
-                                          onTap: () async {
-                                            final DateTime? picked =
-                                                await showDatePicker(
-                                                  context: context,
-                                                  initialDate:
-                                                      context
-                                                          .read<
-                                                            CreateCouponAssetsCubit
-                                                          >()
-                                                          .selectedDate ??
-                                                      DateTime.now(),
-                                                  firstDate: DateTime(1920),
-                                                  lastDate: DateTime.now(),
-                                                );
-                                            if (picked != null &&
-                                                picked !=
-                                                    context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .selectedDate) {
-                                              setState(() {
-                                                context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .selectedDate =
-                                                    picked;
-                                                context
-                                                        .read<
-                                                          CreateCouponAssetsCubit
-                                                        >()
-                                                        .dateController
-                                                        .text =
-                                                    '${context.read<CreateCouponAssetsCubit>().selectedDate!.year} / ${context.read<CreateCouponAssetsCubit>().selectedDate!.month} / ${context.read<CreateCouponAssetsCubit>().selectedDate!.day}';
-                                              });
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: AppConstants.height15(context)),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "قيمة الخصم",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                                  Styles.inter14600black(
-                                                    context,
-                                                  ).copyWith(
-                                                    color: AppColors.redColor,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: AppConstants.height5(context),
-                                        ),
-                                        DefaultTextFormField(
-                                          validation: (String? value) {
-                                            if (value!.isEmpty) {
-                                              return "من فضلك ادخل قيمة الخصم";
-                                            }
-                                            return null;
-                                          },
-                                          style: Styles.inter14600black(
-                                            context,
-                                          ),
-                                          fillColor: const Color(0xffF7F7F8),
-                                          contentPaddingHorizontal:
-                                              AppConstants.width15(context),
-                                          hintText: "قيمة الخصم",
-                                          textInputType: TextInputType.number,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .discountPercentageValueController,
-                                          contentPaddingVertical:
-                                              AppConstants.height15(context),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: AppConstants.width20(context),
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "مرات الاستخدام",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                                  Styles.inter14600black(
-                                                    context,
-                                                  ).copyWith(
-                                                    color: AppColors.redColor,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: AppConstants.height5(context),
-                                        ),
-                                        DefaultTextFormField(
-                                          validation: (String? value) {
-                                            if (value!.isEmpty) {
-                                              return "من فضلك ادخل مرات الاستخدام";
-                                            }
-                                            return null;
-                                          },
-                                          style: Styles.inter14600black(
-                                            context,
-                                          ),
-                                          fillColor: const Color(0xffF7F7F8),
-                                          contentPaddingHorizontal:
-                                              AppConstants.width15(context),
-                                          hintText: "مرات الاستخدام",
-                                          textInputType: TextInputType.number,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .usageLimitController,
-                                          contentPaddingVertical:
-                                              AppConstants.height15(context),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: AppConstants.height15(context)),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "كود الخصم",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                                  Styles.inter14600black(
-                                                    context,
-                                                  ).copyWith(
-                                                    color: AppColors.redColor,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: AppConstants.height5(context),
-                                        ),
-                                        DefaultTextFormField(
-                                          validation: (String? value) {
-                                            if (value!.isEmpty) {
-                                              return "من فضلك ادخل كود الخصم";
-                                            }
-                                            return null;
-                                          },
-                                          style: Styles.inter14600black(
-                                            context,
-                                          ),
-                                          fillColor: const Color(0xffF7F7F8),
-                                          contentPaddingHorizontal:
-                                              AppConstants.width15(context),
-                                          hintText: "كود الخصم",
-                                          textInputType: TextInputType.text,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .codeController,
-                                          contentPaddingVertical:
-                                              AppConstants.height15(context),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: AppConstants.width20(context),
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "اسم الكوبون",
-                                              style: Styles.inter14600black(
-                                                context,
-                                              ),
-                                            ),
-                                            Text(
-                                              "*",
-                                              style:
-                                                  Styles.inter14600black(
-                                                    context,
-                                                  ).copyWith(
-                                                    color: AppColors.redColor,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: AppConstants.height5(context),
-                                        ),
-                                        DefaultTextFormField(
-                                          validation: (String? value) {
-                                            if (value!.isEmpty) {
-                                              return "من فضلك ادخل اسم للكوبون";
-                                            }
-                                            return null;
-                                          },
-                                          style: Styles.inter14600black(
-                                            context,
-                                          ),
-                                          fillColor: const Color(0xffF7F7F8),
-                                          contentPaddingHorizontal:
-                                              AppConstants.width15(context),
-                                          hintText: "اسم الكوبون",
-                                          textInputType: TextInputType.text,
-                                          controller: context
-                                              .read<CreateCouponAssetsCubit>()
-                                              .nameController,
-                                          contentPaddingVertical:
-                                              AppConstants.height15(context),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: AppConstants.height15(context)),
-                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
+
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "وصف الكوبون",
-                                        style: Styles.inter14600black(context),
-                                      ),
-                                      Text(
-                                        "*",
-                                        style: Styles.inter14600black(
-                                          context,
-                                        ).copyWith(color: AppColors.redColor),
-                                      ),
-                                    ],
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "تاريخ البداية",
+                                      hint: "تاريخ البداية",
+                                      readOnly: true,
+                                      controller: couponAssetsCubit.startDateController,
+                                      keyboardType: TextInputType.number,
+                                      validationText: "يجب ادخال هذا الحقل",
+                                      onTap: () async {
+                                        final DateTime? picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: couponAssetsCubit.selectedStartDate ?? DateTime.now(),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime(3000),
+                                        );
+                                        if (picked != null) {
+                                          showTimePicker(context: context, initialTime: TimeOfDay.now()).then((time) {
+                                            if (time != null) {
+                                              couponAssetsCubit.selectedStartDate = picked;
+                                              couponAssetsCubit.startDateController.text =
+                                                  "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour}:${time.minute}:00.00Z";
+                                            }
+                                          });
+                                          setState(() {});
+                                        }
+                                      },
+                                    ),
                                   ),
-                                  SizedBox(
-                                    height: AppConstants.height5(context),
-                                  ),
-                                  DefaultTextFormField(
-                                    validation: (String? value) {
-                                      if (value!.isEmpty) {
-                                        return "من فضلك ادخل وصف الكوبون";
-                                      }
-                                      return null;
-                                    },
-                                    style: Styles.inter14600black(context),
-                                    fillColor: const Color(0xffF7F7F8),
-                                    contentPaddingHorizontal:
-                                        AppConstants.width15(context),
-                                    hintText: "وصف الكوبون",
-                                    textInputType: TextInputType.text,
-                                    controller: context
-                                        .read<CreateCouponAssetsCubit>()
-                                        .descriptionController,
-                                    contentPaddingVertical:
-                                        AppConstants.height15(context),
+                                  SizedBox(width: AppConstants.width20(context)),
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "تاريخ الانتهاء",
+                                      hint: "تاريخ الانتهاء",
+                                      readOnly: true,
+                                      controller: couponAssetsCubit.endDateController,
+                                      keyboardType: TextInputType.number,
+                                      validationText: "يجب ادخال هذا الحقل",
+                                      onTap: () async {
+                                        final DateTime? picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: couponAssetsCubit.selectedEndDate ?? DateTime.now(),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime(3000),
+                                        );
+                                        if (picked != null) {
+                                          showTimePicker(context: context, initialTime: TimeOfDay.now()).then((time) {
+                                            if (time != null) {
+                                              couponAssetsCubit.selectedEndDate = picked;
+                                              couponAssetsCubit.endDateController.text =
+                                                  "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour}:${time.minute}:00.00Z";
+                                            }
+                                          });
+                                          setState(() {});
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ],
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                                children: [
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "قيمة الخصم",
+                                      hint: "قيمة الخصم",
+                                      controller: couponAssetsCubit.discountValueController,
+                                      keyboardType: TextInputType.number,
+                                      validationText: "من فضلك ادخل قيمة الخصم",
+                                    ),
+                                  ),
+                                  SizedBox(width: AppConstants.width20(context)),
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "مرات الاستخدام",
+                                      hint: "مرات الاستخدام",
+                                      controller: couponAssetsCubit.usageLimitController,
+                                      keyboardType: TextInputType.number,
+                                      validationText: "من فضلك ادخل مرات الاستخدام",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              CustomCouponField(
+                                title: "كود الخصم",
+                                hint: "كود الخصم",
+                                controller: couponAssetsCubit.codeController,
+                                keyboardType: TextInputType.text,
+                                validationText: "من فضلك ادخل كود الخصم",
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                                children: [
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "اسم الكوبون (Ar) ",
+                                      hint: "اسم الكوبون (Ar) ",
+                                      controller: couponAssetsCubit.nameArController,
+                                      keyboardType: TextInputType.text,
+                                      validationText: "من فضلك ادخل اسم للكوبون",
+                                    ),
+                                  ),
+                                  SizedBox(width: AppConstants.width20(context)),
+                                  Expanded(
+                                    child: CustomCouponField(
+                                      title: "اسم الكوبون (EN) ",
+                                      hint: "اسم الكوبون (EN) ",
+                                      controller: couponAssetsCubit.nameEnController,
+                                      keyboardType: TextInputType.text,
+                                      validationText: "من فضلك ادخل اسم للكوبون",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              CustomCouponField(
+                                title: "وصف الكوبون (AR) ",
+                                hint: "وصف الكوبون (AR) ",
+                                controller: couponAssetsCubit.descriptionArController,
+                                keyboardType: TextInputType.text,
+                                validationText: "من فضلك ادخل وصف الكوبون",
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              CustomCouponField(
+                                title: "وصف الكوبون (EN) ",
+                                hint: "وصف الكوبون (EN) ",
+                                controller: couponAssetsCubit.descriptionEnController,
+                                keyboardType: TextInputType.text,
+                                validationText: "من فضلك ادخل وصف الكوبون",
                               ),
                             ],
                           ),
@@ -1406,14 +705,62 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
             },
           ),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppConstants.width10(context),
-            ),
-            child: DefaultButton(
-              onPress: () {},
-              text: "انشاء الكوبون",
-              borderRadius: AppConstants.sp10(context),
-              height: AppConstants.height15(context),
+            padding: EdgeInsets.symmetric(horizontal: AppConstants.width10(context)),
+            child: BlocProvider(
+              create: (context) => CreateCouponCubit(getIt<CouponsRepoImpl>()),
+              child: BlocConsumer<CreateCouponCubit, CreateCouponStates>(
+                listener: (context, state) {
+                  if (state is CreateCouponSuccessState) {
+                    toast(text: state.message, color: Colors.green);
+                  } else if (state is CreateCouponErrorState) {
+                    toast(text: state.error, color: AppColors.redColor);
+                  }
+                },
+                builder: (context, state) {
+                  return state is CreateCouponLoadingState
+                      ? const CustomLoadingItem()
+                      : DefaultButton(
+                          onPress: () {
+                            if (couponAssetsCubit.createCouponFormKey.currentState!.validate()) {
+                              context.read<CreateCouponCubit>().createCoupon(
+                                data: {
+                                  "code": couponAssetsCubit.codeController.text,
+                                  "name": {
+                                    "en": couponAssetsCubit.nameEnController.text,
+                                    "ar": couponAssetsCubit.nameArController.text,
+                                  },
+                                  "description": {
+                                    "en": couponAssetsCubit.descriptionEnController.text,
+                                    "ar": couponAssetsCubit.descriptionArController.text,
+                                  },
+                                  //[ percentage, fixed_amount, category_specific, product_specific, free_shipping ]
+                                  "discountType": couponAssetsCubit.couponType,
+                                  "discountValue": couponAssetsCubit.discountValueController.text,
+                                  "maxDiscountAmount":100,
+                                  "minOrderAmount": 20,
+                                  "status": "active",
+                                  "validFrom":couponAssetsCubit.startDateController.text,
+                                  "validTo":couponAssetsCubit.endDateController.text,
+                                  "usageLimit": couponAssetsCubit.usageLimitController.text,
+                                  "usageLimitPerUser": 1,
+                                  "applicableCategories": couponAssetsCubit.selectedCategories.map((e)=>e.id).toList(),
+                                  "applicableProducts": couponAssetsCubit.selectedProducts.map((e)=>e.id).toList(),
+                                  // "excludedCategories": [0],
+                                  // "excludedProducts": [0],
+                                  "applicableUserGroups": couponAssetsCubit.selectedUsers.map((e)=>e.id).toList(),
+                                  "isStackable": true,
+                                  "createdBy": 0,
+                                  "splitValue": 0,
+                                },
+                              );
+                            }
+                          },
+                          text: "انشاء الكوبون",
+                          borderRadius: AppConstants.sp10(context),
+                          height: AppConstants.height15(context),
+                        );
+                },
+              ),
             ),
           ),
           SizedBox(height: AppConstants.height20(context)),

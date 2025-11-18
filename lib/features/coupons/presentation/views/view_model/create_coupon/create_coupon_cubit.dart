@@ -1,20 +1,20 @@
-import 'package:alrayan_admin/features/categories/presentation/view_model/edit_category/edit_category_states.dart';
+import 'package:alrayan_admin/features/coupons/data/repo/coupons_repo.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_states.dart';
 import 'package:bloc/bloc.dart';
-import 'package:alrayan_admin/features/categories/data/repo/categories_repo.dart';
 
-class EditCategoryCubit extends Cubit<EditCategoryStates> {
-  EditCategoryCubit(this.categoriesRepo) : super(EditCategoryInitState());
-  CategoriesRepo? categoriesRepo;
+class CreateCouponCubit extends Cubit<CreateCouponStates> {
+  CreateCouponCubit(this.couponsRepo) : super(CreateCouponInitState());
+  CouponsRepo? couponsRepo;
 
-  Future<void> editCategory({required Map<String, dynamic> data,required int categoryId}) async {
-    emit(EditCategoryLoadingState());
-    var result = await categoriesRepo!.editCategory(data: data,categoryId: categoryId);
+  Future<void> createCoupon({required Map<String, dynamic> data}) async {
+    emit(CreateCouponLoadingState());
+    var result = await couponsRepo!.createCoupon(data: data);
     return result.fold(
       (failure) {
-        emit(EditCategoryErrorState(error: failure.errMessage));
+        emit(CreateCouponErrorState(error: failure.errMessage));
       },
       (data) {
-        emit(EditCategorySuccessState(message: data));
+        emit(CreateCouponSuccessState(message: data));
       },
     );
   }
