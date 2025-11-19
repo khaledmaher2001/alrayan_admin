@@ -25,6 +25,7 @@ class CreateCouponAssetsCubit extends Cubit<CreateCouponAssetsState> {
   final minOrderAmountController = TextEditingController();
   final maxDiscountAmountController = TextEditingController();
   final usageLimitController = TextEditingController();
+  final usageLimitPerUserController = TextEditingController();
   List<prod.Items> selectedProducts = [];
   List<cat.Data> selectedCategories = [];
   List<user.Items> selectedUsers = [];
