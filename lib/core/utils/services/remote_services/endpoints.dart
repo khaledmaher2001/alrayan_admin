@@ -1,12 +1,12 @@
 class EndPoints {
-  // static const baseUrl = "https://ef51e314ba1b.ngrok-free.app/api/v1/";
-  static const baseUrl = "http://109.106.244.200:3800/api/v1/";
+  static const baseUrl = "https://api.elrayan.acwad.tech/api/v1/";
 
   // Auth
   static const login = 'auth/login';
   static const register = 'auth/sign-up';
   static const logout = 'auth/logout';
   static const getSettings = 'app-version/check';
+  static const updateSettings = 'app-version/update';
   static const sendOTP = "auth/resend-otp";
   static const verifyOTP = "auth/verify-otp";
   static const signUp = "auth/sign-up";
@@ -30,6 +30,10 @@ class EndPoints {
   static const users = "user";
 
   static const coupons = "coupons";
+  static const luckyWheel = "rewards";
+  static const getOfferBanner = 'banners';
+
+
 
 
 

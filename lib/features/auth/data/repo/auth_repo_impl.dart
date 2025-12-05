@@ -1,16 +1,13 @@
-import 'dart:developer';
 
+import 'package:alrayan_admin/features/auth/data/models/update_settings_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/services/local_services/cache_helper.dart';
-import '../../../../core/utils/services/local_services/cache_keys.dart';
 import '../../../../core/utils/services/remote_services/api_service.dart';
 import '../../../../core/utils/services/remote_services/endpoints.dart';
 import '../models/login_model.dart';
-import '../models/register_model.dart';
 import '../models/register_model.dart';
 import '../models/settings_model.dart';
 import 'auth_repo.dart';
@@ -174,6 +171,24 @@ class AuthRepoImpl implements AuthRepo {
       print(e.toString());
       if (e is DioException) {
         print(e.response);
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, UpdateSettingsModel>> updateSettings({required Map<String,dynamic> data}) async{
+    try {
+      var response = await apiService.putData(
+        endPoint: EndPoints.updateSettings,
+        data: data,
+      );
+      var result = UpdateSettingsModel.fromJson(response.data);
+      return right(result);
+    } catch (e) {
+      if (e is DioException) {
         return left(ServerFailure.fromDioError(e));
       } else {
         return left(ServerFailure(e.toString()));

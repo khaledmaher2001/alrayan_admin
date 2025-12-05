@@ -1,8 +1,12 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:flutter/material.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
+
+import '../../../../../core/utils/assets/assets.dart';
+import '../../../../../core/utils/colors/colors.dart';
+import '../../../../../core/utils/constants.dart';
+import '../../../../../core/utils/services/local_services/cache_keys.dart';
 import '../../../../../core/utils/text_styles/styles.dart';
 
 class SplashViewBody extends StatefulWidget {
@@ -12,13 +16,15 @@ class SplashViewBody extends StatefulWidget {
   State<SplashViewBody> createState() => _SplashViewBodyState();
 }
 
-class _SplashViewBodyState extends State<SplashViewBody> with SingleTickerProviderStateMixin {
+class _SplashViewBodyState extends State<SplashViewBody>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
+    navigate();
 
     // Initialize the animation controller
     _controller = AnimationController(
@@ -33,7 +39,6 @@ class _SplashViewBodyState extends State<SplashViewBody> with SingleTickerProvid
         curve: Curves.easeInOut, // Animation curve
       ),
     );
-    navigate();
 
     // Start the animation
     _controller.repeat(reverse: true);
@@ -46,23 +51,24 @@ class _SplashViewBodyState extends State<SplashViewBody> with SingleTickerProvid
       if (CacheKeysManger.tokenStatus() != "") {
         GoRouter.of(context).pushReplacement("/mainLayoutView");
       } else {
-        // GoRouter.of(context).pushReplacement("/mainLayoutView");
-
         GoRouter.of(context).pushReplacement("/loginView");
       }
     });
   }
 
+
   @override
   void dispose() {
-    _controller.dispose(); // Dispose of the animation controller
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConstants.width20(context),
+      ),
       child: Column(
         children: [
           Expanded(
@@ -74,18 +80,10 @@ class _SplashViewBodyState extends State<SplashViewBody> with SingleTickerProvid
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      AnimatedBuilder(
-                        animation: _animation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _animation.value, // Apply scaling animation
-                            child: Image.asset(
-                              AssetData.logo,
-                              width: MediaQuery.of(context).size.width * .8,
-                              color: Colors.white,
-                            ),
-                          );
-                        },
+                      Image.asset(
+                        AssetData.logoBackWhite,
+                        width:
+                        MediaQuery.of(context).size.width * .4,
                       ),
                     ],
                   ),
@@ -104,27 +102,49 @@ class _SplashViewBodyState extends State<SplashViewBody> with SingleTickerProvid
                         children: [
                           Text(
                             "Made with love by",
-                            style: Styles.DIN18500(context).copyWith(color: Colors.white, fontWeight: FontWeight.w500),
-                          ),
-                          SizedBox(width: AppConstants.width5(context)),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
-                            child: Image.asset(
-                              AssetData.five,
-                              width: MediaQuery.of(context).size.width * .08,
-                              height: MediaQuery.of(context).size.width * .08,
+                            style: Styles.DIN18500(context)
+                                .copyWith(
+                              color: Colors.black,
+                              fontFamily: "Inter",
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: AppConstants.width5(context)),
+                          SizedBox(
+                            width: AppConstants.width5(context),
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.sp30(context),
+                            ),
+                            child: Image.asset(
+                              AssetData.acwad,
+                              width:
+                              MediaQuery.of(
+                                context,
+                              ).size.width *
+                                  .11,
+                              height:
+                              MediaQuery.of(
+                                context,
+                              ).size.width *
+                                  .11,
+                            ),
+                          ),
+                          SizedBox(
+                            width: AppConstants.width5(context),
+                          ),
                           InkWell(
                             onTap: () async {
                               // await launchUrlString("http://dgytos.com/");
                             },
                             child: Text(
-                              "FIVE",
-                              style: Styles.DIN18500(
-                                context,
-                              ).copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                              "أكواد ACWAD",
+                              style: Styles.DIN18500(context)
+                                  .copyWith(
+                                color: Colors.black,
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],

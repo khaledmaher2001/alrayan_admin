@@ -58,6 +58,8 @@ dependencies:
   flutter_spinkit: ^5.2.1
   pie_chart: ^5.3.2
   fl_chart: ^1.1.1
+  dotted_border: ^2.1.0
+
 
 
 
@@ -76,6 +78,7 @@ flutter:
     - assets/images/
     - assets/images/account_icons/
     - assets/images/coupons_icons/
+    - assets/images/wheel_icons/
     - assets/images/admin_home/
     - lib/core/language/
 

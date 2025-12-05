@@ -1,5 +1,11 @@
 class AssetData {
   static const logo="assets/images/logo.png";
+  static const logoWhite="assets/images/logo_white.png";
+  static const logoSecondry="assets/images/logo_secondry.png";
+  static const logoBackPrimary="assets/images/logo_back_primary.png";
+  static const logoBackWhite="assets/images/logo_back_white.png";
+  static const logoBackSecondry="assets/images/logo_back_secondry.png";
+  static const acwad = "assets/images/acwad.png";
   static const nav="assets/images/nav.png";
   static const navCart="assets/images/nav_cart.svg";
   static const processing="assets/images/processing.svg";
@@ -61,6 +67,8 @@ class AssetData {
   static const insta="assets/images/insta.svg";
   static const facebook="assets/images/facebook.svg";
   static const whatsapp="assets/images/whatsapp.svg";
+  static const orders="assets/images/orders.svg";
+  static const activeOrders="assets/images/active_orders.svg";
 
   static const checkSign="assets/images/tick-circle.svg";
   static const emptyCart="assets/images/empty_cart.svg";
@@ -79,6 +87,8 @@ class AssetData {
   static const mapZone="assets/images/map_zone.json";
   static const checked="assets/images/checked.svg";
   static const uncheck="assets/images/uncheck.svg";
+  static const uploadImage = "assets/images/upload_image.svg";
+
 
 
   //Account Icons
@@ -90,10 +100,18 @@ class AssetData {
   static const accountPassword="assets/images/account_icons/account_password.svg";
   static const accountWheel="assets/images/account_icons/account_wheel.svg";
   static const accountCoupons="assets/images/account_icons/account_coupons.svg";
+  static const ads="assets/images/account_icons/ads.svg";
+  static const support="assets/images/account_icons/support.svg";
+  static const version="assets/images/account_icons/version.svg";
 
   //Coupons Icons
   static const couponBg="assets/images/coupons_icons/coupon_bg.png";
   static const copy="assets/images/coupons_icons/copy.svg";
+  static const department="assets/images/coupons_icons/department.svg";
+  static const product="assets/images/coupons_icons/product.svg";
+  static const fixed="assets/images/coupons_icons/fixed.svg";
+  static const shipping="assets/images/coupons_icons/shipping.svg";
+  static const percentage="assets/images/coupons_icons/percentage.svg";
 
   //Wheel Icons
   static const wheelLock="assets/images/wheel_icons/wheel_lock.png";
@@ -106,6 +124,7 @@ class AssetData {
   static const noSpin="assets/images/wheel_icons/no_spin.svg";
   static const gift="assets/images/wheel_icons/gift.svg";
   static const spin="assets/images/wheel_icons/spin.svg";
+  static const wheel="assets/images/wheel_icons/wheel.svg";
   static const backPattern="assets/images/wheel_icons/back_pattern.png";
 
   // Admin Home
@@ -114,7 +133,6 @@ class AssetData {
   static const totalMoney="assets/images/admin_home/total_money.svg";
   static const cancelled="assets/images/admin_home/cancelled.svg";
   static const confirmed="assets/images/admin_home/confirmed.svg";
-  static const orders="assets/images/admin_home/orders.svg";
   static const coupons="assets/images/admin_home/coupons.svg";
   static const accountStatus="assets/images/admin_home/account_status.svg";
 

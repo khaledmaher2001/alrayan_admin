@@ -1,6 +1,8 @@
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
+import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
+import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/all_users/presentation/views/all_users_view.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_cubit.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_states.dart';
@@ -27,6 +29,31 @@ class HomeViewBody extends StatelessWidget {
               ),
               child: Column(
                 children: [
+                  SizedBox(height: AppConstants.height20(context)),
+                  Row(
+                    children: [
+                      Container(
+                          width: MediaQuery.of(context).size.width*.15,
+                          height: MediaQuery.of(context).size.width*.15,
+                          decoration: BoxDecoration(
+                        color: Color(0xff1e1d2f),
+                        shape: BoxShape.circle
+                      ),child: Padding(
+                        padding: EdgeInsets.all(AppConstants.sp10(context)),
+                        child: Image.asset(AssetData.logoBackSecondry,fit: BoxFit.contain,),
+                      )),
+                      SizedBox(width: AppConstants.width10(context),),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("أهلا بك",style: Styles.inter18500Black(context)),
+                          Text("أستاذ محمد الريان",style: Styles.inter16500black(context).copyWith(
+                            color: AppColors.gray
+                          )),
+                        ],
+                      )
+                    ],
+                  ),
                   SizedBox(height: AppConstants.height20(context)),
                   Row(
                     children: [

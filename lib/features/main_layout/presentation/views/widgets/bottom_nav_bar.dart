@@ -15,14 +15,14 @@ class BottomNavBar extends StatelessWidget {
     List<String> icons = [
       AssetData.home,
       AssetData.category,
-      AssetData.category,
+      AssetData.orders,
       AssetData.products,
       AssetData.profile,
     ];
     List<String> activeIcons = [
       AssetData.activeHome,
       AssetData.activeCategory,
-      AssetData.activeCategory,
+      AssetData.activeOrders,
       AssetData.activeProducts,
       AssetData.activeProfile,
     ];

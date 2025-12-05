@@ -1,0 +1,34 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import '../../../../../core/errors/failure.dart';
+import '../../../../../core/utils/services/remote_services/api_service.dart';
+import '../../../../../core/utils/services/remote_services/endpoints.dart';
+import 'ads_repo.dart';
+
+
+
+class AdsRepoImpl implements AdsRepo{
+  final ApiService apiService;
+
+  AdsRepoImpl(this.apiService);
+
+  @override
+  Future<Either<Failure, bool>> addAds({required data,void Function(int, int)? onSendProgress,}) async {
+    try {
+      var response = await apiService.postDataWithImage(
+        endPoint: EndPoints.getOfferBanner,
+        data: FormData.fromMap(data),
+        onSendProgress: onSendProgress,
+      );
+      return Right(response.data['success']);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+
+}

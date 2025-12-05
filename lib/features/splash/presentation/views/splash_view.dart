@@ -10,13 +10,13 @@ class SplashView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(  SystemUiOverlayStyle(
-      statusBarColor: AppColors.primaryColor,
-      systemNavigationBarColor: AppColors.primaryColor,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
+      statusBarColor:Colors.white,
+      systemNavigationBarColor:Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
     ));
     return   Scaffold(
-      backgroundColor: AppColors.primaryColor,
+      backgroundColor:Colors.white,
       body: const SplashViewBody(),
     );
   }
