@@ -12,7 +12,6 @@ import 'package:alrayan_admin/features/zones/data/repo/zones_repo_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:alrayan_admin/features/notifications/data/repo/notifications_repo_impl.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../features/ads/data/repo/offer_banner/offer_banner_repo_impl.dart';
 import '../file_picker/file_picker_service.dart';
 import '../file_picker/i_file_picker_service.dart';
 import 'api_service.dart';
@@ -35,6 +34,5 @@ void setup() {
   getIt.registerLazySingleton<AllUsersRepoImpl>(() => AllUsersRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<CouponsRepoImpl>(() => CouponsRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<LuckyWheelRepoImpl>(() => LuckyWheelRepoImpl(getIt.get<ApiService>()));
-  getIt.registerLazySingleton<OfferBannerRepoImpl>(() => OfferBannerRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<AdsRepoImpl>(() => AdsRepoImpl(getIt.get<ApiService>()));
 }

@@ -1,6 +1,5 @@
 part of 'offer_banner_cubit.dart';
 
-@immutable
 abstract class OfferBannerState {}
 
 class OfferBannerInitial extends OfferBannerState {}

@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 
 import '../../../data/repo/ads/ads_repo.dart';
 
-
 part 'add_ads_state.dart';
 
 class AddAdsCubit extends Cubit<AddAdsState> {
@@ -11,14 +10,17 @@ class AddAdsCubit extends Cubit<AddAdsState> {
 
   AddAdsCubit(this.addAdsRepo) : super(AddAdsInitial());
   double? progress;
+
   Future<void> addAds({required var data}) async {
     progress = 0;
     emit(AddAdsLoading());
-    final result =
-    await addAdsRepo.addAds(data:data, onSendProgress: (a, b) {
-      progress = a / b;
-      emit(AddAdsLoading());
-    });
+    final result = await addAdsRepo.addAds(
+      data: data,
+      onSendProgress: (a, b) {
+        progress = a / b;
+        emit(AddAdsLoading());
+      },
+    );
     try {
       result.fold(
         (failure) {

@@ -45,23 +45,16 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
       child: Column(
         children: [
           SizedBox(height: AppConstants.height20(context)),
-          CustomAppBar(
-            title: "اضافة اعلان او عرض",
-            textColor: Colors.black,
-            hasBack: true,
-            withNotifications: false,
-          ),
+          CustomAppBar(title: "اضافة اعلان او عرض", textColor: Colors.black, hasBack: true, withNotifications: false),
           SizedBox(height: AppConstants.height20(context)),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppConstants.width20(context),
-                ),
+                padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
                 child: Form(
                   key: formNewKey,
                   child: BlocBuilder<AdsAssetsCubit, AdsAssetsState>(
-                    builder: (context,state) {
+                    builder: (context, state) {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,16 +64,8 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    "نوع الاعلان",
-                                    style: Styles.inter14600black(context),
-                                  ),
-                                  Text(
-                                    "*",
-                                    style: Styles.inter14600black(
-                                      context,
-                                    ).copyWith(color: AppColors.redColor),
-                                  ),
+                                  Text("نوع الاعلان", style: Styles.inter14600black(context)),
+                                  Text("*", style: Styles.inter14600black(context).copyWith(color: AppColors.redColor)),
                                 ],
                               ),
                               SizedBox(height: AppConstants.height5(context)),
@@ -93,14 +78,10 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                 onChanged: (v) {
                                   switch (v) {
                                     case 'عرض علي منتج':
-                                      context.read<AdsAssetsCubit>().selectAdsType(
-                                        type: "discount",
-                                      );
+                                      context.read<AdsAssetsCubit>().selectAdsType(type: "discount");
                                       break;
                                     case 'اعلان عادي':
-                                      context.read<AdsAssetsCubit>().selectAdsType(
-                                        type: "new",
-                                      );
+                                      context.read<AdsAssetsCubit>().selectAdsType(type: "new");
                                       break;
                                   }
                                 },
@@ -115,201 +96,127 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             ],
                           ),
                           SizedBox(height: AppConstants.height20(context)),
-                          if(context.read<AdsAssetsCubit>().adsType == "discount")...[
+                          if (context.read<AdsAssetsCubit>().adsType == "discount") ...[
                             Column(
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        "المنتج المختار",
-                                        style: Styles.inter14600black(context),
-                                      ),
-                                    ),
-                                    if (context
-                                        .read<AdsAssetsCubit>()
-                                        .selectedProduct !=
-                                        null)
+                                    Expanded(child: Text("المنتج المختار", style: Styles.inter14600black(context))),
+                                    if (context.read<AdsAssetsCubit>().selectedProduct != null)
                                       InkWell(
                                         onTap: () {
-                                          SelectAdsProductBottomSheet.show(
-                                            context,
-                                          );
+                                          SelectAdsProductBottomSheet.show(context);
                                         },
                                         child: Container(
-                                          padding: EdgeInsets.all(
-                                            AppConstants.sp5(context),
-                                          ),
+                                          padding: EdgeInsets.all(AppConstants.sp5(context)),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              AppConstants.sp5(context),
-                                            ),
+                                            borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
                                             color: AppColors.secondaryColor,
                                           ),
                                           child: SvgPicture.asset(
                                             AssetData.edit,
                                             color: Colors.white,
-                                            width:
-                                            MediaQuery.of(
-                                              context,
-                                            ).size.width *
-                                                .06,
+                                            width: MediaQuery.of(context).size.width * .06,
                                           ),
                                         ),
                                       ),
                                   ],
                                 ),
                                 SizedBox(height: AppConstants.height10(context)),
-                                context.read<AdsAssetsCubit>().selectedProduct ==
-                                    null
+                                context.read<AdsAssetsCubit>().selectedProduct == null
                                     ? InkWell(
-                                  onTap: () {
-                                    SelectAdsProductBottomSheet.show(
-                                      context,
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.all(
-                                      AppConstants.sp20(context),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xffF7F7F8),
-                                      borderRadius: BorderRadius.circular(
-                                        AppConstants.sp10(context),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(
-                                          AssetData.addCircle,
-                                          color: AppColors.gray,
-                                        ),
-                                        Text(
-                                          "اضافة المنتج",
-                                          style: Styles.inter14600gray(
-                                            context,
+                                        onTap: () {
+                                          SelectAdsProductBottomSheet.show(context);
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(AppConstants.sp20(context)),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xffF7F7F8),
+                                            borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
+                                              Text("اضافة المنتج", style: Styles.inter14600gray(context)),
+                                            ],
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                )
+                                      )
                                     : Container(
-                                  padding: EdgeInsets.all(AppConstants.sp20(context)),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffF7F7F8),
-                                    borderRadius: BorderRadius.circular(
-                                      AppConstants.sp10(context),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                        Colors.black.withOpacity(.1),
-                                        blurRadius: 5,
-                                        spreadRadius: 1,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: EdgeInsets.all(
-                                          AppConstants.sp5(context),
-                                        ),
+                                        padding: EdgeInsets.all(AppConstants.sp20(context)),
                                         decoration: BoxDecoration(
-                                          color: AppColors.gray
-                                              .withOpacity(.3),
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                            AppConstants.sp10(
-                                              context,
+                                          color: Color(0xffF7F7F8),
+                                          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(.1),
+                                              blurRadius: 5,
+                                              spreadRadius: 1,
+                                              offset: const Offset(0, 3),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                        child:
-                                        DefaultCachedNetworkImage(
-                                          imageUrl: context
-                                              .read<
-                                              AdsAssetsCubit
-                                          >()
-                                              .selectedProduct!
-                                              .images!
-                                              .first
-                                              .attach,
-                                          imageWidth:
-                                          MediaQuery.of(
-                                            context,
-                                          ).size.width *
-                                              .15,
-                                          imageHeight:
-                                          MediaQuery.of(
-                                            context,
-                                          ).size.width *
-                                              .15,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: AppConstants.width10(
-                                          context,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              context.read<AdsAssetsCubit>().selectedProduct!.mainCategory!.name ?? '',
-                                              style: Styles.inter14600gray(
-                                                context,
+                                            Container(
+                                              padding: EdgeInsets.all(AppConstants.sp5(context)),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.gray.withOpacity(.3),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                              ),
+                                              child: DefaultCachedNetworkImage(
+                                                imageUrl: context
+                                                    .read<AdsAssetsCubit>()
+                                                    .selectedProduct!
+                                                    .images!
+                                                    .first
+                                                    .attach,
+                                                imageWidth: MediaQuery.of(context).size.width * .15,
+                                                imageHeight: MediaQuery.of(context).size.width * .15,
                                               ),
                                             ),
-                                            SizedBox(height: AppConstants.height5(context),),
-                                            Text(
-                                              context
-                                                  .read<AdsAssetsCubit>()
-                                                  .selectedProduct!
-                                                  .name!
-                                                  .ar ??
-                                                  '',
-                                              style: Styles.inter16500black(
-                                                context,
+                                            SizedBox(width: AppConstants.width10(context)),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    context
+                                                            .read<AdsAssetsCubit>()
+                                                            .selectedProduct!
+                                                            .mainCategory!
+                                                            .name ??
+                                                        '',
+                                                    style: Styles.inter14600gray(context),
+                                                  ),
+                                                  SizedBox(height: AppConstants.height5(context)),
+                                                  Text(
+                                                    context.read<AdsAssetsCubit>().selectedProduct!.name!.ar ?? '',
+                                                    style: Styles.inter16500black(context),
+                                                  ),
+                                                ],
                                               ),
+                                            ),
+                                            Column(
+                                              children: [
+                                                Text("السعر", style: Styles.inter16500black(context)),
+                                                Text(
+                                                  "${context.read<AdsAssetsCubit>().selectedProduct!.price ?? ''} جنيه",
+                                                  style: Styles.inter16500black(
+                                                    context,
+                                                  ).copyWith(color: AppColors.primaryColor),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
                                       ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "السعر",
-                                            style: Styles.inter16500black(
-                                              context,
-                                            ),
-                                          ),
-                                          Text(
-                                            "${context.read<AdsAssetsCubit>().selectedProduct!.price ?? ''} جنيه",
-                                            style: Styles.inter16500black(
-                                              context,
-                                            ).copyWith(
-                                              color: AppColors.primaryColor
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
                               ],
                             ),
-                          SizedBox(height: AppConstants.height20(context)),],
-                          Text(
-                            "عنوان الاعلان",
-                            style: Styles.inter14500black(context),
-                          ),
+                            SizedBox(height: AppConstants.height20(context)),
+                          ],
+                          Text("عنوان الاعلان", style: Styles.inter14500black(context)),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             validation: (value) {
@@ -328,10 +235,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             controller: newTitle,
                           ),
                           SizedBox(height: AppConstants.height20(context)),
-                          Text(
-                            "وصف الاعلان",
-                            style: Styles.inter14500black(context),
-                          ),
+                          Text("وصف الاعلان", style: Styles.inter14500black(context)),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             validation: (value) {
@@ -357,29 +261,22 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    "اضافة صورة او مرفق",
-                                    style: Styles.inter14500black(context),
-                                  ),
+                                  Text("اضافة صورة او مرفق", style: Styles.inter14500black(context)),
                                   SizedBox(height: AppConstants.height10(context)),
                                   FormField(
                                     validator: (value) {
-                                      if (context.read<AdsAssetsCubit>().newImage ==
-                                          null) {
+                                      if (context.read<AdsAssetsCubit>().newImage == null) {
                                         return "يجب اضافة صورة او مرفق";
                                       }
                                       return null;
                                     },
                                     builder: (FormFieldState<String> state) {
                                       return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           DottedBorder(
                                             borderType: BorderType.RRect,
-                                            radius: Radius.circular(
-                                              AppConstants.sp10(context),
-                                            ),
+                                            radius: Radius.circular(AppConstants.sp10(context)),
                                             color: AppColors.gray,
 
                                             dashPattern: const [5, 5],
@@ -387,77 +284,43 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                             child: Container(
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
-                                                borderRadius: BorderRadius.circular(
-                                                  AppConstants.sp10(context),
-                                                ),
+                                                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                               ),
-                                              height:
-                                                  MediaQuery.of(
-                                                    context,
-                                                  ).size.height *
-                                                  .17,
+                                              height: MediaQuery.of(context).size.height * .17,
                                               child: InkWell(
                                                 onTap: () {
-                                                  context
-                                                      .read<AdsAssetsCubit>()
-                                                      .selectNewImage(context);
+                                                  context.read<AdsAssetsCubit>().selectNewImage(context);
                                                 },
-                                                child:
-                                                    context
-                                                            .read<AdsAssetsCubit>()
-                                                            .newImage !=
-                                                        null
+                                                child: context.read<AdsAssetsCubit>().newImage != null
                                                     ? Container(
                                                         width: double.infinity,
                                                         decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                AppConstants.sp10(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          borderRadius: BorderRadius.circular(
+                                                            AppConstants.sp10(context),
+                                                          ),
                                                           color: Colors.grey[200],
                                                         ),
                                                         child: ClipRRect(
-                                                          clipBehavior:
-                                                              Clip.hardEdge,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                AppConstants.sp10(
-                                                                  context,
-                                                                ),
-                                                              ),
+                                                          clipBehavior: Clip.hardEdge,
+                                                          borderRadius: BorderRadius.circular(
+                                                            AppConstants.sp10(context),
+                                                          ),
                                                           child: Image.file(
-                                                            context
-                                                                .read<
-                                                                  AdsAssetsCubit
-                                                                >()
-                                                                .newImage!,
+                                                            context.read<AdsAssetsCubit>().newImage!,
                                                             fit: BoxFit.cover,
                                                           ),
                                                         ),
                                                       )
                                                     : Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        crossAxisAlignment: CrossAxisAlignment.center,
                                                         children: [
                                                           Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
+                                                            mainAxisAlignment: MainAxisAlignment.center,
                                                             children: [
                                                               SvgPicture.asset(
-                                                                AssetData
-                                                                    .uploadImage,
-                                                                width:
-                                                                    MediaQuery.of(
-                                                                      context,
-                                                                    ).size.height *
-                                                                    .11,
+                                                                AssetData.uploadImage,
+                                                                width: MediaQuery.of(context).size.height * .11,
                                                               ),
                                                             ],
                                                           ),
@@ -468,23 +331,14 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                           ),
                                           if (state.errorText != null)
                                             Padding(
-                                              padding: EdgeInsets.only(
-                                                top: AppConstants.height10(context),
-                                              ),
+                                              padding: EdgeInsets.only(top: AppConstants.height10(context)),
                                               child: Text(
                                                 state.errorText!,
-                                                style:
-                                                    Styles.inter16500black(
-                                                      context,
-                                                    ).copyWith(
-                                                      fontWeight: FontWeight.w100,
-                                                      color: Colors.red,
-                                                      fontSize:
-                                                          MediaQuery.of(
-                                                            context,
-                                                          ).size.height *
-                                                          .012,
-                                                    ),
+                                                style: Styles.inter16500black(context).copyWith(
+                                                  fontWeight: FontWeight.w100,
+                                                  color: Colors.red,
+                                                  fontSize: MediaQuery.of(context).size.height * .012,
+                                                ),
                                               ),
                                             ),
                                         ],
@@ -498,16 +352,14 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                           SizedBox(height: AppConstants.height20(context)),
                         ],
                       );
-                    }
+                    },
                   ),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppConstants.width10(context),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: AppConstants.width10(context)),
             child: BlocConsumer<AddAdsCubit, AddAdsState>(
               builder: (context, state) {
                 return state is AddAdsLoading
@@ -523,13 +375,11 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             context.read<AddAdsCubit>().addAds(
                               data: {
                                 "title": newTitle.text.trim(),
-                                "content": newDescription.text.trim(),
-                                "image": await MultipartFile.fromFile(
-                                  context
-                                          .read<AdsAssetsCubit>()
-                                          .newImage
-                                          ?.path ??
-                                      "",
+                                "description": newDescription.text.trim(),
+                                "type": context.read<AdsAssetsCubit>().adsType,
+                                "productId": context.read<AdsAssetsCubit>().selectedProduct!.id,
+                                "imagePath": await MultipartFile.fromFile(
+                                  context.read<AdsAssetsCubit>().newImage?.path ?? "",
                                 ),
                               },
                             );
@@ -545,11 +395,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                   context.read<OfferBannerCubit>().fetchOfferBanners();
                   toast(text: "تم أضافة الاعلان بنجاح", color: Colors.green);
                 } else if (state is AddAdsError) {
-                  customSnackBar(
-                    message: state.error,
-                    color: AppColors.redColor,
-                    context: context,
-                  );
+                  customSnackBar(message: state.error, color: AppColors.redColor, context: context);
                 }
               },
             ),

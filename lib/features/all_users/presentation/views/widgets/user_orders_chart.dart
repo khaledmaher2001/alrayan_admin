@@ -1,5 +1,4 @@
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -85,8 +84,8 @@ class UserOrdersChart extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryColor.withOpacity(0.2),
-                    AppColors.primaryColor.withOpacity(0.1),
+                    AppColors.primaryColor.withValues(alpha: 0.2),
+                    AppColors.primaryColor.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

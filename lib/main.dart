@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:alrayan_admin/bloc_observer.dart';
 import 'package:alrayan_admin/core/shared_cubit/file_picker_cubit/file_picker_cubit.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
-import 'package:alrayan_admin/features/ads/data/repo/offer_banner/offer_banner_repo_impl.dart';
+import 'package:alrayan_admin/features/ads/data/repo/ads/ads_repo_impl.dart';
 import 'package:alrayan_admin/features/ads/presentation/view_models/ads_assets/ads_assets_cubit.dart';
 import 'package:alrayan_admin/features/ads/presentation/view_models/offer_banner_cubit/offer_banner_cubit.dart';
 import 'package:alrayan_admin/features/all_users/data/repo/all_users_repo_impl.dart';
@@ -126,7 +126,7 @@ class _AlRayanAdminState extends State<AlRayanAdmin> {
         BlocProvider(create: (context) => GetSubCategoriesCubit(getIt<CategoriesRepoImpl>())),
         BlocProvider(create: (context) => ChangeCategoryCubit()),
         BlocProvider(create: (context) => GetProductsCubit(getIt.get<ProductsRepoImpl>())..getProducts()),
-        BlocProvider(create: (context) => OfferBannerCubit(getIt.get<OfferBannerRepoImpl>())..fetchOfferBanners()),
+        BlocProvider(create: (context) => OfferBannerCubit(getIt.get<AdsRepoImpl>())..fetchOfferBanners()),
         BlocProvider(create: (context) => GetProfileCubit(getIt.get<ProfileRepoImpl>())..getProfile()),
         BlocProvider(create: (context) => GetCouponsCubit(getIt.get<CouponsRepoImpl>())..getCoupons()),
         BlocProvider(create: (context) => GetLuckyWheelItemsCubit(getIt.get<LuckyWheelRepoImpl>())..getLuckyWheelItems()),
