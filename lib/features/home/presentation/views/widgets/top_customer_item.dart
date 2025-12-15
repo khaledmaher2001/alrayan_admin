@@ -1,12 +1,16 @@
+import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
+import 'package:alrayan_admin/features/top_users/presentation/views/top_users_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/text_styles/styles.dart';
 class TopCustomerItem extends StatelessWidget {
-  const TopCustomerItem({super.key, required this.instance});
+  const TopCustomerItem({super.key, required this.instance, required this.fromHome, required this.index});
   final TopCustomers instance;
+  final bool fromHome;
+  final int index;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,7 +35,7 @@ class TopCustomerItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+         if(fromHome)...[ Row(
             children: [
               Expanded(
                 child: Text(
@@ -42,7 +46,7 @@ class TopCustomerItem extends StatelessWidget {
               SizedBox(width: AppConstants.width20(context)),
               InkWell(
                 onTap: () {
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllReviewsView()));
+                  NavigationUtils.navigateTo(context: context, destinationScreen: TopUsersView());
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(
@@ -70,7 +74,7 @@ class TopCustomerItem extends StatelessWidget {
             "حاول انشاء كوبونات خصم تشجيعا للعملاء الاكثر طلبا",
             style: Styles.inter10400grey(context),
           ),
-          SizedBox(height: AppConstants.height20(context)),
+          SizedBox(height: AppConstants.height20(context)),],
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -82,23 +86,32 @@ class TopCustomerItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(
                     AppConstants.sp10(context),
                   ),
-                  color: AppColors.gray.withOpacity(.2),
+                  color: Colors.primaries[
+                  index % Colors.primaries.length],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(
                     AppConstants.sp10(context),
                   ),
-                  child: Container(
+                  child: SizedBox(
                     height:
                     MediaQuery.of(context).size.width * .12,
                     width:
                     MediaQuery.of(context).size.width * .12,
+
                     child: Center(
                       child: Text(
-                        instance.fullName!
-                            .substring(0, 1)
-                            .toUpperCase(),
-                        style: Styles.inter18500Black(context),
+                        (instance.fullName ?? '')
+                            .split(' ')
+                            .take(2)
+                            .map((e) => e.isNotEmpty ? e[0] : '')
+                            .join()
+                            .toUpperCase(), // أول حرفين من الاسم
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),

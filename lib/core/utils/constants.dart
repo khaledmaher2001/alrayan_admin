@@ -19,6 +19,8 @@ class AppConstants {
         return "قيد الانتظار";
       case "shipped":
         return "تم الشحن";
+        case "confirmed":
+        return "تم تاكيده";
       case "delivered":
         return "تم التوصيل";
       case "cancelled":

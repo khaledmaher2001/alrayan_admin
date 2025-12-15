@@ -4,6 +4,7 @@ import '../../../../core/errors/failure.dart';
 
 abstract class OrdersRepo{
   Future<Either<Failure,OrdersModel>> getOrders({required Map<String,dynamic> data});
+  Future<Either<Failure, Items>> getOrderDetails({required int orderId});
   Future<Either<Failure,String>> changeOrderStatus({required int orderId,required Map<String,dynamic> data});
   Future<Either<Failure,String>> cancelOrder({required int orderId});
 

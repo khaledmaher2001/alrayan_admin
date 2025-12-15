@@ -63,8 +63,9 @@ class Items {
   String? updatedAt;
   String? deletedAt;
   String? code;
-  Name? name;
-  Name? description;
+  Description? name; // <- changed from String? to Description?
+  String? currency;
+  Description? description;
   String? discountType;
   int? discountValue;
   int? splitValue;
@@ -76,14 +77,12 @@ class Items {
   int? usageLimit;
   int? usedCount;
   int? usageLimitPerUser;
-  List<int>? applicableCategories;
-  List<int>? applicableVendors;
-  List<int>? applicableProducts;
-  List<int>? excludedCategories;
-  List<int>? excludedProducts;
-  List<int>? applicableUserGroups;
   bool? isStackable;
   int? createdBy;
+  bool? isSplitCoupon;
+  int? totalSplits;
+  List<Products>? products;
+  List<Categories>? categories;
 
   Items(
       {this.id,
@@ -92,6 +91,7 @@ class Items {
         this.deletedAt,
         this.code,
         this.name,
+        this.currency,
         this.description,
         this.discountType,
         this.discountValue,
@@ -104,14 +104,12 @@ class Items {
         this.usageLimit,
         this.usedCount,
         this.usageLimitPerUser,
-        this.applicableCategories,
-        this.applicableVendors,
-        this.applicableProducts,
-        this.excludedCategories,
-        this.excludedProducts,
-        this.applicableUserGroups,
         this.isStackable,
-        this.createdBy});
+        this.createdBy,
+        this.totalSplits,
+        this.isSplitCoupon,
+        this.products,
+        this.categories});
 
   Items.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -119,48 +117,61 @@ class Items {
     updatedAt = json['updatedAt'];
     deletedAt = json['deletedAt'];
     code = json['code'];
+    currency = json['currency'];
 
-    // name/description may be null or an object
-    name = json['name'] != null && json['name'] is Map
-        ? Name.fromJson(Map<String, dynamic>.from(json['name']))
-        : null;
-    description = json['description'] != null && json['description'] is Map
-        ? Name.fromJson(Map<String, dynamic>.from(json['description']))
-        : null;
+    // robust parsing for `name` which may be String, Map, empty map or null
+    if (json['name'] == null) {
+      name = null;
+    } else if (json['name'] is String) {
+      // if the API sometimes returns simple string, store it in `en`
+      name = Description(en: json['name'] as String);
+    } else if (json['name'] is Map) {
+      // normal object with ar/en
+      name = Description.fromJson(Map<String, dynamic>.from(json['name']));
+    } else {
+      name = null;
+    }
+
+    // robust parsing for `description` as well
+    if (json['description'] == null) {
+      description = null;
+    } else if (json['description'] is String) {
+      description = Description(en: json['description'] as String);
+    } else if (json['description'] is Map) {
+      description =
+          Description.fromJson(Map<String, dynamic>.from(json['description']));
+    } else {
+      description = null;
+    }
 
     discountType = json['discountType'];
-    discountValue = json['discountValue'] is int
-        ? json['discountValue']
-        : (json['discountValue'] != null ? int.tryParse(json['discountValue'].toString()) : null);
-    splitValue = json['splitValue'] is int
-        ? json['splitValue']
-        : (json['splitValue'] != null ? int.tryParse(json['splitValue'].toString()) : null);
-    maxDiscountAmount = json['maxDiscountAmount'] is int
-        ? json['maxDiscountAmount']
-        : (json['maxDiscountAmount'] != null ? int.tryParse(json['maxDiscountAmount'].toString()) : null);
-    minOrderAmount = json['minOrderAmount'] is int
-        ? json['minOrderAmount']
-        : (json['minOrderAmount'] != null ? int.tryParse(json['minOrderAmount'].toString()) : null);
-
+    discountValue = json['discountValue'];
+    splitValue = json['splitValue'];
+    maxDiscountAmount = json['maxDiscountAmount'];
+    minOrderAmount = json['minOrderAmount'];
     status = json['status'];
     validFrom = json['validFrom'];
     validTo = json['validTo'];
-    usageLimit = json['usageLimit'] is int ? json['usageLimit'] : (json['usageLimit'] != null ? int.tryParse(json['usageLimit'].toString()) : null);
-    usedCount = json['usedCount'] is int ? json['usedCount'] : (json['usedCount'] != null ? int.tryParse(json['usedCount'].toString()) : null);
-    usageLimitPerUser = json['usageLimitPerUser'] is int ? json['usageLimitPerUser'] : (json['usageLimitPerUser'] != null ? int.tryParse(json['usageLimitPerUser'].toString()) : null);
-
-    // Safe parsing for lists that might be null or empty
-    applicableCategories = (json['applicableCategories'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-    applicableVendors = (json['applicableVendors'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-    applicableProducts = (json['applicableProducts'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-
-    excludedCategories = (json['excludedCategories'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-    excludedProducts = (json['excludedProducts'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-
-    applicableUserGroups = (json['applicableUserGroups'] as List<dynamic>?)?.map((e) => e == null ? 0 : (e is int ? e : int.tryParse(e.toString()) ?? 0)).toList() ?? <int>[];
-
+    usageLimit = json['usageLimit'];
+    usedCount = json['usedCount'];
+    usageLimitPerUser = json['usageLimitPerUser'];
     isStackable = json['isStackable'];
-    createdBy = json['createdBy'] is int ? json['createdBy'] : (json['createdBy'] != null ? int.tryParse(json['createdBy'].toString()) : null);
+    createdBy = json['createdBy'];
+    totalSplits = json['totalSplits'];
+    isSplitCoupon = json['isSplitCoupon'];
+    if (json['products'] != null && json['products'] is List) {
+      products = <Products>[];
+      (json['products'] as List).forEach((v) {
+        if (v is Map) products!.add(Products.fromJson(Map<String, dynamic>.from(v)));
+      });
+    }
+
+    if (json['categories'] != null && json['categories'] is List) {
+      categories = <Categories>[];
+      (json['categories'] as List).forEach((v) {
+        if (v is Map) categories!.add(Categories.fromJson(Map<String, dynamic>.from(v)));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -170,11 +181,16 @@ class Items {
     data['updatedAt'] = this.updatedAt;
     data['deletedAt'] = this.deletedAt;
     data['code'] = this.code;
+    data['currency'] = this.currency;
     if (this.name != null) {
       data['name'] = this.name!.toJson();
+    } else {
+      data['name'] = null;
     }
     if (this.description != null) {
       data['description'] = this.description!.toJson();
+    } else {
+      data['description'] = null;
     }
     data['discountType'] = this.discountType;
     data['discountValue'] = this.discountValue;
@@ -187,26 +203,28 @@ class Items {
     data['usageLimit'] = this.usageLimit;
     data['usedCount'] = this.usedCount;
     data['usageLimitPerUser'] = this.usageLimitPerUser;
-    data['applicableCategories'] = this.applicableCategories;
-    data['applicableVendors'] = this.applicableVendors;
-    data['applicableProducts'] = this.applicableProducts;
-    data['excludedCategories'] = this.excludedCategories;
-    data['excludedProducts'] = this.excludedProducts;
-    data['applicableUserGroups'] = this.applicableUserGroups;
     data['isStackable'] = this.isStackable;
     data['createdBy'] = this.createdBy;
+    data['totalSplits'] = this.totalSplits;
+    data['isSplitCoupon'] = this.isSplitCoupon;
+    if (this.products != null) {
+      data['products'] = this.products!.map((v) => v.toJson()).toList();
+    }
+    if (this.categories != null) {
+      data['categories'] = this.categories!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }
 
 
-class Name {
+class Description {
   String? ar;
   String? en;
 
-  Name({this.ar, this.en});
+  Description({this.ar, this.en});
 
-  Name.fromJson(Map<String, dynamic> json) {
+  Description.fromJson(Map<String, dynamic> json) {
     ar = json['ar'];
     en = json['en'];
   }
@@ -215,6 +233,76 @@ class Name {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['ar'] = this.ar;
     data['en'] = this.en;
+    return data;
+  }
+}
+
+class Products {
+  int? id;
+  String? name;
+  int? price;
+  List<Images>? images;
+
+  Products({this.id, this.name, this.price, this.images});
+
+  Products.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    price = json['price'];
+    if (json['images'] != null) {
+      images = <Images>[];
+      json['images'].forEach((v) {
+        images!.add(new Images.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['name'] = this.name;
+    data['price'] = this.price;
+    if (this.images != null) {
+      data['images'] = this.images!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Images {
+  int? id;
+  String? attach;
+
+  Images({this.id, this.attach});
+
+  Images.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    attach = json['attach'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['attach'] = this.attach;
+    return data;
+  }
+}
+
+class Categories {
+  int? id;
+  String? name;
+
+  Categories({this.id, this.name});
+
+  Categories.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['name'] = this.name;
     return data;
   }
 }

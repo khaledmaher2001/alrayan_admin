@@ -28,6 +28,20 @@ class OrdersRepoImpl implements OrdersRepo {
       }
     }
   }
+  @override
+  Future<Either<Failure, Items>> getOrderDetails({required int orderId}) async {
+    try {
+      var response = await apiService!.get(endPoint: "${EndPoints.orders}/$orderId",sendToken: true);
+      var result = Items.fromJson(response.data["data"]);
+      return right(result);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
 
   @override
   Future<Either<Failure, String>> changeOrderStatus({required int orderId, required Map<String, dynamic> data}) async {

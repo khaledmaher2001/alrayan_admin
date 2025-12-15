@@ -8,6 +8,9 @@ import 'package:alrayan_admin/features/ads/presentation/views/widgets/ads_item.d
 import 'package:flutter/material.dart';
 
 import '../../../../../core/shared_widgets/custom_app_bar.dart';
+import '../../../../../core/shared_widgets/toast.dart';
+import '../../../../../core/utils/colors/colors.dart';
+import '../../view_models/delete_banner/delete_banner_cubit.dart';
 
 class AdsViewBody extends StatelessWidget {
   const AdsViewBody({super.key});
@@ -27,21 +30,39 @@ class AdsViewBody extends StatelessWidget {
           SizedBox(height: AppConstants.height20(context),),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: AppConstants.width20(context)),
-              child: BlocBuilder<OfferBannerCubit, OfferBannerState>(
+              padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+              child: BlocListener<DeleteBannersCubit, DeleteBannersState>(
+                listener: (context, state) {
+                  if (state is DeleteBannersLoaded) {
+                    toast(text: state.message, color: Colors.green);
+                    context.read<OfferBannerCubit>().fetchOfferBanners(withLoading: false);
+                  } else if (state is DeleteBannersError) {
+                    toast(text: state.message, color: AppColors.redColor);
+                  }
+                },
+                child: BlocBuilder<OfferBannerCubit, OfferBannerState>(
                   builder: (context, state) {
                     if (state is OfferBannerLoaded) {
-                      return ListView.separated(
-                        itemBuilder: (BuildContext context, int index) {
-                          return AdsItem(instance:state.banners[index]);
-                        }, separatorBuilder: (BuildContext context, int index) {
-                          return SizedBox(height: AppConstants.height15(context),);
-                      }, itemCount: state.banners.length,);
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<OfferBannerCubit>().fetchOfferBanners();
+                        },
+                        child: ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemBuilder: (BuildContext context, int index) {
+                            return AdsItem(instance: state.banners[index],);
+                          },
+                          separatorBuilder: (BuildContext context, int index) {
+                            return SizedBox(height: AppConstants.height15(context));
+                          },
+                          itemCount: state.banners.length,
+                        ),
+                      );
                     } else {
-                      return const Center(child: CircularProgressIndicator(),);
+                      return const Center(child: CircularProgressIndicator());
                     }
-                  }
+                  },
+                ),
               ),
             ),
           ),

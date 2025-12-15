@@ -9,6 +9,7 @@ import 'package:alrayan_admin/core/utils/services/remote_services/service_locato
 import 'package:alrayan_admin/features/coupons/data/repo/coupons_repo_impl.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_states.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/get_coupons/get_coupons_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/custom_coupon_field.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_category_bottom_sheet.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_product_bottom_sheet.dart';
@@ -253,6 +254,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   CustomDropDownButton(
                                     hintText: "نوع كوبون الخصم",
                                     items: [
+                                      'كوبون مجزئ',
                                       'شحن مجاني',
                                       'خصم نسبة مئوية',
                                       'خصم قيمة ثابتة بالجنية',
@@ -264,7 +266,10 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     height: MediaQuery.of(context).size.height * .06,
                                     onChanged: (v) {
                                       switch (v) {
-                                        case 'شحن مجاني':
+                                        case 'كوبون مجزئ':
+                                          couponAssetsCubit.selectCouponType(type: "fixed_split");
+                                          break;
+                                          case 'شحن مجاني':
                                           couponAssetsCubit.selectCouponType(type: "free_shipping");
                                           break;
                                         case 'خصم نسبة مئوية':
@@ -611,14 +616,15 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 ],
                               ),
                               SizedBox(height: AppConstants.height15(context)),
-                             if(couponAssetsCubit.couponType!= "free_shipping")...[ CustomCouponField(
+                             if(couponAssetsCubit.couponType!= "free_shipping")...[
+                               if(couponAssetsCubit.couponType!= "fixed_amount"&&couponAssetsCubit.couponType!="fixed_split")...[CustomCouponField(
                                 title: "الحد الاقصي للخصم",
                                 hint: "الحد الاقصي للخصم",
                                 controller: couponAssetsCubit.maxDiscountAmountController,
                                 keyboardType: TextInputType.text,
                                 validationText: "من فضلك ادخل الحد الاقصي للخصم",
                               ),
-                              SizedBox(height: AppConstants.height15(context)),
+                              SizedBox(height: AppConstants.height15(context)),],
                               CustomCouponField(
                                 title: "الحد الادني لقيمة الطلب",
                                 hint: "الحد الادني لقيمة الطلب",
@@ -651,7 +657,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                             if (time != null) {
                                               couponAssetsCubit.selectedStartDate = picked;
                                               couponAssetsCubit.startDateController.text =
-                                                  "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour}:${time.minute}:00.000";
+                                              "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:00.000Z";
                                             }
                                           });
                                           setState(() {});
@@ -680,7 +686,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                             if (time != null) {
                                               couponAssetsCubit.selectedEndDate = picked;
                                               couponAssetsCubit.endDateController.text =
-                                                  "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour}:${time.minute}:00.000";
+                                              "${DateFormat("yyyy-MM-dd", "en").format(picked)}T${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:00.000Z";
                                             }
                                           });
                                           setState(() {});
@@ -690,7 +696,6 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   ),
                                 ],
                               ),
-
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
                                 title: "مرات الاستخدام الكلية",
@@ -704,9 +709,37 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 title: "مرات الاستخدام للمستخدم الواحد",
                                 hint: "مرات الاستخدام للمستخدم الواحد",
                                 controller: couponAssetsCubit.usageLimitPerUserController,
+                                onChange: (value){
+                                 setState(() {
+                                   if(couponAssetsCubit.discountValueController.text!=null&&couponAssetsCubit.discountValueController.text.isNotEmpty)
+                                   {
+                                     final discount =
+                                         double.tryParse(couponAssetsCubit.discountValueController.text.trim()) ?? 0;
+
+                                     final usageLimit =
+                                         double.tryParse(couponAssetsCubit.usageLimitPerUserController.text.trim()) ?? 0;
+
+                                     if (usageLimit == 0) {
+                                       couponAssetsCubit.splitValueController.text = "0";
+                                     } else {
+                                       couponAssetsCubit.splitValueController.text =
+                                           (discount / usageLimit).toString();
+                                     }
+                                   }
+                                 });
+                                },
                                 keyboardType: TextInputType.number,
                                 validationText: "من فضلك ادخل مرات الاستخدام للمستخدم الواحد",
                               ),
+                             if(couponAssetsCubit.couponType=="fixed_split")...[ SizedBox(height: AppConstants.height15(context)),
+                              CustomCouponField(
+                                title: "قيمة الخصم في المرة الواحده",
+                                hint: "قيمة الخصم في المرة الواحده",
+                                controller: couponAssetsCubit.splitValueController,
+                                keyboardType: TextInputType.number,
+                                readOnly: true,
+                                validationText: "من فضلك ادخل قيمة الخصم في المرة الواحده",
+                              ),],
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
                                 title: "وصف الكوبون (AR) ",
@@ -743,6 +776,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                   if (state is CreateCouponSuccessState) {
                     toast(text: state.message, color: Colors.green);
                     couponAssetsCubit.clearAllData();
+                    context.read<GetCouponsCubit>().getCoupons();
                     NavigationUtils.navigateBack(context: context);
                   } else if (state is CreateCouponErrorState) {
                     toast(text: state.error, color: AppColors.redColor);
@@ -761,8 +795,8 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     "en": couponAssetsCubit.descriptionEnController.text.trim(),
                                     "ar": couponAssetsCubit.descriptionArController.text.trim(),
                                   },
-                                  "discountType": couponAssetsCubit.couponType,
-                                  "discountValue": couponAssetsCubit.couponType=="free_shipping"?"100":couponAssetsCubit.discountValueController.text.trim(),
+                                  "discountType": couponAssetsCubit.couponType=="fixed_split"?"fixed_amount":couponAssetsCubit.couponType,
+                                  "discountValue": couponAssetsCubit.couponType=="free_shipping"?"0":couponAssetsCubit.discountValueController.text.trim(),
                                   if(couponAssetsCubit.couponType!="free_shipping")
                                   "maxDiscountAmount":couponAssetsCubit.maxDiscountAmountController.text.trim(),
                                   if(couponAssetsCubit.couponType!="free_shipping")
@@ -776,7 +810,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   "applicableProducts": couponAssetsCubit.selectedProducts.map((e)=>e.id).toList(),
                                   "applicableUserGroups": couponAssetsCubit.selectedUsers.map((e)=>e.id).toList(),
                                   "isStackable": false,
-                                  "splitValue": 0,
+                                  "splitValue": couponAssetsCubit.couponType=="fixed_split"?couponAssetsCubit.splitValueController.text.trim():null,
                                 },
                               );
                             }

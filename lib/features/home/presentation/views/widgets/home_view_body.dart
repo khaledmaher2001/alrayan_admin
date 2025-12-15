@@ -86,10 +86,10 @@ class HomeViewBody extends StatelessWidget {
                   SizedBox(height: AppConstants.height10(context)),
                   MostOrderedItem(
                     instance:
-                        state.model.productStats!.topSellingProducts!.first,
+                        state.model.productStats!.topSellingProducts!.first, fromHome: true,
                   ),
                   SizedBox(height: AppConstants.height10(context)),
-                  TopCustomerItem(instance: state.model.topCustomers!.first),
+                  TopCustomerItem(instance: state.model.topCustomers!.first,fromHome: true,index: 0,),
                   SizedBox(height: AppConstants.height20(context)),
                 ],
               ),

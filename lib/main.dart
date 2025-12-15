@@ -22,6 +22,7 @@ import 'package:alrayan_admin/features/products/presentation/view_model/change_c
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:alrayan_admin/features/profile/data/repo/profile_repo/profile_repo_impl.dart';
 import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_cubit.dart';
+import 'package:alrayan_admin/features/top_users/presentation/view_models/get_top_users_cubit/get_top_users_cubit.dart';
 import 'package:alrayan_admin/features/zones/data/repo/zones_repo_impl.dart';
 import 'package:alrayan_admin/features/zones/presentation/view_model/get_zones/get_zones_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -42,6 +43,12 @@ import 'features/auth/presentation/view_model/reset_password/reset_password_cubi
 import 'features/coupons/presentation/views/view_model/create_coupon_assets/create_coupon_assets_cubit.dart';
 import 'features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'features/notifications/presenatation/view_model/get_notifications/get_notifications_cubit.dart';
+import 'features/reviews/data/repo/reviews_repo_impl.dart';
+import 'features/reviews/presentation/view_model/get_reviews/get_reviews_cubit.dart';
+import 'features/reviews/presentation/view_model/get_reviews_summery/get_reviews_summery_cubit.dart';
+import 'features/top_products/data/repo/top_products_repo_impl.dart';
+import 'features/top_products/presentation/view_models/get_top_products_cubit/get_top_products_cubit.dart';
+import 'features/top_users/data/repo/top_users_repo_impl.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -116,7 +123,10 @@ class _AlRayanAdminState extends State<AlRayanAdmin> {
         BlocProvider(create: (context) => RegisterCubit(getIt.get<AuthRepoImpl>())),
         BlocProvider(create: (context) => ForgetPasswordCubit(getIt.get<AuthRepoImpl>())),
         BlocProvider(create: (context) => ResetPasswordCubit(getIt.get<AuthRepoImpl>())),
-
+        BlocProvider(create: (context) => GetTopUsersCubit(getIt<TopUsersRepoImpl>())..getTopUsers()),
+        BlocProvider(create: (context) => GetTopProductsCubit(getIt<TopProductsRepoImpl>())..getTopProducts()),
+        BlocProvider(create: (context) => GetReviewsCubit(getIt<ReviewRepoImpl>())..getReviews(page: 1)),
+        BlocProvider(create: (context) => GetReviewsSummeryCubit(getIt<ReviewRepoImpl>())..getReviewsSummery()),
         BlocProvider(create: (context) => GetSettingsCubit(getIt.get<AuthRepoImpl>())..getSettings()),
         BlocProvider(create: (context) => UpdateSettingsCubit(getIt.get<AuthRepoImpl>())),
         BlocProvider(

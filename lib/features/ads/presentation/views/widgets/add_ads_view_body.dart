@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
+import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/ads/presentation/view_models/offer_banner_cubit/offer_banner_cubit.dart';
 import 'package:alrayan_admin/features/ads/presentation/views/widgets/select_ads_product_bottom_sheet.dart';
 import 'package:dio/dio.dart';
@@ -30,6 +31,7 @@ class AddAdsViewBody extends StatefulWidget {
 class _AddAdsViewBodyState extends State<AddAdsViewBody> {
   var formNewKey = GlobalKey<FormState>();
 
+  TextEditingController link = TextEditingController();
   TextEditingController newTitle = TextEditingController();
   TextEditingController newDescription = TextEditingController();
 
@@ -254,6 +256,21 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             textInputType: TextInputType.emailAddress,
                             controller: newDescription,
                           ),
+                         if(context.read<AdsAssetsCubit>().adsType == "new")...[ SizedBox(height: AppConstants.height20(context)),
+                          Text("رابط الاعلان ان وجد", style: Styles.inter14500black(context)),
+                          SizedBox(height: AppConstants.height5(context)),
+                          DefaultTextFormField(
+                            hintText: "اضافة رابط الاعلان",
+                            borderRadius: AppConstants.sp10(context),
+                            hasBorder: true,
+                            borderSideColor: AppColors.gray,
+                            borderSideWidth: 1,
+                            maxLines: 1,
+                            contentPaddingHorizontal: AppConstants.width20(context),
+                            contentPaddingVertical: AppConstants.height20(context),
+                            textInputType: TextInputType.url,
+                            controller: link,
+                          ),],
                           SizedBox(height: AppConstants.height20(context)),
                           BlocBuilder<AdsAssetsCubit, AdsAssetsState>(
                             builder: (context, frontIdState) {
@@ -377,7 +394,10 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                 "title": newTitle.text.trim(),
                                 "description": newDescription.text.trim(),
                                 "type": context.read<AdsAssetsCubit>().adsType,
-                                "productId": context.read<AdsAssetsCubit>().selectedProduct!.id,
+                                if(context.read<AdsAssetsCubit>().adsType == "new")
+                                "link":link.text.trim(),
+                                if(context.read<AdsAssetsCubit>().adsType == "discount")
+                                  "productId": context.read<AdsAssetsCubit>().selectedProduct!.id,
                                 "imagePath": await MultipartFile.fromFile(
                                   context.read<AdsAssetsCubit>().newImage?.path ?? "",
                                 ),
@@ -394,6 +414,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                   context.read<AdsAssetsCubit>().newImage = null;
                   context.read<OfferBannerCubit>().fetchOfferBanners();
                   toast(text: "تم أضافة الاعلان بنجاح", color: Colors.green);
+                  NavigationUtils.navigateBack(context: context);
                 } else if (state is AddAdsError) {
                   customSnackBar(message: state.error, color: AppColors.redColor, context: context);
                 }

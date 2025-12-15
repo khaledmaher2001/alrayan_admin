@@ -1,4 +1,6 @@
+import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
+import 'package:alrayan_admin/features/top_products/presentation/views/top_products_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/shared_widgets/default_cached_network_image.dart';
@@ -6,8 +8,9 @@ import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/text_styles/styles.dart';
 class MostOrderedItem extends StatelessWidget {
-  const MostOrderedItem({super.key, required this.instance});
+  const MostOrderedItem({super.key, required this.instance, required this.fromHome});
   final TopSellingProducts instance;
+  final bool fromHome;
   @override
   Widget build(BuildContext context) {
     return  Container(
@@ -32,7 +35,7 @@ class MostOrderedItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+        if(fromHome)...[  Row(
             children: [
               Expanded(
                 child: Text(
@@ -43,7 +46,7 @@ class MostOrderedItem extends StatelessWidget {
               SizedBox(width: AppConstants.width20(context),),
               InkWell(
                 onTap: (){
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => AllReviewsView()));
+                  NavigationUtils.navigateTo(context: context, destinationScreen: TopProductsView());
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.width15(context),vertical: AppConstants.height10(context)/1.5),
@@ -64,7 +67,7 @@ class MostOrderedItem extends StatelessWidget {
             "حاول توفير اكبر كمية من المنتجات التي عليها طلب كبير",
             style: Styles.inter10400grey(context),
           ),
-          SizedBox(height: AppConstants.height20(context)),
+          SizedBox(height: AppConstants.height20(context)),],
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -84,7 +87,7 @@ class MostOrderedItem extends StatelessWidget {
                   ),
                   child: DefaultCachedNetworkImage(
                     imageUrl:
-                    "https://pics.clipartpng.com/midle/Cheese_PNG_Clipart-3141.png",
+                    instance.image??'',
                     imageHeight:
                     MediaQuery.of(context).size.width * .12,
                     imageWidth:

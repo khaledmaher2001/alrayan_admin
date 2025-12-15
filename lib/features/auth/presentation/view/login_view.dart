@@ -2,7 +2,9 @@ import 'package:alrayan_admin/core/shared_widgets/custom_snackbar.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_helper.dart';
 import 'package:alrayan_admin/features/auth/presentation/view/forget_password_view.dart';
+import 'package:alrayan_admin/features/categories/presentation/view_model/get_categories/get_categories_cubit.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
+import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -159,7 +161,6 @@ class _LoginViewState extends State<LoginView> {
                                 if (state is LoginSuccessState) {
 
                                   await CacheHelper.saveData(key: "token", value: state.loginModel.data!.accessToken);
-                                  // context.read<ProfileCubit>().fetchProfile();
                                   context.read<ChangeNavBarStatusCubit>().changeNavBarIndex(0);
                                   customSnackBar(message: state.loginModel.message!, color: Colors.green, context: context);
                                   GoRouter.of(context).pushReplacement('/mainLayoutView');

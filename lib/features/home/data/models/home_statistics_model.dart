@@ -107,9 +107,9 @@ class Overview {
 }
 
 class RecentStats {
-  int? todayRevenue;
+  dynamic todayRevenue;
   int? todayOrders;
-  int? weeklyRevenue;
+  dynamic weeklyRevenue;
   int? weeklyOrders;
   dynamic monthlyRevenue;
   int? monthlyOrders;
@@ -310,16 +310,18 @@ class ProductStats {
 class TopSellingProducts {
   int? id;
   String? name;
+  String? image;
   int? totalSold;
   dynamic revenue;
-  int? averagePrice;
+  dynamic averagePrice;
 
   TopSellingProducts(
-      {this.id, this.name, this.totalSold, this.revenue, this.averagePrice});
+      {this.id, this.name, this.image,this.totalSold, this.revenue, this.averagePrice});
 
   TopSellingProducts.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
+    image = json['image'];
     totalSold = json['totalSold'];
     revenue = json['revenue'];
     averagePrice = json['averagePrice'];
@@ -329,6 +331,7 @@ class TopSellingProducts {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
+    data['image'] = this.image;
     data['totalSold'] = this.totalSold;
     data['revenue'] = this.revenue;
     data['averagePrice'] = this.averagePrice;
@@ -551,7 +554,7 @@ class TopCustomers {
 }
 
 class ReviewStats {
-  int? averageRating;
+  dynamic averageRating;
   int? totalReviews;
   RatingDistribution? ratingDistribution;
 

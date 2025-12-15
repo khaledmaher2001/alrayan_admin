@@ -14,8 +14,10 @@ class OfferBannerCubit extends Cubit<OfferBannerState> {
   List<Data> banner = [];
   int _currentIndex = 0;
 
-  Future<void> fetchOfferBanners() async {
-    emit(OfferBannerLoading());
+  Future<void> fetchOfferBanners({bool withLoading = true}) async {
+    if(withLoading){
+      emit(OfferBannerLoading());
+    }
     final Either<Failure, OfferBannerModel> result = await repo.getBanner();
     result.fold(
           (failure) => emit(OfferBannerError(failure.errMessage)),

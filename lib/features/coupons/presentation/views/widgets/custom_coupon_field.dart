@@ -10,13 +10,14 @@ class CustomCouponField extends StatelessWidget {
     required this.title,
     required this.hint,
     required this.controller,
-    required this.keyboardType, required this.validationText, this.onTap, this.readOnly=false,
+    required this.keyboardType, required this.validationText, this.onTap, this.readOnly=false, this.onChange,
   });
 
   final String title, hint,validationText;
   final TextEditingController controller;
   final TextInputType keyboardType;
   final Function()? onTap;
+  final Function(String)? onChange;
   final bool readOnly;
 
   @override
@@ -39,6 +40,7 @@ class CustomCouponField extends StatelessWidget {
             }
             return null;
           },
+          onChange: onChange ,
           style: Styles.inter14600black(context),
           fillColor: const Color(0xffF7F7F8),
           contentPaddingHorizontal: AppConstants.width15(context),

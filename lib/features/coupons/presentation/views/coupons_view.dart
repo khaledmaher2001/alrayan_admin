@@ -2,13 +2,14 @@ import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/delete_coupon/delete_coupon_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/get_coupons/get_coupons_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/coupon_item.dart';
-import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/empty_widget.dart';
 import '../../../../core/shared_widgets/toast.dart';
+import '../../../../core/utils/assets/assets.dart';
 import '../../../../core/utils/colors/colors.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/navigation_utility.dart';
@@ -77,12 +78,15 @@ class _CouponsViewState extends State<CouponsView> {
                                 toast(text: deleteState.error, color: AppColors.redColor);
                               }
                             },
-                            child: ListView.separated(
+                            child: context.read<GetCouponsCubit>().couponsList.isNotEmpty?ListView.separated(
                                 controller: scrollController,
                                 itemBuilder: (context, index) => CouponItem(
                                     couponData: context.read<GetCouponsCubit>().couponsList[index], index: index),
                                 separatorBuilder: (context, index) => SizedBox(height: AppConstants.height20(context),),
-                                itemCount: context.read<GetCouponsCubit>().couponsList.length),
+                                itemCount: context.read<GetCouponsCubit>().couponsList.length):Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+                                  child: EmptyWidget(icon: AssetData.coupons,iconColor: Colors.grey,title: "لا توجد كوبونات الان",description: "برجاء إنشاء كوبونات جديدة للمستخدمين لتحفيزهم على زيادة عمليات الشراء والاستفادة من العروض.",),
+                                ),
                           ),
                         ),
                         if(isLoading)

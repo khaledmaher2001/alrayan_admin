@@ -33,6 +33,13 @@ class EndPoints {
   static const luckyWheel = "rewards";
   static const getOfferBanner = 'banners';
 
+  static const reviews = 'reviews';
+  static const reviewsSummery = 'reviews/stats';
+
+
+  static const topUsers = 'orders/top-customer';
+  static const topProducts = 'orders/top-products';
+
 
 
 

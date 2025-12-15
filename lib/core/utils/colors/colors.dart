@@ -19,4 +19,16 @@ class AppColors {
     800: Color(0xE6e3000f),
     900: Color(0xFFe3000f),
   });
+  static MaterialColor greyColor = const MaterialColor(0xff121212, <int, Color>{
+    50: Color(0xffFAFAFA),
+    100: Color(0xffF5F5F5),
+    200: Color(0xffE8E8E8),
+    300: Color(0xffD6D6D6),
+    400: Color(0xffB8B8B8),
+    500: Color(0xffA6A6A6),
+    600: Color(0xff7A7A7A),
+    700: Color(0xff454545),
+    800: Color(0xff292929),
+    900: Color(0xff121212),
+  });
 }

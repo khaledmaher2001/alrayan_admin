@@ -178,4 +178,76 @@ abstract class Styles {
     color: Colors.black,
     fontFamily: "Inter",
   );
+  static TextStyle font14500Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .014,
+    fontWeight: FontWeight.w500,
+    color: AppColors.greyColor[900],
+    fontFamily: "Inter",
+  );
+  static TextStyle font16500Grey600(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w500,
+    color: AppColors.greyColor[600],
+    fontFamily: "Inter",
+  );
+  static TextStyle font16600Grey700(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w600,
+    color: AppColors.greyColor[700],
+    fontFamily: "Inter",
+  );
+  static TextStyle font16500Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w500,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+  static TextStyle font16500Grey500(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w500,
+    color: AppColors.greyColor[500],
+    fontFamily: "Inter",
+  );
+  static TextStyle font16500Primary(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w500,
+    color: AppColors.primaryColor,
+    fontFamily: "Inter",
+  );
+  static TextStyle font16600Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .016,
+    fontWeight: FontWeight.w600,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+  static TextStyle font18500Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .018,
+    fontWeight: FontWeight.w500,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+  static TextStyle font18600Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .018,
+    fontWeight: FontWeight.w600,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+  static TextStyle font20600Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .02,
+    fontWeight: FontWeight.w600,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+  static TextStyle font20700Grey900(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .02,
+    fontWeight: FontWeight.w700,
+    color: AppColors.greyColor[900],
+     fontFamily: "Inter",
+  );
+
+  static TextStyle font18500Primary(context) => TextStyle(
+    fontSize: MediaQuery.of(context).size.height * .02,
+    fontWeight: FontWeight.w600,
+    color: AppColors.primaryColor,
+  );
 }

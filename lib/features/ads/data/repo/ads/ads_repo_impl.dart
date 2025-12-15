@@ -46,6 +46,18 @@ class AdsRepoImpl implements AdsRepo{
     }
   }
 
-
+  @override
+  Future<Either<Failure, String>> deleteBanner({required int id}) async {
+    try {
+      final response = await apiService.deleteData(endPoint: "${EndPoints.getOfferBanner}/$id",sendToken: true);
+      return Right(response.data["message"]);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
 
 }

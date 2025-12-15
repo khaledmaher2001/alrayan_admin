@@ -112,6 +112,7 @@ class AssetData {
   static const fixed="assets/images/coupons_icons/fixed.svg";
   static const shipping="assets/images/coupons_icons/shipping.svg";
   static const percentage="assets/images/coupons_icons/percentage.svg";
+  static const split="assets/images/coupons_icons/split.svg";
 
   //Wheel Icons
   static const wheelLock="assets/images/wheel_icons/wheel_lock.png";
