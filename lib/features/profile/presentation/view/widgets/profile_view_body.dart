@@ -148,16 +148,16 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       icon: AssetData.accountCoupons,
                     ),
                     SizedBox(height: AppConstants.height20(context)),
-                    AccountItem(
-                      onTap: () {
-                        NavigationUtils.navigateTo(
-                          context: context,
-                          destinationScreen: const LuckyWheelView(),
-                        );
-                      },
-                      title: "عجلة الحظ".tr(),
-                      icon: AssetData.wheel,
-                    ),SizedBox(height: AppConstants.height20(context)),
+                    // AccountItem(
+                    //   onTap: () {
+                    //     NavigationUtils.navigateTo(
+                    //       context: context,
+                    //       destinationScreen: const LuckyWheelView(),
+                    //     );
+                    //   },
+                    //   title: "عجلة الحظ".tr(),
+                    //   icon: AssetData.wheel,
+                    // ),SizedBox(height: AppConstants.height20(context)),
                     AccountItem(
                       onTap: () {
                         NavigationUtils.navigateTo(
@@ -168,16 +168,16 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       title: "اعدادات النسخة الحالية".tr(),
                       icon: AssetData.version,
                     ),SizedBox(height: AppConstants.height20(context)),
-                    AccountItem(
-                      onTap: () {
-                        NavigationUtils.navigateTo(
-                          context: context,
-                          destinationScreen: const LuckyWheelView(),
-                        );
-                      },
-                      title: "طلبات الدعم الفني".tr(),
-                      icon: AssetData.support,
-                    ),SizedBox(height: AppConstants.height20(context)),
+                    // AccountItem(
+                    //   onTap: () {
+                    //     NavigationUtils.navigateTo(
+                    //       context: context,
+                    //       destinationScreen: const LuckyWheelView(),
+                    //     );
+                    //   },
+                    //   title: "طلبات الدعم الفني".tr(),
+                    //   icon: AssetData.support,
+                    // ),SizedBox(height: AppConstants.height20(context)),
                     AccountItem(
                       onTap: () {
                         NavigationUtils.navigateTo(
@@ -198,30 +198,34 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       title: "change_password".tr(),
                       icon: AssetData.accountPassword,
                     ),
-
-                    SizedBox(height: AppConstants.height20(context)),
-
-                    DefaultButton(
-                      onPress: () async {
-                        await CacheHelper.removeData(key: "token");
-                        await CacheHelper.removeData(key: "guestUser");
-                        GoRouter.of(context).go("/loginView");
-                      },
-                      text: "logout".tr(),
-                      borderRadius: AppConstants.sp30(context) * 3,
-                      height: AppConstants.height15(context),
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      surfaceTintColor: Colors.transparent,
-                      hasBorder: true,
-                      textColor: AppColors.primaryColor,
-                    ),
                   ],
                 ),
               ],
             ),
           ),
         ),
+        SizedBox(height: AppConstants.height20(context)),
+
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+          child: DefaultButton(
+            onPress: () async {
+              await CacheHelper.removeData(key: "token");
+              await CacheHelper.removeData(key: "guestUser");
+              GoRouter.of(context).go("/loginView");
+            },
+            text: "logout".tr(),
+            borderRadius: AppConstants.sp30(context) * 3,
+            height: AppConstants.height15(context),
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            hasBorder: true,
+            textColor: AppColors.primaryColor,
+          ),
+        ),
+        SizedBox(height: AppConstants.height20(context)),
+
       ],
     );
   }

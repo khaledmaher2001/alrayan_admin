@@ -38,6 +38,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
   @override
   void initState() {
     context.read<AdsAssetsCubit>().newImage = null;
+    link.text="";
     super.initState();
   }
 
@@ -263,6 +264,9 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             hintText: "اضافة رابط الاعلان",
                             borderRadius: AppConstants.sp10(context),
                             hasBorder: true,
+                            validation: (value) {
+                              return null;
+                            },
                             borderSideColor: AppColors.gray,
                             borderSideWidth: 1,
                             maxLines: 1,
@@ -421,6 +425,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
               },
             ),
           ),
+          SizedBox(height: AppConstants.height20(context),),
         ],
       ),
     );

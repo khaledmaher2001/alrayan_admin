@@ -321,7 +321,7 @@ class TopSellingProducts {
   TopSellingProducts.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    image = json['image'];
+    image = json['Image'];
     totalSold = json['totalSold'];
     revenue = json['revenue'];
     averagePrice = json['averagePrice'];
@@ -331,7 +331,7 @@ class TopSellingProducts {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
-    data['image'] = this.image;
+    data['Image'] = this.image;
     data['totalSold'] = this.totalSold;
     data['revenue'] = this.revenue;
     data['averagePrice'] = this.averagePrice;

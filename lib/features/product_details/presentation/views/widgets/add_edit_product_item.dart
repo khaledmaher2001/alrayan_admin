@@ -5,6 +5,7 @@ import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
+import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/create_product/create_product_cubit.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/create_product/create_product_states.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/delete_product/delete_product_cubit.dart';
@@ -56,6 +57,105 @@ class AddEditProductItem extends StatelessWidget {
   final int subCategoryId;
   final bool isRecommended;
 
+  Map<String, dynamic> _buildProductData({
+    required List<MultipartFile> attachments,
+    required bool addImages,
+  }) {
+    final bool hasDiscountType = discountType.trim().isNotEmpty;
+
+    final dynamic normalizedDiscount =
+    hasDiscountType
+        ? (discount.text.trim().isEmpty ? 0 : discount.text.trim())
+        : 0;
+
+    final String normalizedDiscountType =
+    hasDiscountType ? discountType.trim() : "";
+
+    final Map<String, dynamic> data = {
+      "name": {
+        "en": nameEn.text.trim(),
+        "ar": name.text.trim(),
+      },
+      "description": {
+        "en": descriptionEn.text.trim(),
+        "ar": description.text.trim(),
+      },
+      "supplier_price": supplierPrice.text.trim(),
+      "price": price.text.trim(),
+      "stock": stock.text.trim(),
+      "discount": normalizedDiscount,
+      "discount_type": normalizedDiscountType,
+      "main_category_id": categoryId,
+      "sub_category_id": subCategoryId,
+      "unit": unit.text.trim(),
+      "isRecommended": isRecommended,
+    };
+
+    if (addImages) {
+      data["images"] = attachments;
+    }
+
+    return data;
+  }
+
+  Future<List<MultipartFile>> _prepareAttachments(BuildContext context) async {
+    final photos = context.read<SelectProductPhotosCubit>().productPhotos;
+
+    return Future.wait(
+      photos.map(
+            (item) async => MultipartFile.fromFile(
+          item.path,
+          filename: item.path.split('/').last.replaceAll(' ', '_'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text("تأكيد الحذف",style: Styles.inter24600black(context),),
+          content: Text("هل أنت متأكد أنك تريد حذف المنتج؟",style: Styles.font18500Grey900(context),),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppConstants.sp10(dialogContext),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text("إلغاء",style: Styles.inter18500Black(context),),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.redColor,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(
+                "حذف",
+                style: Styles.inter16400white(context),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true && productData != null) {
+      context.read<DeleteProductCubit>().deleteProduct(
+        id: productData!.id!,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -69,57 +169,48 @@ class AddEditProductItem extends StatelessWidget {
                   context.read<GetProductsCubit>().getProducts();
                   NavigationUtils.navigateBack(context: context);
                 } else if (createState is CreateProductErrorState) {
-                  cherryToast(text: createState.error, context: context, isSuccess: false);
+                  cherryToast(
+                    text: createState.error,
+                    context: context,
+                    isSuccess: false,
+                  );
                 }
               },
               builder: (context, createState) {
                 return createState is CreateProductLoadingState
                     ? CustomLoadingItem()
                     : DefaultButton(
-                        onPress: () async {
-                          if (formKey.currentState!.validate()) {
-                            if (context.read<SelectProductPhotosCubit>().productPhotos.isNotEmpty) {
-                              final attachments = await Future.wait(
-                                context.read<SelectProductPhotosCubit>().productPhotos.map(
-                                  (item) async => await MultipartFile.fromFile(
-                                    item.path,
-                                    filename: item.path.split('/').last.replaceAll(' ', '_'),
-                                  ),
-                                ),
-                              );
-                              context.read<CreateProductCubit>().createProduct(
-                                data: {
-                                  "name": {"en": nameEn.text, "ar": name.text},
-                                  "description": {"en": descriptionEn.text, "ar": description.text},
-                                  "supplier_price": supplierPrice.text,
-                                  "price": price.text,
-                                  "stock": stock.text,
-                                  "discount":discountType=="undefined"?0: discount.text.isEmpty ? 0 : discount.text,
-                                  "main_category_id": categoryId,
-                                  "sub_category_id": subCategoryId,
-                                  "unit": unit.text,
-                                  "discount_type": discountType == "نسبة ثابتة"
-                                      ? "fixed"
-                                      : discountType == "نسبة مئوية"
-                                      ? "percentage"
-                                      : "undefined",
-                                  "isRecommended": isRecommended,
-                                  if (context.read<SelectProductPhotosCubit>().productPhotos.isNotEmpty)
-                                    "images": attachments,
-                                },
-                              );
-                            } else {
-                              cherryToast(text: "يجب اختيار صور للمنتج اولا", context: context, isSuccess: false);
-                            }
-                          }
-                        },
-                        text: "اضافة",
-                        borderRadius: AppConstants.sp10(context),
+                  onPress: () async {
+                    if (!formKey.currentState!.validate()) return;
+
+                    final photosCubit =
+                    context.read<SelectProductPhotosCubit>();
+
+                    if (photosCubit.productPhotos.isEmpty) {
+                      cherryToast(
+                        text: "يجب اختيار صور للمنتج اولا",
+                        context: context,
+                        isSuccess: false,
                       );
+                      return;
+                    }
+
+                    final attachments =
+                    await _prepareAttachments(context);
+
+                    context.read<CreateProductCubit>().createProduct(
+                      data: _buildProductData(
+                        attachments: attachments,
+                        addImages: attachments.isNotEmpty,
+                      ),
+                    );
+                  },
+                  text: "اضافة",
+                  borderRadius: AppConstants.sp10(context),
+                );
               },
             ),
           ),
-
         if (productData != null) ...[
           Expanded(
             child: BlocConsumer<EditProductCubit, EditProductStates>(
@@ -127,68 +218,66 @@ class AddEditProductItem extends StatelessWidget {
                 if (editState is EditProductSuccessState) {
                   cherryToast(text: editState.message, context: context);
                   context.read<GetProductsCubit>().getProducts(
-                    categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-                    subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+                    categoryId:
+                    context.read<ChangeCategoryCubit>().mainCategoryId,
+                    subCategoryId:
+                    context.read<ChangeCategoryCubit>().subCategoryId,
                   );
                   NavigationUtils.navigateBack(context: context);
                 } else if (editState is EditProductErrorState) {
-                  cherryToast(text: editState.error, context: context, isSuccess: false);
+                  cherryToast(
+                    text: editState.error,
+                    context: context,
+                    isSuccess: false,
+                  );
                 }
               },
               builder: (context, editState) {
                 return editState is EditProductLoadingState
                     ? CustomLoadingItem()
                     : DefaultButton(
-                        onPress: () async {
-                          if (formKey.currentState!.validate()) {
-                            if (context.read<SelectProductPhotosCubit>().productPhotos.isEmpty &&
-                                productData!.images!.isEmpty) {
-                              cherryToast(text: "يجب اختيار صور للمنتج اولا", context: context, isSuccess: false);
-                            } else {
-                              final attachments = await Future.wait(
-                                context.read<SelectProductPhotosCubit>().productPhotos.map(
-                                  (item) async => await MultipartFile.fromFile(
-                                    item.path,
-                                    filename: item.path.split('/').last.replaceAll(' ', '_'),
-                                  ),
-                                ),
-                              );
-                              context.read<EditProductCubit>().editProduct(
-                                id: productData!.id!,
-                                data: {
-                                  "name": {"en": nameEn.text, "ar": name.text},
-                                  "description": {"en": descriptionEn.text, "ar": description.text},
-                                  "supplier_price": supplierPrice.text,
-                                  "price": price.text,
-                                  "stock": stock.text,
-                                  "discount": discount.text.isEmpty ? 0 : discount.text,
-                                  "main_category_id": categoryId,
-                                  "sub_category_id": subCategoryId,
-                                  "unit": unit.text,
-                                  "discount_type": discountType == "نسبة ثابتة"
-                                      ? "fixed"
-                                      : discountType == "نسبة مئوية"
-                                      ? "percentage"
-                                      : "undefined",
-                                  "isRecommended": isRecommended,
-                                  if(context.read<SelectProductPhotosCubit>().productPhotos.isNotEmpty)
-                                  "images": attachments,
-                                },
-                              );
-                            }
-                          }
-                        },
-                        text: "تعديل",
-                        backgroundColor: Colors.green,
-                        borderRadius: AppConstants.sp10(context),
+                  onPress: () async {
+                    if (!formKey.currentState!.validate()) return;
+
+                    final photosCubit =
+                    context.read<SelectProductPhotosCubit>();
+
+                    final bool hasOldImages =
+                        productData?.images?.isNotEmpty ?? false;
+                    final bool hasNewImages =
+                        photosCubit.productPhotos.isNotEmpty;
+
+                    if (!hasOldImages && !hasNewImages) {
+                      cherryToast(
+                        text: "يجب اختيار صور للمنتج اولا",
+                        context: context,
+                        isSuccess: false,
                       );
+                      return;
+                    }
+
+                    final attachments =
+                    await _prepareAttachments(context);
+
+                    context.read<EditProductCubit>().editProduct(
+                      id: productData!.id!,
+                      data: _buildProductData(
+                        attachments: attachments,
+                        addImages: attachments.isNotEmpty,
+                      ),
+                    );
+                  },
+                  text: "تعديل",
+                  backgroundColor: Colors.green,
+                  borderRadius: AppConstants.sp10(context),
+                );
               },
             ),
           ),
           SizedBox(width: AppConstants.width15(context)),
           GestureDetector(
-            onTap: () {
-              context.read<DeleteProductCubit>().deleteProduct(id: productData!.id!);
+            onTap: () async {
+              await _showDeleteConfirmationDialog(context);
             },
             child: Container(
               padding: EdgeInsets.all(AppConstants.width20(context)),
@@ -200,25 +289,33 @@ class AddEditProductItem extends StatelessWidget {
                 listener: (context, deleteState) {
                   if (deleteState is DeleteProductSuccessState) {
                     cherryToast(text: deleteState.message, context: context);
-
                     context.read<GetProductsCubit>().getProducts(
-                      categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-                      subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+                      categoryId:
+                      context.read<ChangeCategoryCubit>().mainCategoryId,
+                      subCategoryId:
+                      context.read<ChangeCategoryCubit>().subCategoryId,
                     );
                     NavigationUtils.navigateBack(context: context);
                   } else if (deleteState is DeleteProductErrorState) {
-                    cherryToast(text: deleteState.error, context: context, isSuccess: false);
+                    cherryToast(
+                      text: deleteState.error,
+                      context: context,
+                      isSuccess: false,
+                    );
                   }
                 },
                 builder: (context, deleteState) {
                   return deleteState is DeleteProductLoadingState
-                      ? CustomLoadingItem(color: Colors.white, size: MediaQuery.of(context).size.height * .026)
+                      ? CustomLoadingItem(
+                    color: Colors.white,
+                    size: MediaQuery.of(context).size.height * .026,
+                  )
                       : SvgPicture.asset(
-                          AssetData.delete,
-                          color: Colors.white,
-                          width: MediaQuery.of(context).size.height * .026,
-                          height: MediaQuery.of(context).size.height * .026,
-                        );
+                    AssetData.delete,
+                    color: Colors.white,
+                    width: MediaQuery.of(context).size.height * .026,
+                    height: MediaQuery.of(context).size.height * .026,
+                  );
                 },
               ),
             ),

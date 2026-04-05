@@ -9,9 +9,17 @@ import '../../../../../core/utils/assets/assets.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/text_styles/styles.dart';
 import '../../view_models/delete_banner/delete_banner_cubit.dart';
+
 class AdsItem extends StatelessWidget {
-  const AdsItem({super.key, required this.instance});
+  const AdsItem({
+    super.key,
+    required this.instance,
+    required this.onDeleteTap,
+  });
+
   final Data instance;
+  final VoidCallback onDeleteTap;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,7 +32,7 @@ class AdsItem extends StatelessWidget {
             color: Colors.grey.withOpacity(0.3),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: const Offset(0, 3), // changes position of shadow
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -36,7 +44,7 @@ class AdsItem extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                 child: DefaultCachedNetworkImage(
-                  imageUrl: instance.imagePath??"",
+                  imageUrl: instance.imagePath ?? "",
                   imageWidth: MediaQuery.of(context).size.width * 0.9,
                   imageHeight: MediaQuery.of(context).size.height * 0.18,
                   fit: BoxFit.fill,
@@ -48,11 +56,16 @@ class AdsItem extends StatelessWidget {
                   children: [
                     BlocBuilder<DeleteBannersCubit, DeleteBannersState>(
                       builder: (context, state) {
-                        return GestureDetector(
-                          onTap: () {
-                            context.read<DeleteBannersCubit>().selectedBanner = instance.id!;
+                        final deleteCubit = context.read<DeleteBannersCubit>();
+                        final isCurrentDeleting =
+                            state is DeleteBannersLoading &&
+                                deleteCubit.selectedBanner == instance.id;
 
-                            context.read<DeleteBannersCubit>().deleteBanner(id: instance.id!);
+                        return GestureDetector(
+                          onTap: isCurrentDeleting
+                              ? null
+                              : () {
+                            onDeleteTap();
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
@@ -61,26 +74,38 @@ class AdsItem extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: Colors.red,
-                              borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.sp5(context),
+                              ),
                             ),
-                            child:
-                            state is DeleteBannersLoading &&
-                                context.read<DeleteBannersCubit>().selectedBanner == instance.id
-                                ? CustomLoadingItem(size: AppConstants.sp20(context), color: Colors.white)
-                                : SvgPicture.asset(AssetData.delete, color: Colors.white),
+                            child: isCurrentDeleting
+                                ? CustomLoadingItem(
+                              size: AppConstants.sp20(context),
+                              color: Colors.white,
+                            )
+                                : SvgPicture.asset(
+                              AssetData.delete,
+                              color: Colors.white,
+                            ),
                           ),
                         );
                       },
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
-          SizedBox(height: AppConstants.height10(context),),
-          Text(instance.title??'',style: Styles.inter18500Black(context),),
-          SizedBox(height: AppConstants.height5(context),),
-          Text(instance.description??'',style: Styles.inter14600gray(context),),
+          SizedBox(height: AppConstants.height10(context)),
+          Text(
+            instance.title ?? '',
+            style: Styles.inter18500Black(context),
+          ),
+          SizedBox(height: AppConstants.height5(context)),
+          Text(
+            instance.description ?? '',
+            style: Styles.inter14600gray(context),
+          ),
         ],
       ),
     );

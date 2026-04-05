@@ -21,7 +21,6 @@ class WelcomeMessage extends StatelessWidget {
             Text(
               title,
               style: Styles.inter28600black(context).copyWith(
-                color: Colors.white
               ),
             ),
           ],
@@ -32,7 +31,6 @@ class WelcomeMessage extends StatelessWidget {
         Text(
           supTitle,
           style: Styles.inter14600gray(context).copyWith(
-            color: Colors.white
           ),
         ),
       ],

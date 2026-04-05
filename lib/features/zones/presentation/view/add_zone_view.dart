@@ -252,8 +252,8 @@ class _AddZoneViewState extends State<AddZoneView> {
                                                         if (polygon != null) {
                                                           await context.read<AddZoneCubit>().addZone(
                                                             data: {
-                                                              "name": zoneName.text,
-                                                              // "ShippingCost": zoneCost.text,
+                                                              "name": zoneName.text.trim(),
+                                                              "shippingCost": zoneCost.text.trim(),
                                                               "polygon": polygon,
                                                               "isActive": true,
                                                             },
