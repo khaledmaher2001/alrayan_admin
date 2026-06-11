@@ -35,6 +35,25 @@ class _SmallSwitchState extends State<SmallSwitch>
     }
   }
 
+  @override
+  void didUpdateWidget(SmallSwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _value = widget.value;
+      if (_value) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _toggleSwitch() {
     setState(() {
       _value = !_value;

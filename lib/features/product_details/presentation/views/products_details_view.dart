@@ -20,7 +20,7 @@ class ProductsDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion(
-      value: SystemUiOverlayStyle(
+      value: const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
         systemNavigationBarColor: Colors.white,
         statusBarIconBrightness: Brightness.dark,
@@ -28,14 +28,30 @@ class ProductsDetailsView extends StatelessWidget {
       ),
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (context) => SelectProductPhotosCubit()),
-          BlocProvider(create: (context) => GetProductsDetailsCubit(getIt<ProductsRepoImpl>())),
-          BlocProvider(create: (context) => CreateProductCubit(getIt<ProductsRepoImpl>())),
-          BlocProvider(create: (context) => EditProductCubit(getIt<ProductsRepoImpl>())),
-          BlocProvider(create: (context) => DeleteProductCubit(getIt<ProductsRepoImpl>())),
-          BlocProvider(create: (context) => DeleteProductAttachmentsCubit(getIt<ProductsRepoImpl>())),
+          BlocProvider(
+            create: (context) => SelectProductPhotosCubit(),
+          ),
+          BlocProvider(
+            create: (context) =>
+                GetProductsDetailsCubit(getIt<ProductsRepoImpl>()),
+          ),
+          BlocProvider(
+            create: (context) => CreateProductCubit(getIt<ProductsRepoImpl>()),
+          ),
+          BlocProvider(
+            create: (context) => EditProductCubit(getIt<ProductsRepoImpl>()),
+          ),
+          BlocProvider(
+            create: (context) => DeleteProductCubit(getIt<ProductsRepoImpl>()),
+          ),
+          BlocProvider(
+            create: (context) =>
+                DeleteProductAttachmentsCubit(getIt<ProductsRepoImpl>()),
+          ),
         ],
-        child: Scaffold(body: ProductsDetailsViewBody(productData: productData)),
+        child: Scaffold(
+          body: ProductsDetailsViewBody(productData: productData),
+        ),
       ),
     );
   }

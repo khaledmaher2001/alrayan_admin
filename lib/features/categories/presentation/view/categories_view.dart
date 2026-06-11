@@ -35,6 +35,31 @@ class CategoriesView extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
               child: BlocBuilder<GetCategoriesCubit, GetCategoriesStates>(
                 builder: (context, state) {
+                  if (state is GetCategoriesLoadingState || state is GetCategoriesInitState) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is GetCategoriesErrorState) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                          SizedBox(height: AppConstants.height10(context)),
+                          Text(
+                            "حدث خطأ في تحميل التصنيفات",
+                            style: Styles.inter16500black(context),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppConstants.height10(context)),
+                          ElevatedButton.icon(
+                            onPressed: () => context.read<GetCategoriesCubit>().getCategories(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("إعادة المحاولة"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   if (state is GetCategoriesSuccessState) {
                     return state.categoriesModel.data!.isNotEmpty
                         ? RefreshIndicator(
@@ -44,10 +69,10 @@ class CategoriesView extends StatelessWidget {
                             child: GridView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3, // Number of columns
+                                crossAxisCount: 3,
                                 mainAxisSpacing: AppConstants.height10(context),
                                 crossAxisSpacing: AppConstants.width10(context),
-                                childAspectRatio: .8, // Adjust to fit design
+                                childAspectRatio: .8,
                               ),
                               itemCount: state.categoriesModel.data!.length,
                               itemBuilder: (context, index) =>
@@ -63,9 +88,20 @@ class CategoriesView extends StatelessWidget {
                                       ),
                             ),
                           )
-                        : Center(child: SvgPicture.asset(AssetData.emptyCategory));
+                        : RefreshIndicator(
+                            onRefresh: () async {
+                              await context.read<GetCategoriesCubit>().getCategories();
+                            },
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height * 0.6,
+                                child: Center(child: SvgPicture.asset(AssetData.emptyCategory)),
+                              ),
+                            ),
+                          );
                   }
-                  return const Center(child: CircularProgressIndicator());
+                  return const SizedBox.shrink();
                 },
               ),
             ),

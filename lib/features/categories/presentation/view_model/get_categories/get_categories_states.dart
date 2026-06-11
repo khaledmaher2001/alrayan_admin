@@ -9,4 +9,7 @@ class GetCategoriesSuccessState extends GetCategoriesStates{
 
   GetCategoriesSuccessState({required this.categoriesModel});
 }
-class GetCategoriesErrorState extends GetCategoriesStates{}
+class GetCategoriesErrorState extends GetCategoriesStates{
+  final String error;
+  GetCategoriesErrorState({this.error = "حدث خطأ، يرجى المحاولة مجددًا"});
+}

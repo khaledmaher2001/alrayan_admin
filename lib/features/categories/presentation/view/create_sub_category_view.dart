@@ -28,7 +28,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CreateSubCategoryView extends StatefulWidget {
-  const CreateSubCategoryView({super.key, this.subCategoryData, required this.mainCategoryId});
+  const CreateSubCategoryView({
+    super.key,
+    this.subCategoryData,
+    required this.mainCategoryId,
+  });
 
   final Data? subCategoryData;
   final int mainCategoryId;
@@ -51,6 +55,60 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
     super.initState();
   }
 
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            "تأكيد الحذف",
+            style: Styles.inter24600black(context),
+          ),
+          content: Text(
+            "هل أنت متأكد أنك تريد حذف القسم الفرعى؟",
+            style: Styles.font18500Grey900(context),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppConstants.sp10(dialogContext),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                "إلغاء",
+                style: Styles.inter18500Black(context),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.redColor,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(
+                "حذف",
+                style: Styles.inter16400white(context),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true && widget.subCategoryData != null) {
+      context.read<DeleteSubCategoryCubit>().deleteSubCategory(
+        subCategoryId: widget.subCategoryData!.id!,
+      );
+    }
+  }
+
   @override
   void dispose() {
     nameEn.dispose();
@@ -62,14 +120,28 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => CreateSubCategoryCubit(getIt<CategoriesRepoImpl>())),
-        BlocProvider(create: (context) => EditSubCategoryCubit(getIt<CategoriesRepoImpl>())),
-        BlocProvider(create: (context) => DeleteSubCategoryCubit(getIt<CategoriesRepoImpl>())),
+        BlocProvider(
+          create: (context) => CreateSubCategoryCubit(
+            getIt<CategoriesRepoImpl>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => EditSubCategoryCubit(
+            getIt<CategoriesRepoImpl>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => DeleteSubCategoryCubit(
+            getIt<CategoriesRepoImpl>(),
+          ),
+        ),
       ],
       child: Scaffold(
         body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppConstants.width15(context)),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppConstants.width15(context),
+            ),
             child: Form(
               key: formKey,
               child: Column(
@@ -79,20 +151,35 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CustomBackButton(),
-                      Text(widget.subCategoryData==null?"قسم فرعى جديد":"تعديل", style: Styles.inter18500Black(context)),
+                      Text(
+                        widget.subCategoryData == null
+                            ? "قسم فرعى جديد"
+                            : "تعديل",
+                        style: Styles.inter18500Black(context),
+                      ),
                       SizedBox(width: AppConstants.width20(context) * 2),
                     ],
                   ),
                   SizedBox(height: AppConstants.height20(context)),
                   Expanded(
-                    child: BlocConsumer<CreateSubCategoryCubit, CreateSubCategoryStates>(
+                    child: BlocConsumer<
+                        CreateSubCategoryCubit,
+                        CreateSubCategoryStates>(
                       listener: (context, state) {
                         if (state is CreateSubCategorySuccessState) {
                           cherryToast(text: state.message, context: context);
-                          context.read<GetSubCategoriesCubit>().getSubCategories(mainCategoryId: widget.mainCategoryId);
+                          context
+                              .read<GetSubCategoriesCubit>()
+                              .getSubCategories(
+                            mainCategoryId: widget.mainCategoryId,
+                          );
                           NavigationUtils.navigateBack(context: context);
                         } else if (state is CreateSubCategoryErrorState) {
-                          cherryToast(text: state.error, context: context, isSuccess: false);
+                          cherryToast(
+                            text: state.error,
+                            context: context,
+                            isSuccess: false,
+                          );
                         }
                       },
                       builder: (context, state) {
@@ -100,36 +187,68 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                context.read<CreateSubCategoryCubit>().selectSubCategoryIcon();
+                                context
+                                    .read<CreateSubCategoryCubit>()
+                                    .selectSubCategoryIcon();
                               },
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: [
-                                  context.read<CreateSubCategoryCubit>().subCategoryIcon != null
+                                  context
+                                      .read<CreateSubCategoryCubit>()
+                                      .subCategoryIcon !=
+                                      null
                                       ? ClipOval(
-                                          child: Image.file(
-                                            context.read<CreateSubCategoryCubit>().subCategoryIcon!,
-                                            width: MediaQuery.of(context).size.width * 0.2,
-                                            height: MediaQuery.of(context).size.width * 0.2,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
+                                    child: Image.file(
+                                      context
+                                          .read<CreateSubCategoryCubit>()
+                                          .subCategoryIcon!,
+                                      width: MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      height: MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                       : widget.subCategoryData != null
                                       ? ClipOval(
-                                          child: DefaultCachedNetworkImage(
-                                            imageUrl: widget.subCategoryData!.icon ?? "",
-                                            imageWidth: MediaQuery.of(context).size.width * 0.2,
-                                            imageHeight: MediaQuery.of(context).size.width * 0.2,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
+                                    child: DefaultCachedNetworkImage(
+                                      imageUrl:
+                                      widget.subCategoryData!
+                                          .icon ??
+                                          "",
+                                      imageWidth:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      imageHeight:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                       : SizedBox(),
                                   Container(
-                                    width: MediaQuery.of(context).size.width * 0.2,
-                                    height: MediaQuery.of(context).size.width * 0.2,
-                                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black26),
+                                    width:
+                                    MediaQuery.of(context).size.width * 0.2,
+                                    height:
+                                    MediaQuery.of(context).size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black26,
+                                    ),
                                   ),
-                                  Icon(CupertinoIcons.camera, color: Colors.white),
+                                  Icon(
+                                    CupertinoIcons.camera,
+                                    color: Colors.white,
+                                  ),
                                 ],
                               ),
                             ),
@@ -150,115 +269,200 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                               hintText: "ادخل القسم الفرعى (EN)",
                               validationMsg: "يجب ادخال القسم الفرعى (EN)",
                             ),
-                            SizedBox(height: AppConstants.height20(context) * 2),
+                            SizedBox(
+                              height: AppConstants.height20(context) * 2,
+                            ),
                             if (widget.subCategoryData == null)
                               state is CreateSubCategoryLoadingState
-                                  ? const Center(child: CircularProgressIndicator())
+                                  ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
                                   : DefaultButton(
-                                      onPress: () async {
-                                        if (formKey.currentState!.validate()) {
-                                          if (context.read<CreateSubCategoryCubit>().subCategoryIcon != null) {
-                                            context.read<CreateSubCategoryCubit>().createSubCategory(
-                                              data: {
-                                                "icon": await MultipartFile.fromFile(
-                                                  context.read<CreateSubCategoryCubit>().subCategoryIcon!.path,
-                                                ),
-                                                "name": {"en": nameEn.text, "ar": nameAr.text},
-                                                "main_category_id":widget.mainCategoryId
-                                              },
-                                            );
-                                          } else {
-                                            cherryToast(
-                                              text: "اختر ايقونة القسم الفرعى اولا",
-                                              context: context,
-                                              isSuccess: false,
-                                            );
-                                          }
-                                        }
-                                      },
-                                      text: "حفظ",
-                                      borderRadius: AppConstants.sp10(context),
-                                    ),
+                                onPress: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    if (context
+                                        .read<CreateSubCategoryCubit>()
+                                        .subCategoryIcon !=
+                                        null) {
+                                      context
+                                          .read<CreateSubCategoryCubit>()
+                                          .createSubCategory(
+                                        data: {
+                                          "icon":
+                                          await MultipartFile.fromFile(
+                                            context
+                                                .read<
+                                                CreateSubCategoryCubit>()
+                                                .subCategoryIcon!
+                                                .path,
+                                          ),
+                                          "name": {
+                                            "en": nameEn.text,
+                                            "ar": nameAr.text,
+                                          },
+                                          "main_category_id":
+                                          widget.mainCategoryId,
+                                        },
+                                      );
+                                    } else {
+                                      cherryToast(
+                                        text:
+                                        "اختر ايقونة القسم الفرعى اولا",
+                                        context: context,
+                                        isSuccess: false,
+                                      );
+                                    }
+                                  }
+                                },
+                                text: "حفظ",
+                                borderRadius: AppConstants.sp10(context),
+                              ),
                             if (widget.subCategoryData != null)
                               Row(
                                 children: [
                                   Expanded(
-                                    child: BlocConsumer<EditSubCategoryCubit, EditSubCategoryStates>(
+                                    child: BlocConsumer<
+                                        EditSubCategoryCubit,
+                                        EditSubCategoryStates>(
                                       listener: (context, editState) {
-                                        if (editState is EditSubCategorySuccessState) {
-                                          cherryToast(text: editState.message, context: context);
-                                          context.read<GetSubCategoriesCubit>().getSubCategories(mainCategoryId: widget.mainCategoryId);
-                                          NavigationUtils.navigateBack(context: context);
-                                        } else if (editState is EditSubCategoryErrorState) {
-                                          cherryToast(text: editState.error, context: context, isSuccess: false);
+                                        if (editState
+                                        is EditSubCategorySuccessState) {
+                                          cherryToast(
+                                            text: editState.message,
+                                            context: context,
+                                          );
+                                          context
+                                              .read<GetSubCategoriesCubit>()
+                                              .getSubCategories(
+                                            mainCategoryId:
+                                            widget.mainCategoryId,
+                                          );
+                                          NavigationUtils.navigateBack(
+                                            context: context,
+                                          );
+                                        } else if (editState
+                                        is EditSubCategoryErrorState) {
+                                          cherryToast(
+                                            text: editState.error,
+                                            context: context,
+                                            isSuccess: false,
+                                          );
                                         }
                                       },
                                       builder: (context, editState) {
-                                        return editState is EditSubCategoryLoadingState
+                                        return editState
+                                        is EditSubCategoryLoadingState
                                             ? CustomLoadingItem()
                                             : DefaultButton(
-                                                onPress: () async {
-                                                  if (formKey.currentState!.validate()) {
-                                                    context.read<EditSubCategoryCubit>().editSubCategory(
-                                                      data: {
-                                                        if (context.read<CreateSubCategoryCubit>().subCategoryIcon !=
-                                                            null)
-                                                          "icon": await MultipartFile.fromFile(
-                                                            context
-                                                                .read<CreateSubCategoryCubit>()
-                                                                .subCategoryIcon!
-                                                                .path,
-                                                          ),
-                                                        "name": {"en": nameEn.text, "ar": nameAr.text},
-                                                        "main_category_id":widget.mainCategoryId
-
-                                                      },
-                                                      subCategoryId: widget.subCategoryData!.id!,
-                                                    );
-                                                  }
+                                          onPress: () async {
+                                            if (formKey
+                                                .currentState!
+                                                .validate()) {
+                                              context
+                                                  .read<
+                                                  EditSubCategoryCubit>()
+                                                  .editSubCategory(
+                                                data: {
+                                                  if (context
+                                                      .read<
+                                                      CreateSubCategoryCubit>()
+                                                      .subCategoryIcon !=
+                                                      null)
+                                                    "icon":
+                                                    await MultipartFile
+                                                        .fromFile(
+                                                      context
+                                                          .read<
+                                                          CreateSubCategoryCubit>()
+                                                          .subCategoryIcon!
+                                                          .path,
+                                                    ),
+                                                  "name": {
+                                                    "en": nameEn.text,
+                                                    "ar": nameAr.text,
+                                                  },
+                                                  "main_category_id":
+                                                  widget
+                                                      .mainCategoryId,
                                                 },
-                                                text: "تعديل",
-                                                backgroundColor: Colors.green,
-                                                borderRadius: AppConstants.sp10(context),
+                                                subCategoryId: widget
+                                                    .subCategoryData!.id!,
                                               );
+                                            }
+                                          },
+                                          text: "تعديل",
+                                          backgroundColor: Colors.green,
+                                          borderRadius:
+                                          AppConstants.sp10(context),
+                                        );
                                       },
                                     ),
                                   ),
                                   SizedBox(width: AppConstants.width15(context)),
                                   GestureDetector(
                                     onTap: () {
-                                      context.read<DeleteSubCategoryCubit>().deleteSubCategory(
-                                        subCategoryId: widget.subCategoryData!.id!,
-                                      );
+                                      _showDeleteConfirmationDialog(context);
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.all(AppConstants.width20(context)),
+                                      padding: EdgeInsets.all(
+                                        AppConstants.width20(context),
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.redColor,
-                                        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                        borderRadius: BorderRadius.circular(
+                                          AppConstants.sp10(context),
+                                        ),
                                       ),
-                                      child: BlocConsumer<DeleteSubCategoryCubit, DeleteSubCategoryStates>(
+                                      child: BlocConsumer<
+                                          DeleteSubCategoryCubit,
+                                          DeleteSubCategoryStates>(
                                         listener: (context, deleteState) {
-                                          if (deleteState is DeleteSubCategorySuccessState) {
-                                            cherryToast(text: deleteState.message, context: context);
-                                            context.read<GetSubCategoriesCubit>().getSubCategories(mainCategoryId: widget.mainCategoryId);
-                                            NavigationUtils.navigateBack(context: context);
-                                          } else if (deleteState is DeleteSubCategoryErrorState) {
-                                            cherryToast(text: deleteState.error, context: context, isSuccess: false);
+                                          if (deleteState
+                                          is DeleteSubCategorySuccessState) {
+                                            cherryToast(
+                                              text: deleteState.message,
+                                              context: context,
+                                            );
+                                            context
+                                                .read<GetSubCategoriesCubit>()
+                                                .getSubCategories(
+                                              mainCategoryId:
+                                              widget.mainCategoryId,
+                                            );
+                                            NavigationUtils.navigateBack(
+                                              context: context,
+                                            );
+                                          } else if (deleteState
+                                          is DeleteSubCategoryErrorState) {
+                                            cherryToast(
+                                              text: deleteState.error,
+                                              context: context,
+                                              isSuccess: false,
+                                            );
                                           }
                                         },
                                         builder: (context, deleteState) {
-                                          return deleteState is DeleteSubCategoryLoadingState
+                                          return deleteState
+                                          is DeleteSubCategoryLoadingState
                                               ? CustomLoadingItem(
-                                                  color: Colors.white,
-                                                  size: MediaQuery.of(context).size.height * .026,
-                                                )
+                                            color: Colors.white,
+                                            size: MediaQuery.of(context)
+                                                .size
+                                                .height *
+                                                .026,
+                                          )
                                               : SvgPicture.asset(
-                                                  AssetData.delete,
-                                                  color: Colors.white,
-                                                  width: MediaQuery.of(context).size.height * .026,
-                                                  height: MediaQuery.of(context).size.height * .026,
-                                                );
+                                            AssetData.delete,
+                                            color: Colors.white,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .height *
+                                                .026,
+                                            height: MediaQuery.of(context)
+                                                .size
+                                                .height *
+                                                .026,
+                                          );
                                         },
                                       ),
                                     ),

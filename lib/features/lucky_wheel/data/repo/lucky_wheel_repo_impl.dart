@@ -62,4 +62,38 @@ class LuckyWheelRepoImpl implements LuckyWheelRepo {
     }
   }
 
+  @override
+  Future<Either<Failure, String>> editLuckyItem({required int itemId, required Map<String, dynamic> data}) async {
+    try {
+      var response = await apiService!.patchData(
+        endPoint: "${EndPoints.luckyWheel}/$itemId",
+        data: data,
+        sendToken: true,
+      );
+      return right(response.data["message"] ?? "");
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> toggleSpinWheel() async {
+    try {
+      var response = await apiService!.postData(
+        endPoint: EndPoints.toggleSpinWheel,
+        sendToken: true,
+      );
+      return right(response.data["message"] ?? "");
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
 }

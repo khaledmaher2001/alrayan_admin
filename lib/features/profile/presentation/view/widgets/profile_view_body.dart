@@ -148,16 +148,17 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       icon: AssetData.accountCoupons,
                     ),
                     SizedBox(height: AppConstants.height20(context)),
-                    // AccountItem(
-                    //   onTap: () {
-                    //     NavigationUtils.navigateTo(
-                    //       context: context,
-                    //       destinationScreen: const LuckyWheelView(),
-                    //     );
-                    //   },
-                    //   title: "عجلة الحظ".tr(),
-                    //   icon: AssetData.wheel,
-                    // ),SizedBox(height: AppConstants.height20(context)),
+                    AccountItem(
+                      onTap: () {
+                        NavigationUtils.navigateTo(
+                          context: context,
+                          destinationScreen: const LuckyWheelView(),
+                        );
+                      },
+                      title: "عجلة الحظ",
+                      icon: AssetData.wheel,
+                    ),
+                    SizedBox(height: AppConstants.height20(context)),
                     AccountItem(
                       onTap: () {
                         NavigationUtils.navigateTo(

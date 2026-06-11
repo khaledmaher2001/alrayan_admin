@@ -10,12 +10,18 @@ class PieChartItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, double> dataMap = {
+    Map<String, double> dataMap = instance.ordersByStatus!.length>0?{
       AppConstants.getStatusText(instance.ordersByStatus![4].status!): instance.ordersByStatus![4].percentage?.toDouble() ?? 0,
       AppConstants.getStatusText(instance.ordersByStatus![1].status!): instance.ordersByStatus![1].percentage?.toDouble() ?? 0,
       AppConstants.getStatusText(instance.ordersByStatus![3].status!): instance.ordersByStatus![3].percentage?.toDouble() ?? 0,
       AppConstants.getStatusText(instance.ordersByStatus![0].status!): instance.ordersByStatus![0].percentage?.toDouble() ?? 0,
-      AppConstants.getStatusText(instance.ordersByStatus![5].status!): instance.ordersByStatus![5].percentage?.toDouble() ?? 0,
+      AppConstants.getStatusText(instance.ordersByStatus![2].status!): instance.ordersByStatus![2].percentage?.toDouble() ?? 0,
+    }:{
+      "مكتمل": 0,
+      "قيد التنفيذ": 0,
+      "ملغي": 0,
+      "قيد المراجعة": 0,
+      "قيد الشحن": 0,
     };
 
     final colorList = <Color>[

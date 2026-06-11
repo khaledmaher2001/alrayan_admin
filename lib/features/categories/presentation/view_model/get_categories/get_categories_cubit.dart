@@ -12,7 +12,7 @@ class GetCategoriesCubit extends Cubit<GetCategoriesStates> {
     emit(GetCategoriesLoadingState());
     var result = await categoriesRepo!.getCategories();
     return result.fold((failure) {
-      emit(GetCategoriesErrorState());
+      emit(GetCategoriesErrorState(error: failure.errMessage));
     }, (data) {
       categoriesModel=data;
       emit(GetCategoriesSuccessState(categoriesModel: data));

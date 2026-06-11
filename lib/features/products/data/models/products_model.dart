@@ -40,6 +40,7 @@ class Items {
   int? stock;
   List<Images>? images;
   bool? isRecommended;
+  bool? isHidden;
   MainCategory? mainCategory;
   MainCategory? subCategory;
 
@@ -63,6 +64,7 @@ class Items {
       });
     }
     isRecommended = json['isRecommended'];
+    isHidden = json['isHidden'];
     mainCategory = json['mainCategory'] != null ? MainCategory.fromJson(json['mainCategory']) : null;
     subCategory = json['subCategory'] != null ? MainCategory.fromJson(json['subCategory']) : null;
   }

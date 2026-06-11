@@ -17,3 +17,10 @@ class GetLuckyWheelItemsErrorState extends GetLuckyWheelItemsState {
 
   GetLuckyWheelItemsErrorState(this.error);
 }
+
+class GetLuckyWheelToggleLoadingState extends GetLuckyWheelItemsState {}
+
+class GetLuckyWheelToggleErrorState extends GetLuckyWheelItemsState {
+  final String error;
+  GetLuckyWheelToggleErrorState(this.error);
+}

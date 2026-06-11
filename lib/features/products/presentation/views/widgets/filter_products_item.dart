@@ -51,8 +51,18 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
               Expanded(
                 child: BlocBuilder<GetCategoriesCubit, GetCategoriesStates>(
                   builder: (context, state) {
-                    if (state is! GetCategoriesSuccessState) {
+                    if (state is GetCategoriesLoadingState || state is GetCategoriesInitState) {
                       return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is GetCategoriesErrorState) {
+                      return IconButton(
+                        onPressed: () => context.read<GetCategoriesCubit>().getCategories(),
+                        icon: const Icon(Icons.refresh, color: Colors.redAccent),
+                        tooltip: "إعادة تحميل التصنيفات",
+                      );
+                    }
+                    if (state is! GetCategoriesSuccessState) {
+                      return const SizedBox.shrink();
                     }
 
                     final categories = state.categoriesModel.data ?? [];
@@ -103,8 +113,14 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
               Expanded(
                 child: BlocBuilder<GetCategoriesCubit, GetCategoriesStates>(
                   builder: (context, state) {
-                    if (state is! GetCategoriesSuccessState) {
+                    if (state is GetCategoriesLoadingState || state is GetCategoriesInitState) {
                       return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is GetCategoriesErrorState) {
+                      return const SizedBox.shrink();
+                    }
+                    if (state is! GetCategoriesSuccessState) {
+                      return const SizedBox.shrink();
                     }
 
                     final categories = state.categoriesModel.data ?? [];

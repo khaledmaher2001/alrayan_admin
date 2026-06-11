@@ -17,7 +17,6 @@ class CouponsRepoImpl implements CouponsRepo {
       var response = await apiService!.postData(endPoint: EndPoints.coupons, data: data,sendToken: true);
       return right(response.data["message"]);
     } catch (e) {
-      print("RRRRRRRRRRRRRRRRRRRR:${e.toString()}");
       if (e is DioException) {
         print(e.response);
         return left(ServerFailure.fromDioError(e));

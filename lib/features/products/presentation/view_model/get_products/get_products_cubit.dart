@@ -31,7 +31,7 @@ class GetProductsCubit extends Cubit<GetProductsStates> {
     );
     return result.fold(
       (failure) {
-        emit(GetProductsErrorState());
+        emit(GetProductsErrorState(error: failure.errMessage));
       },
       (data) {
         productsModel = data;

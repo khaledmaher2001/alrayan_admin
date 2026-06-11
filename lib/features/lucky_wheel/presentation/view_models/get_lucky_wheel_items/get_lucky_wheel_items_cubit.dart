@@ -18,7 +18,6 @@ class GetLuckyWheelItemsCubit extends Cubit<GetLuckyWheelItemsState> {
       luckyWheelList.clear();
       luckyWheelModel = null;
       page = 1;
-
       emit(GetLuckyWheelItemsLoadingState());
     }
 
@@ -27,11 +26,28 @@ class GetLuckyWheelItemsCubit extends Cubit<GetLuckyWheelItemsState> {
       (failure) {
         emit(GetLuckyWheelItemsErrorState(failure.errMessage));
       },
-      (data) async {
+      (data) {
         luckyWheelModel = data;
-        luckyWheelList = luckyWheelList + data.data!.rewards!;
+        luckyWheelList = List<Rewards>.from(data.data?.rewards ?? []);
         emit(GetLuckyWheelItemsSuccessState(data));
       },
     );
+  }
+
+  Future<void> toggleSpinWheel() async {
+    emit(GetLuckyWheelToggleLoadingState());
+    final result = await repo.toggleSpinWheel();
+    result.fold(
+      (failure) => emit(GetLuckyWheelToggleErrorState(failure.errMessage)),
+      (_) => getLuckyWheelItems(withLoading: false),
+    );
+  }
+
+  double get totalProbability {
+    if (luckyWheelList.isEmpty) return 0.0;
+    return luckyWheelList.fold(0.0, (sum, item) {
+      final p = (item.probability is num) ? (item.probability as num).toDouble() : 0.0;
+      return sum + p;
+    });
   }
 }

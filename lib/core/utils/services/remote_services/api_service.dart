@@ -4,13 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../local_services/cache_keys.dart';
+import '../../roots/app_router.dart';
 import 'endpoints.dart';
 
 class ApiService {
   final Dio _dio;
 
   ApiService(this._dio) {
-    // Add PrettyDioLogger interceptor only in debug mode
+    _dio.interceptors.add(InterceptorsWrapper(
+      onError: (DioException e, ErrorInterceptorHandler handler) async {
+        if (e.response?.statusCode == 401) {
+          await CacheHelper.removeData(key: "token");
+          AppRouter.router.go('/loginView');
+        }
+        handler.next(e);
+      },
+    ));
+
     if (kDebugMode) {
       _dio.interceptors.add(PrettyDioLogger(
         requestHeader: true,
@@ -49,7 +59,8 @@ class ApiService {
     required String endPoint,
     bool sendToken = false,
     dynamic data,
-   dynamic query,
+    dynamic query,
+    String? baseUrl,
   }) async {
     _dio.options.headers = {
       "Content-Type": "application/json",
@@ -58,7 +69,7 @@ class ApiService {
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };
     var response = await _dio.get(
-      '${EndPoints.baseUrl}$endPoint',
+      '${baseUrl ?? EndPoints.baseUrl}$endPoint',
       queryParameters: query,
       data: data,
     );
@@ -98,7 +109,7 @@ class ApiService {
         "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
     };
     var response = await _dio.post(
-      "${EndPoints.baseUrl}$endPoint",
+      "${baseUrl ?? EndPoints.baseUrl}$endPoint",
       data: data,
       queryParameters: query,
     );

@@ -2,8 +2,11 @@ import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_dropdown_formfield.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
+import 'package:alrayan_admin/core/utils/constants.dart';
+import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/select_product_photos/select_product_photos_cubit.dart';
+import 'package:alrayan_admin/features/product_details/presentation/view_model/select_product_photos/select_product_photos_states.dart';
 import 'package:alrayan_admin/features/product_details/presentation/views/widgets/add_edit_product_item.dart';
 import 'package:alrayan_admin/features/product_details/presentation/views/widgets/category_row_item.dart';
 import 'package:alrayan_admin/features/product_details/presentation/views/widgets/product_photos_list.dart';
@@ -11,7 +14,6 @@ import 'package:alrayan_admin/features/product_details/presentation/views/widget
 import 'package:alrayan_admin/features/products/data/models/products_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/utils/constants.dart';
 
 class ProductsDetailsViewBody extends StatefulWidget {
   const ProductsDetailsViewBody({super.key, this.productData});
@@ -19,7 +21,8 @@ class ProductsDetailsViewBody extends StatefulWidget {
   final Items? productData;
 
   @override
-  State<ProductsDetailsViewBody> createState() => _ProductsDetailsViewBodyState();
+  State<ProductsDetailsViewBody> createState() =>
+      _ProductsDetailsViewBodyState();
 }
 
 class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
@@ -35,6 +38,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
 
   String? discountTypeUi;
   bool isRecommended = false;
+
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool get _hasDiscountType =>
@@ -64,11 +68,32 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
     }
   }
 
+  String? _getMainCategoryNameForCurrentLang(Items product) {
+    final lang = CacheKeysManger.getUserLanguageFromCache();
+
+    if (lang == "en") {
+      return product.mainCategory?.name ?? "";
+    }
+
+    return product.mainCategory?.name ?? "";
+  }
+
+  String? _getSubCategoryNameForCurrentLang(Items product) {
+    final lang = CacheKeysManger.getUserLanguageFromCache();
+
+    if (lang == "en") {
+      return product.subCategory?.name ?? "";
+    }
+
+    return product.subCategory?.name ?? "";
+  }
+
   @override
   void initState() {
     super.initState();
 
-    final cubit = context.read<SelectProductPhotosCubit>();
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+    selectCubit.productPhotos.clear();
 
     if (widget.productData != null) {
       final product = widget.productData!;
@@ -83,11 +108,12 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
       unit.text = product.unit ?? "";
       discount.text = product.discount?.toString() ?? "0";
 
-      cubit.mainCategory =
-      product.mainCategory != null ? (product.mainCategory!.name ?? "") : null;
-      cubit.subCategory = product.subCategory?.name ?? "";
-      cubit.mainCategoryId = product.mainCategoryId;
-      cubit.subCategoryId = product.subCategoryId;
+      selectCubit.setInitialCategory(
+        mainId: product.mainCategoryId,
+        mainName: _getMainCategoryNameForCurrentLang(product),
+        subId: product.subCategoryId,
+        subName: _getSubCategoryNameForCurrentLang(product),
+      );
 
       discountTypeUi = product.discountType == "fixed"
           ? "نسبة ثابتة"
@@ -98,9 +124,15 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
       isRecommended = product.isRecommended ?? false;
     } else {
       discount.text = "0";
+
+      selectCubit.setInitialCategory(
+        mainId: null,
+        mainName: null,
+        subId: null,
+        subName: null,
+      );
     }
 
-    cubit.productPhotos.clear();
     _syncDiscountWithType();
   }
 
@@ -120,7 +152,6 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
 
   @override
   Widget build(BuildContext context) {
-    final selectPhotosCubit = context.watch<SelectProductPhotosCubit>();
     final normalizedDiscountType = _getDiscountTypeForApi();
 
     return SafeArea(
@@ -237,7 +268,10 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "نوع الخصم", isRequired: false),
+                              TextFieldHeader(
+                                text: "نوع الخصم",
+                                isRequired: false,
+                              ),
                               SizedBox(height: AppConstants.height5(context)),
                               CustomDropDownButton(
                                 hintText: "اختر نوع الخصم",
@@ -261,10 +295,14 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "قيمة الخصم", isRequired: false),
+                              TextFieldHeader(
+                                text: "قيمة الخصم",
+                                isRequired: false,
+                              ),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
-                                textInputType: const TextInputType.numberWithOptions(
+                                textInputType:
+                                const TextInputType.numberWithOptions(
                                   decimal: true,
                                 ),
                                 controller: discount,
@@ -274,7 +312,9 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      discountTypeUi == "نسبة مئوية" ? "%" : "ج.م",
+                                      discountTypeUi == "نسبة مئوية"
+                                          ? "%"
+                                          : "ج.م",
                                       style: Styles.inter14500black(context)
                                           .copyWith(color: Colors.grey),
                                     ),
@@ -295,7 +335,8 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                                     return "قيمة الخصم لا يمكن أن تكون سالبة";
                                   }
 
-                                  if (discountTypeUi == "نسبة مئوية" && parsed > 100) {
+                                  if (discountTypeUi == "نسبة مئوية" &&
+                                      parsed > 100) {
                                     return "النسبة المئوية يجب ألا تزيد عن 100";
                                   }
 
@@ -309,7 +350,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
-                    CategoryRowItem(),
+                    const CategoryRowItem(),
                     SizedBox(height: AppConstants.height15(context)),
 
                     Row(
@@ -335,7 +376,10 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "وحدة المنتج", isRequired: false),
+                              TextFieldHeader(
+                                text: "وحدة المنتج",
+                                isRequired: false,
+                              ),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 textInputType: TextInputType.text,
@@ -352,30 +396,41 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                     ),
                     SizedBox(height: AppConstants.height20(context)),
 
-                    Row(
-                      children: [
-                        TextFieldHeader(text: "صور المنتج"),
-                        SizedBox(width: AppConstants.width5(context)),
-                        GestureDetector(
-                          onTap: () {
-                            selectPhotosCubit.selectProductPhotos();
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(AppConstants.sp5(context)),
-                            decoration:  BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.primaryColor,
+                    BlocBuilder<SelectProductPhotosCubit,
+                        SelectProductPhotosStates>(
+                      builder: (context, state) {
+                        final selectPhotosCubit =
+                        context.read<SelectProductPhotosCubit>();
+
+                        return Row(
+                          children: [
+                            TextFieldHeader(text: "صور المنتج"),
+                            SizedBox(width: AppConstants.width5(context)),
+                            GestureDetector(
+                              onTap: () {
+                                selectPhotosCubit.selectProductPhotos();
+                              },
+                              child: Container(
+                                padding:
+                                EdgeInsets.all(AppConstants.sp5(context)),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primaryColor,
+                                ),
+                                child:
+                                const Icon(Icons.add, color: Colors.white),
+                              ),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white),
-                          ),
-                        ),
-                        SizedBox(width: AppConstants.width5(context)),
-                        Text(
-                          "(اقصى عدد 5 صور)",
-                          style: Styles.inter12500Black(context)
-                              .copyWith(color: Colors.grey),
-                        ),
-                      ],
+                            SizedBox(width: AppConstants.width5(context)),
+                            Text(
+                              "(اقصى عدد 5 صور)",
+                              style: Styles.inter12500Black(context).copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
@@ -393,7 +448,8 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                               isRecommended = value ?? false;
                             });
                           },
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          materialTapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
                           activeColor: AppColors.primaryColor,
                         ),
                         Text(
@@ -404,23 +460,32 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
-                    AddEditProductItem(
-                      productData: widget.productData,
-                      formKey: formKey,
-                      name: name,
-                      nameEn: nameEn,
-                      description: description,
-                      descriptionEn: descriptionEn,
-                      categoryId: selectPhotosCubit.mainCategoryId ?? 0,
-                      subCategoryId: selectPhotosCubit.subCategoryId ?? 0,
-                      discount: discount,
-                      discountType: normalizedDiscountType,
-                      isRecommended: isRecommended,
-                      price: price,
-                      stock: stock,
-                      supplierPrice: supplierPrice,
-                      unit: unit,
+                    BlocBuilder<SelectProductPhotosCubit,
+                        SelectProductPhotosStates>(
+                      builder: (context, state) {
+                        final selectCubit =
+                        context.read<SelectProductPhotosCubit>();
+
+                        return AddEditProductItem(
+                          productData: widget.productData,
+                          formKey: formKey,
+                          name: name,
+                          nameEn: nameEn,
+                          description: description,
+                          descriptionEn: descriptionEn,
+                          categoryId: selectCubit.mainCategoryId ?? 0,
+                          subCategoryId: selectCubit.subCategoryId,
+                          discount: discount,
+                          discountType: normalizedDiscountType,
+                          isRecommended: isRecommended,
+                          price: price,
+                          stock: stock,
+                          supplierPrice: supplierPrice,
+                          unit: unit,
+                        );
+                      },
                     ),
+
                     SizedBox(height: AppConstants.height15(context)),
                   ],
                 ),

@@ -139,9 +139,7 @@ class CategoriesRepoImpl implements CategoriesRepo {
       );
       return right(response.data["message"]);
     } catch (e) {
-      print("RRRRRRRRRRRRRRRRRRRR:${e.toString()}");
       if (e is DioException) {
-        print(e.response);
         return left(ServerFailure.fromDioError(e));
       } else {
         return left(ServerFailure(e.toString()));
@@ -152,12 +150,10 @@ class CategoriesRepoImpl implements CategoriesRepo {
   @override
   Future<Either<Failure, String>> deleteSubCategory({required int subCategoryId}) async {
     try {
-      var response = await apiService!.deleteData(endPoint: "${EndPoints.categories}/$subCategoryId", sendToken: true);
+      var response = await apiService!.deleteData(endPoint: "${EndPoints.subCategories}/$subCategoryId", sendToken: true);
       return right(response.data["message"]);
     } catch (e) {
-      print("RRRRRRRRRRRRRRRRRRRR:${e.toString()}");
       if (e is DioException) {
-        print(e.response);
         return left(ServerFailure.fromDioError(e));
       } else {
         return left(ServerFailure(e.toString()));

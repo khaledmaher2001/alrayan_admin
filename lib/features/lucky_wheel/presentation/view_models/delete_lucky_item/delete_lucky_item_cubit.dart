@@ -9,17 +9,20 @@ class DeleteLuckyItemCubit extends Cubit<DeleteLuckyItemState> {
 
   LuckyWheelRepo repo;
 
-  int selectedIndex = -1;
+  int? deletingItemId;
 
   Future<void> deleteLuckyItem({required int itemId}) async {
+    deletingItemId = itemId;
     emit(DeleteLuckyItemLoadingState());
 
     final result = await repo.deleteLuckyItem(itemId: itemId);
     result.fold(
       (failure) {
+        deletingItemId = null;
         emit(DeleteLuckyItemErrorState(failure.errMessage));
       },
       (data) async {
+        deletingItemId = null;
         emit(DeleteLuckyItemSuccessState(data));
       },
     );

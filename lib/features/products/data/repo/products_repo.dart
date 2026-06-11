@@ -11,4 +11,5 @@ abstract class ProductsRepo {
   Future<Either<Failure, String>> editProduct({required Map<String, dynamic> data,required int id});
   Future<Either<Failure, String>> deleteProduct({required int id});
   Future<Either<Failure, String>> deleteProductAttachments({required int id});
+  Future<Either<Failure, String>> toggleProductHidden({required int id});
 }

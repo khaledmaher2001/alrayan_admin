@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
+import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -17,6 +18,59 @@ class ZoneItem extends StatelessWidget {
 
   final Zone zoneData;
 
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            "تأكيد الحذف",
+            style: Styles.inter24600black(context),
+          ),
+          content: Text(
+            "هل أنت متأكد أنك تريد حذف المنطقة؟",
+            style: Styles.font18500Grey900(context),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppConstants.sp10(dialogContext),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                "إلغاء",
+                style: Styles.inter18500Black(context),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.redColor,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(
+                "حذف",
+                style: Styles.inter16400white(context),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true) {
+      context.read<DeleteZoneCubit>().selectZone(zoneData.id!);
+      context.read<DeleteZoneCubit>().deleteZone(zoneId: zoneData.id!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -31,36 +85,57 @@ class ZoneItem extends StatelessWidget {
           horizontal: AppConstants.width15(context),
           vertical: AppConstants.height15(context),
         ),
-        margin: EdgeInsets.symmetric(horizontal: AppConstants.width15(context)),
+        margin: EdgeInsets.symmetric(
+          horizontal: AppConstants.width15(context),
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          boxShadow: [BoxShadow(color: Colors.grey.shade300, spreadRadius: 3, blurRadius: 2, offset: Offset(0, 1))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade300,
+              spreadRadius: 3,
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(CupertinoIcons.location_solid),
+            const Icon(CupertinoIcons.location_solid),
             SizedBox(width: AppConstants.width10(context)),
-            Expanded(child: Text(zoneData.name??"", style: Styles.inter16500black(context))),
+            Expanded(
+              child: Text(
+                zoneData.name ?? "",
+                style: Styles.inter16500black(context),
+              ),
+            ),
             SizedBox(width: AppConstants.width5(context)),
             BlocBuilder<DeleteZoneCubit, DeleteZoneStates>(
               builder: (context, deleteState) {
                 return GestureDetector(
                   onTap: () {
-                    context.read<DeleteZoneCubit>().selectZone(zoneData.id!);
-                    context.read<DeleteZoneCubit>().deleteZone(zoneId: zoneData.id!);
+                    _showDeleteConfirmationDialog(context);
                   },
                   child: Container(
                     padding: EdgeInsets.all(AppConstants.sp5(context)),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.sp10(context),
+                      ),
                     ),
-                    child:
-                        deleteState is DeleteZoneLoadingState &&
-                            context.read<DeleteZoneCubit>().selectedZoneId == zoneData.id
-                        ? CustomLoadingItem(size: MediaQuery.of(context).size.width * 0.05, color: Colors.white)
-                        : SvgPicture.asset(AssetData.delete, color: Colors.white),
+                    child: deleteState is DeleteZoneLoadingState &&
+                        context.read<DeleteZoneCubit>().selectedZoneId ==
+                            zoneData.id
+                        ? CustomLoadingItem(
+                      size: MediaQuery.of(context).size.width * 0.05,
+                      color: Colors.white,
+                    )
+                        : SvgPicture.asset(
+                      AssetData.delete,
+                      color: Colors.white,
+                    ),
                   ),
                 );
               },

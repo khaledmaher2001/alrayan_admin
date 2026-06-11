@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
+import 'package:alrayan_admin/core/utils/assets/assets.dart';
+import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/change_category/change_category_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_states.dart';
-import 'package:alrayan_admin/features/products/presentation/views/widgets/categories_list_item.dart';
 import 'package:alrayan_admin/features/products/presentation/views/widgets/filter_products_item.dart';
 import 'package:alrayan_admin/features/products/presentation/views/widgets/main_product_item.dart';
-import 'package:alrayan_admin/features/products/presentation/views/widgets/subCategories_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../core/utils/constants.dart';
 
@@ -26,7 +27,8 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
 
   Future<void> pagination() async {
     final cubit = context.read<GetProductsCubit>();
-    if (cubit.page < cubit.productsModel!.data!.metadata!.totalPages! &&
+    if (cubit.productsModel == null) return;
+    if (cubit.page < (cubit.productsModel!.data?.metadata?.totalPages ?? 0) &&
         scrollController.position.maxScrollExtent == scrollController.position.pixels &&
         !isLoading) {
       isLoading = true;
@@ -52,11 +54,20 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
   void initState() {
     scrollController.addListener(pagination);
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<GetProductsCubit>().state;
+      if (state is GetProductsInitState || state is GetProductsErrorState) {
+        context.read<GetProductsCubit>().getProducts(
+          categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
+          subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(() {});
+    scrollController.removeListener(pagination);
     scrollController.dispose();
     search.dispose();
     super.dispose();
@@ -75,7 +86,6 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
               controller: search,
               hintText: "ابحث عن المنتج...",
               onFilledSubmit: (value) {
-                print(value.trim());
                 context.read<GetProductsCubit>().getProducts(
                   categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
                   subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
@@ -100,9 +110,53 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
               },
               child: BlocBuilder<GetProductsCubit, GetProductsStates>(
                 builder: (context, state) {
+                  if (state is GetProductsErrorState) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                          SizedBox(height: AppConstants.height10(context)),
+                          Text(
+                            "حدث خطأ في تحميل المنتجات",
+                            style: Styles.inter16500black(context),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppConstants.height10(context)),
+                          ElevatedButton.icon(
+                            onPressed: () => context.read<GetProductsCubit>().getProducts(
+                              categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
+                              subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+                            ),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text("إعادة المحاولة"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   if (state is GetProductsSuccessState) {
+                    final products = context.read<GetProductsCubit>().productsList;
+                    if (products.isEmpty) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(AssetData.emptyCart, height: 120),
+                                SizedBox(height: AppConstants.height10(context)),
+                                Text("لا توجد منتجات", style: Styles.inter16500black(context)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                     return GridView.builder(
-                      physics: AlwaysScrollableScrollPhysics(),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       controller: scrollController,
                       padding: EdgeInsets.symmetric(
                         vertical: AppConstants.height10(context),
@@ -112,14 +166,14 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
                         crossAxisCount: 2,
                         crossAxisSpacing: AppConstants.width10(context),
                         mainAxisSpacing: AppConstants.height10(context),
-                        childAspectRatio: .68,
+                        childAspectRatio: .55,
                       ),
-                      itemCount: context.read<GetProductsCubit>().productsList.length + (isLoading ? 2 : 0),
+                      itemCount: products.length + (isLoading ? 2 : 0),
                       itemBuilder: (context, index) {
-                        if (index >= context.read<GetProductsCubit>().productsList.length) {
+                        if (index >= products.length) {
                           return const _LoadingTile();
                         }
-                        return MainProductItem(productDetails: context.read<GetProductsCubit>().productsList[index]);
+                        return MainProductItem(productDetails: products[index]);
                       },
                     );
                   }

@@ -1,5 +1,6 @@
 class EndPoints {
   static const baseUrl = "https://api.elrayan.acwad.tech/api/v1/";
+  static const reportsBaseUrl = "https://reporting.opream.net/api/v1/";
 
   // Auth
   static const login = 'auth/login';
@@ -19,6 +20,7 @@ class EndPoints {
   static const categories = 'category';
   static const subCategories = 'sub-categories';
   static const products = 'product';
+  static String toggleProductHidden(int id) => 'product/toggle-hidden/$id';
 
   static const userNotification = "notifications/me";
   static String readNotification(id) => "notifications/$id/read";
@@ -31,6 +33,7 @@ class EndPoints {
 
   static const coupons = "coupons";
   static const luckyWheel = "rewards";
+  static const toggleSpinWheel = "rewards/toggle-spin-wheel";
   static const getOfferBanner = 'banners';
 
   static const reviews = 'reviews';
@@ -39,6 +42,9 @@ class EndPoints {
 
   static const topUsers = 'orders/top-customer';
   static const topProducts = 'orders/top-products';
+
+  static const reports = 'reports';
+  static String reportRequestUpdate(int id) => 'reports/$id/request-update';
 
 
 

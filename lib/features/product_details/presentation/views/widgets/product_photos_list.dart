@@ -8,7 +8,6 @@ import 'package:alrayan_admin/features/product_details/presentation/view_model/d
 import 'package:alrayan_admin/features/product_details/presentation/view_model/select_product_photos/select_product_photos_cubit.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/select_product_photos/select_product_photos_states.dart';
 import 'package:alrayan_admin/features/products/data/models/products_model.dart';
-import 'package:alrayan_admin/features/products/presentation/view_model/change_category/change_category_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,8 +26,17 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
 
   @override
   void initState() {
-    photoCubit = context.read<SelectProductPhotosCubit>();
     super.initState();
+    photoCubit = context.read<SelectProductPhotosCubit>();
+  }
+
+  void _refreshProducts(BuildContext context) {
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+
+    context.read<GetProductsCubit>().getProducts(
+      categoryId: selectCubit.mainCategoryId,
+      subCategoryId: selectCubit.subCategoryId,
+    );
   }
 
   @override
@@ -37,23 +45,30 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
       builder: (context, photoState) {
         return Column(
           children: [
-            BlocConsumer<DeleteProductAttachmentsCubit, DeleteProductAttachmentsStates>(
+            BlocConsumer<DeleteProductAttachmentsCubit,
+                DeleteProductAttachmentsStates>(
               listener: (context, deleteAttachments) {
                 if (deleteAttachments is DeleteProductAttachmentsSuccessState) {
-                  widget.images.removeAt(photoCubit.photoIndex);
+                  if (photoCubit.photoIndex >= 0 &&
+                      photoCubit.photoIndex < widget.images.length) {
+                    widget.images.removeAt(photoCubit.photoIndex);
+                  }
+
                   photoCubit.removeProductPhotos();
-                  context.read<GetProductsCubit>().getProducts(
-                    categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-                    subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+                  _refreshProducts(context);
+                } else if (deleteAttachments
+                is DeleteProductAttachmentsErrorState) {
+                  cherryToast(
+                    text: deleteAttachments.error,
+                    context: context,
+                    isSuccess: false,
                   );
-                } else if (deleteAttachments is DeleteProductAttachmentsErrorState) {
-                  cherryToast(text: deleteAttachments.error, context: context, isSuccess: false);
                 }
               },
               builder: (context, deleteAttachments) {
                 return GridView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: widget.images.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
@@ -62,7 +77,9 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
                     childAspectRatio: 0.8,
                   ),
                   itemBuilder: (context, index) => ClipRRect(
-                    borderRadius: BorderRadiusGeometry.circular(AppConstants.sp10(context)),
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.sp10(context),
+                    ),
                     child: Stack(
                       alignment: AlignmentDirectional.topStart,
                       children: [
@@ -72,26 +89,40 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
                           imageWidth: MediaQuery.of(context).size.width,
                           fit: BoxFit.cover,
                         ),
-                        if(widget.images.length>1)
-                        IconButton(
-                          onPressed: () {
-                            photoCubit.selectPhotoIndex(index);
-                            context.read<DeleteProductAttachmentsCubit>().deleteProductAttachments(
-                              id: widget.images[index].id!,
-                            );
-                          },
-                          icon: Container(
-                            decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.redColor),
-                            padding: EdgeInsets.all(AppConstants.sp5(context)),
-                            width: AppConstants.sp30(context),
-                            height: AppConstants.sp30(context),
-                            child:
-                                deleteAttachments is DeleteProductAttachmentsLoadingState &&
-                                    photoCubit.photoIndex == index
-                                ? CustomLoadingItem(color: Colors.white, size: AppConstants.sp15(context))
-                                : Icon(Icons.close, color: Colors.white, size: AppConstants.sp20(context)),
+                        if (widget.images.length > 1)
+                          IconButton(
+                            onPressed: () {
+                              photoCubit.selectPhotoIndex(index);
+
+                              context
+                                  .read<DeleteProductAttachmentsCubit>()
+                                  .deleteProductAttachments(
+                                id: widget.images[index].id!,
+                              );
+                            },
+                            icon: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.redColor,
+                              ),
+                              padding:
+                              EdgeInsets.all(AppConstants.sp5(context)),
+                              width: AppConstants.sp30(context),
+                              height: AppConstants.sp30(context),
+                              child: deleteAttachments
+                              is DeleteProductAttachmentsLoadingState &&
+                                  photoCubit.photoIndex == index
+                                  ? CustomLoadingItem(
+                                color: Colors.white,
+                                size: AppConstants.sp15(context),
+                              )
+                                  : Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: AppConstants.sp20(context),
+                              ),
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -101,7 +132,7 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
             SizedBox(height: AppConstants.height15(context)),
             GridView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: photoCubit.productPhotos.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -110,7 +141,9 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
                 childAspectRatio: 0.8,
               ),
               itemBuilder: (context, index) => ClipRRect(
-                borderRadius: BorderRadiusGeometry.circular(AppConstants.sp10(context)),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.sp10(context),
+                ),
                 child: Stack(
                   alignment: AlignmentDirectional.topStart,
                   children: [
@@ -122,13 +155,19 @@ class _ProductPhotosListState extends State<ProductPhotosList> {
                     ),
                     IconButton(
                       onPressed: () {
-                        photoCubit.productPhotos.removeAt(index);
-                        photoCubit.removeProductPhotos();
+                        photoCubit.removeProductPhotoAt(index);
                       },
                       icon: Container(
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.redColor),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.redColor,
+                        ),
                         padding: EdgeInsets.all(AppConstants.sp5(context)),
-                        child: Icon(Icons.close, color: Colors.white, size: AppConstants.sp20(context)),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: AppConstants.sp20(context),
+                        ),
                       ),
                     ),
                   ],

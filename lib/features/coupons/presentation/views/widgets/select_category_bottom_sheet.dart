@@ -98,7 +98,7 @@ class _SelectCategoriesBottomSheetState
                             crossAxisCount: 3,
                             crossAxisSpacing: AppConstants.width10(context),
                             mainAxisSpacing: AppConstants.height10(context),
-                            childAspectRatio: 0.75,
+                            childAspectRatio: 0.7,
                           ),
                           itemCount: context
                               .read<GetCategoriesCubit>()

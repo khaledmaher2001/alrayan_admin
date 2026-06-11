@@ -105,4 +105,21 @@ class ProductsRepoImpl implements ProductsRepo {
       }
     }
   }
+
+  @override
+  Future<Either<Failure, String>> toggleProductHidden({required int id}) async {
+    try {
+      var response = await apiService!.patchData(
+        endPoint: EndPoints.toggleProductHidden(id),
+        sendToken: true,
+      );
+      return right(response.data["message"] ?? "");
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
 }

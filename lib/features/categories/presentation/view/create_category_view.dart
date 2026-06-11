@@ -49,6 +49,60 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
     super.initState();
   }
 
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            "تأكيد الحذف",
+            style: Styles.inter24600black(context),
+          ),
+          content: Text(
+            "هل أنت متأكد أنك تريد حذف التصنيف؟",
+            style: Styles.font18500Grey900(context),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppConstants.sp10(dialogContext),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                "إلغاء",
+                style: Styles.inter18500Black(context),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.redColor,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(
+                "حذف",
+                style: Styles.inter16400white(context),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true && widget.categoryData != null) {
+      context.read<DeleteCategoryCubit>().deleteCategory(
+        categoryId: widget.categoryData!.id!,
+      );
+    }
+  }
+
   @override
   void dispose() {
     nameEn.dispose();
@@ -60,14 +114,22 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => CreateCategoryCubit(getIt<CategoriesRepoImpl>())),
-        BlocProvider(create: (context) => EditCategoryCubit(getIt<CategoriesRepoImpl>())),
-        BlocProvider(create: (context) => DeleteCategoryCubit(getIt<CategoriesRepoImpl>())),
+        BlocProvider(
+          create: (context) => CreateCategoryCubit(getIt<CategoriesRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => EditCategoryCubit(getIt<CategoriesRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => DeleteCategoryCubit(getIt<CategoriesRepoImpl>()),
+        ),
       ],
       child: Scaffold(
         body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppConstants.width15(context)),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppConstants.width15(context),
+            ),
             child: Form(
               key: formKey,
               child: Column(
@@ -78,7 +140,9 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                     children: [
                       CustomBackButton(),
                       Text(
-                        widget.categoryData == null ? "تصنيف جديد" : "تعديل التصنيف",
+                        widget.categoryData == null
+                            ? "تصنيف جديد"
+                            : "تعديل التصنيف",
                         style: Styles.inter18500Black(context),
                       ),
                       SizedBox(width: AppConstants.width20(context) * 2),
@@ -93,7 +157,11 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                           context.read<GetCategoriesCubit>().getCategories();
                           NavigationUtils.navigateBack(context: context);
                         } else if (state is CreateCategoryErrorState) {
-                          cherryToast(text: state.error, context: context, isSuccess: false);
+                          cherryToast(
+                            text: state.error,
+                            context: context,
+                            isSuccess: false,
+                          );
                         }
                       },
                       builder: (context, state) {
@@ -101,36 +169,68 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                context.read<CreateCategoryCubit>().selectCategoryIcon();
+                                context
+                                    .read<CreateCategoryCubit>()
+                                    .selectCategoryIcon();
                               },
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: [
-                                  context.read<CreateCategoryCubit>().categoryIcon != null
+                                  context
+                                      .read<CreateCategoryCubit>()
+                                      .categoryIcon !=
+                                      null
                                       ? ClipOval(
-                                          child: Image.file(
-                                            context.read<CreateCategoryCubit>().categoryIcon!,
-                                            width: MediaQuery.of(context).size.width * 0.2,
-                                            height: MediaQuery.of(context).size.width * 0.2,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
+                                    child: Image.file(
+                                      context
+                                          .read<CreateCategoryCubit>()
+                                          .categoryIcon!,
+                                      width:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      height:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                       : widget.categoryData != null
                                       ? ClipOval(
-                                          child: DefaultCachedNetworkImage(
-                                            imageUrl: widget.categoryData!.icon ?? "",
-                                            imageWidth: MediaQuery.of(context).size.width * 0.2,
-                                            imageHeight: MediaQuery.of(context).size.width * 0.2,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
+                                    child: DefaultCachedNetworkImage(
+                                      imageUrl:
+                                      widget.categoryData!.icon ?? "",
+                                      imageWidth:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      imageHeight:
+                                      MediaQuery.of(context)
+                                          .size
+                                          .width *
+                                          0.2,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                       : SizedBox(),
                                   Container(
-                                    width: MediaQuery.of(context).size.width * 0.2,
-                                    height: MediaQuery.of(context).size.width * 0.2,
-                                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black26),
+                                    width:
+                                    MediaQuery.of(context).size.width * 0.2,
+                                    height:
+                                    MediaQuery.of(context).size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.black26,
+                                    ),
                                   ),
-                                  Icon(CupertinoIcons.camera, color: Colors.white),
+                                  Icon(
+                                    CupertinoIcons.camera,
+                                    color: Colors.white,
+                                  ),
                                 ],
                               ),
                             ),
@@ -151,109 +251,200 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                               hintText: "ادخل اسم التصنيف (EN)",
                               validationMsg: "يجب ادخال اسم التصنيف (EN)",
                             ),
-                            SizedBox(height: AppConstants.height20(context) * 2),
+                            SizedBox(
+                              height: AppConstants.height20(context) * 2,
+                            ),
                             if (widget.categoryData == null)
                               state is CreateCategoryLoadingState
-                                  ? const Center(child: CircularProgressIndicator())
+                                  ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
                                   : DefaultButton(
-                                      onPress: () async {
-                                        if (formKey.currentState!.validate()) {
-                                          if (context.read<CreateCategoryCubit>().categoryIcon != null) {
-                                            context.read<CreateCategoryCubit>().createCategory(
-                                              data: {
-                                                "icon": await MultipartFile.fromFile(
-                                                  context.read<CreateCategoryCubit>().categoryIcon!.path,
-                                                ),
-                                                "name": {"en": nameEn.text, "ar": nameAr.text},
-                                              },
-                                            );
-                                          } else {
-                                            cherryToast(
-                                              text: "اختر ايقونة التصنيف اولا",
-                                              context: context,
-                                              isSuccess: false,
-                                            );
-                                          }
-                                        }
-                                      },
-                                      text: "حفظ",
-                                      borderRadius: AppConstants.sp10(context),
-                                    ),
+                                onPress: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    if (context
+                                        .read<CreateCategoryCubit>()
+                                        .categoryIcon !=
+                                        null) {
+                                      context
+                                          .read<CreateCategoryCubit>()
+                                          .createCategory(
+                                        data: {
+                                          "icon":
+                                          await MultipartFile.fromFile(
+                                            context
+                                                .read<
+                                                CreateCategoryCubit
+                                            >()
+                                                .categoryIcon!
+                                                .path,
+                                          ),
+                                          "name": {
+                                            "en": nameEn.text,
+                                            "ar": nameAr.text,
+                                          },
+                                        },
+                                      );
+                                    } else {
+                                      cherryToast(
+                                        text:
+                                        "اختر ايقونة التصنيف اولا",
+                                        context: context,
+                                        isSuccess: false,
+                                      );
+                                    }
+                                  }
+                                },
+                                text: "حفظ",
+                                borderRadius: AppConstants.sp10(context),
+                              ),
                             if (widget.categoryData != null)
                               Row(
                                 children: [
                                   Expanded(
-                                    child: BlocConsumer<EditCategoryCubit, EditCategoryStates>(
+                                    child: BlocConsumer<
+                                        EditCategoryCubit,
+                                        EditCategoryStates
+                                    >(
                                       listener: (context, editState) {
-                                        if (editState is EditCategorySuccessState) {
-                                          cherryToast(text: editState.message, context: context);
-                                          context.read<GetCategoriesCubit>().getCategories();
-                                          NavigationUtils.navigateBack(context: context);
-                                        } else if (editState is EditCategoryErrorState) {
-                                          cherryToast(text: editState.error, context: context, isSuccess: false);
+                                        if (editState
+                                        is EditCategorySuccessState) {
+                                          cherryToast(
+                                            text: editState.message,
+                                            context: context,
+                                          );
+                                          context
+                                              .read<GetCategoriesCubit>()
+                                              .getCategories();
+                                          NavigationUtils.navigateBack(
+                                            context: context,
+                                          );
+                                        } else if (editState
+                                        is EditCategoryErrorState) {
+                                          cherryToast(
+                                            text: editState.error,
+                                            context: context,
+                                            isSuccess: false,
+                                          );
                                         }
                                       },
                                       builder: (context, editState) {
-                                        return editState is EditCategoryLoadingState
+                                        return editState
+                                        is EditCategoryLoadingState
                                             ? CustomLoadingItem()
                                             : DefaultButton(
-                                                onPress: () async {
-                                                  if (formKey.currentState!.validate()) {
-                                                    context.read<EditCategoryCubit>().editCategory(
-                                                      data: {
-                                                        if (context.read<CreateCategoryCubit>().categoryIcon != null)
-                                                          "icon": await MultipartFile.fromFile(
-                                                            context.read<CreateCategoryCubit>().categoryIcon!.path,
-                                                          ),
-                                                        "name": {"en": nameEn.text, "ar": nameAr.text},
-                                                      },
-                                                      categoryId: widget.categoryData!.id!,
-                                                    );
-                                                  }
+                                          onPress: () async {
+                                            if (formKey
+                                                .currentState!
+                                                .validate()) {
+                                              context
+                                                  .read<
+                                                  EditCategoryCubit
+                                              >()
+                                                  .editCategory(
+                                                data: {
+                                                  if (context
+                                                      .read<
+                                                      CreateCategoryCubit
+                                                  >()
+                                                      .categoryIcon !=
+                                                      null)
+                                                    "icon":
+                                                    await MultipartFile.fromFile(
+                                                      context
+                                                          .read<
+                                                          CreateCategoryCubit
+                                                      >()
+                                                          .categoryIcon!
+                                                          .path,
+                                                    ),
+                                                  "name": {
+                                                    "en": nameEn.text,
+                                                    "ar": nameAr.text,
+                                                  },
                                                 },
-                                                text: "تعديل",
-                                                backgroundColor: Colors.green,
-                                                borderRadius: AppConstants.sp10(context),
+                                                categoryId:
+                                                widget
+                                                    .categoryData!
+                                                    .id!,
                                               );
+                                            }
+                                          },
+                                          text: "تعديل",
+                                          backgroundColor: Colors.green,
+                                          borderRadius:
+                                          AppConstants.sp10(context),
+                                        );
                                       },
                                     ),
                                   ),
                                   SizedBox(width: AppConstants.width15(context)),
                                   GestureDetector(
                                     onTap: () {
-                                      context.read<DeleteCategoryCubit>().deleteCategory(
-                                        categoryId: widget.categoryData!.id!,
-                                      );
+                                      _showDeleteConfirmationDialog(context);
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.all(AppConstants.width20(context)),
+                                      padding: EdgeInsets.all(
+                                        AppConstants.width20(context),
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.redColor,
-                                        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                        borderRadius: BorderRadius.circular(
+                                          AppConstants.sp10(context),
+                                        ),
                                       ),
-                                      child: BlocConsumer<DeleteCategoryCubit, DeleteCategoryStates>(
+                                      child: BlocConsumer<
+                                          DeleteCategoryCubit,
+                                          DeleteCategoryStates
+                                      >(
                                         listener: (context, deleteState) {
-                                          if (deleteState is DeleteCategorySuccessState) {
-                                            cherryToast(text: deleteState.message, context: context);
+                                          if (deleteState
+                                          is DeleteCategorySuccessState) {
+                                            cherryToast(
+                                              text: deleteState.message,
+                                              context: context,
+                                            );
 
-                                            context.read<GetCategoriesCubit>().getCategories();
-                                            NavigationUtils.navigateBack(context: context);
-                                          } else if (deleteState is DeleteCategoryErrorState) {
-                                            cherryToast(text: deleteState.error, context: context, isSuccess: false);
+                                            context
+                                                .read<GetCategoriesCubit>()
+                                                .getCategories();
+                                            NavigationUtils.navigateBack(
+                                              context: context,
+                                            );
+                                          } else if (deleteState
+                                          is DeleteCategoryErrorState) {
+                                            cherryToast(
+                                              text: deleteState.error,
+                                              context: context,
+                                              isSuccess: false,
+                                            );
                                           }
                                         },
                                         builder: (context, deleteState) {
-                                          return deleteState is DeleteCategoryLoadingState
+                                          return deleteState
+                                          is DeleteCategoryLoadingState
                                               ? CustomLoadingItem(
-                                                  color: Colors.white,
-                                                  size: MediaQuery.of(context).size.height * .026,
-                                                )
+                                            color: Colors.white,
+                                            size:
+                                            MediaQuery.of(
+                                              context,
+                                            ).size.height *
+                                                .026,
+                                          )
                                               : SvgPicture.asset(
-                                                  AssetData.delete,
-                                                  color: Colors.white,
-                                                  width: MediaQuery.of(context).size.height * .026,
-                                                  height: MediaQuery.of(context).size.height * .026,
-                                                );
+                                            AssetData.delete,
+                                            color: Colors.white,
+                                            width:
+                                            MediaQuery.of(
+                                              context,
+                                            ).size.height *
+                                                .026,
+                                            height:
+                                            MediaQuery.of(
+                                              context,
+                                            ).size.height *
+                                                .026,
+                                          );
                                         },
                                       ),
                                     ),

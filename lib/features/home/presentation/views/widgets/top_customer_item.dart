@@ -123,14 +123,14 @@ class TopCustomerItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      instance.fullName!,
+                      instance.fullName??"",
                       style: Styles.inter14500black(context),
                     ),
                     SizedBox(
                       height: AppConstants.height5(context),
                     ),
                     Text(
-                      instance.email!,
+                      instance.email??"",
                       style: Styles.inter10400grey(context),
                     ),
                   ],

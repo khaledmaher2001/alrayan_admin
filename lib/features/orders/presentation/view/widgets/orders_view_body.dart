@@ -19,22 +19,31 @@ class OrdersViewBody extends StatefulWidget {
 }
 
 class _OrdersViewBodyState extends State<OrdersViewBody> {
-  ScrollController scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
   bool isLoading = false;
 
   Future<void> pagination() async {
     final cubit = context.read<GetOrdersCubit>();
     final filterCubit = context.read<OrderStatusFilterCubit>();
+
+    if (cubit.ordersModel == null) return;
+
     if (cubit.page < cubit.ordersModel!.data!.metadata!.totalPages! &&
-        scrollController.position.maxScrollExtent == scrollController.position.pixels &&
+        scrollController.position.maxScrollExtent ==
+            scrollController.position.pixels &&
         !isLoading) {
       isLoading = true;
+
       setState(() {
         cubit.page++;
       });
-      await cubit.getOrders(withLoading: false, status: filterCubit.status[filterCubit.selectedFilterIndex]).then((
-        value,
-      ) {
+
+      await cubit
+          .getOrders(
+        withLoading: false,
+        status: filterCubit.status[filterCubit.selectedFilterIndex],
+      )
+          .then((value) {
         setState(() {
           isLoading = false;
         });
@@ -50,7 +59,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
 
   @override
   void dispose() {
-    scrollController.removeListener(() {});
+    scrollController.removeListener(pagination);
     scrollController.dispose();
     super.dispose();
   }
@@ -61,59 +70,92 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
       child: Column(
         children: [
           SizedBox(height: AppConstants.height10(context)),
-          Text("الطلبات", textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+          Text(
+            "الطلبات",
+            textAlign: TextAlign.center,
+            style: Styles.inter18500Black(context),
+          ),
           SizedBox(height: AppConstants.height20(context)),
-          StatusFilterList(),
+          const StatusFilterList(),
           SizedBox(height: AppConstants.height20(context)),
 
           Expanded(
             child: BlocBuilder<GetOrdersCubit, GetOrdersStates>(
               builder: (context, state) {
                 if (state is GetOrdersSuccessState) {
-                  return context.read<GetOrdersCubit>().ordersList.isNotEmpty
-                      ? Column(
-                          children: [
-                            Expanded(
-                              child: RefreshIndicator(
-                                onRefresh: () async {
-                                  await context.read<GetOrdersCubit>().getOrders(
-                                    status: context
-                                        .read<OrderStatusFilterCubit>()
-                                        .status[context.read<OrderStatusFilterCubit>().selectedFilterIndex],
-                                  );
-                                },
-                                child: ListView.separated(
-                                  controller: scrollController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    if (context.read<GetOrdersCubit>().ordersList.isNotEmpty) {
-                                      return Column(
-                                        children: [
-                                          OrdersItem(orderData: context.read<GetOrdersCubit>().ordersList[index]),
-                                          if (index == context.read<GetOrdersCubit>().ordersList.length - 1)
-                                            SizedBox(height: AppConstants.height20(context)),
-                                        ],
-                                      );
-                                    } else {
-                                      return const Center(child: Text('No items found for this order.'));
-                                    }
-                                  },
-                                  separatorBuilder: (context, index) =>
-                                      SizedBox(height: AppConstants.height15(context)),
-                                  itemCount: context.read<GetOrdersCubit>().ordersList.length,
-                                ),
-                              ),
-                            ),
+                  final getOrdersCubit = context.read<GetOrdersCubit>();
+                  final filterCubit = context.read<OrderStatusFilterCubit>();
 
-                            if (isLoading)
-                              Padding(
-                                padding: EdgeInsets.all(AppConstants.sp10(context)),
-                                child: CustomLoadingItem(size: MediaQuery.of(context).size.width * 0.08),
-                              ),
-                          ],
-                        )
-                      : Center(child: SvgPicture.asset(AssetData.emptyCategory));
+                  final selectedStatus =
+                  filterCubit.status[filterCubit.selectedFilterIndex];
+
+                  final displayOrders = List.of(getOrdersCubit.ordersList);
+
+                  if (selectedStatus != "" && selectedStatus != "pending") {
+                    displayOrders.sort(
+                          (a, b) => DateTime.parse(
+                        b.createdAt ?? "",
+                      ).compareTo(
+                        DateTime.parse(a.createdAt ?? ""),
+                      ),
+                    );
+                  }
+
+                  return displayOrders.isNotEmpty
+                      ? Column(
+                    children: [
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            await getOrdersCubit.getOrders(
+                              status: selectedStatus,
+                            );
+                          },
+                          child: ListView.separated(
+                            controller: scrollController,
+                            physics:
+                            const AlwaysScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: [
+                                  OrdersItem(
+                                    orderData: displayOrders[index],
+                                  ),
+                                  if (index == displayOrders.length - 1)
+                                    SizedBox(
+                                      height: AppConstants.height20(
+                                        context,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                            separatorBuilder: (context, index) =>
+                                SizedBox(
+                                  height: AppConstants.height15(context),
+                                ),
+                            itemCount: displayOrders.length,
+                          ),
+                        ),
+                      ),
+
+                      if (isLoading)
+                        Padding(
+                          padding: EdgeInsets.all(
+                            AppConstants.sp10(context),
+                          ),
+                          child: CustomLoadingItem(
+                            size:
+                            MediaQuery.of(context).size.width * 0.08,
+                          ),
+                        ),
+                    ],
+                  )
+                      : Center(
+                    child: SvgPicture.asset(AssetData.emptyCategory),
+                  );
                 }
+
                 return const CustomLoadingItem();
               },
             ),

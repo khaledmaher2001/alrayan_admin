@@ -43,6 +43,7 @@ class AddEditProductItem extends StatelessWidget {
 
   final Items? productData;
   final GlobalKey<FormState> formKey;
+
   final TextEditingController name;
   final TextEditingController nameEn;
   final TextEditingController description;
@@ -53,23 +54,27 @@ class AddEditProductItem extends StatelessWidget {
   final TextEditingController discount;
   final TextEditingController stock;
   final TextEditingController unit;
+
   final int categoryId;
-  final int subCategoryId;
+  final int? subCategoryId;
+
   final bool isRecommended;
 
   Map<String, dynamic> _buildProductData({
     required List<MultipartFile> attachments,
     required bool addImages,
+    required int currentCategoryId,
+    required int? currentSubCategoryId,
   }) {
-    final bool hasDiscountType = discountType.trim().isNotEmpty;
+    final String discountText = discount.text.trim();
+    final double discountValue = double.tryParse(discountText) ?? 0;
 
-    final dynamic normalizedDiscount =
-    hasDiscountType
-        ? (discount.text.trim().isEmpty ? 0 : discount.text.trim())
-        : 0;
+    final bool hasValidDiscount = discountValue > 0;
+
+    final dynamic normalizedDiscount = hasValidDiscount ? discountValue : "0";
 
     final String normalizedDiscountType =
-    hasDiscountType ? discountType.trim() : "";
+    hasValidDiscount ? discountType.trim() : "";
 
     final Map<String, dynamic> data = {
       "name": {
@@ -85,8 +90,8 @@ class AddEditProductItem extends StatelessWidget {
       "stock": stock.text.trim(),
       "discount": normalizedDiscount,
       "discount_type": normalizedDiscountType,
-      "main_category_id": categoryId,
-      "sub_category_id": subCategoryId,
+      "main_category_id": currentCategoryId,
+      "sub_category_id": currentSubCategoryId,
       "unit": unit.text.trim(),
       "isRecommended": isRecommended,
     };
@@ -94,6 +99,8 @@ class AddEditProductItem extends StatelessWidget {
     if (addImages) {
       data["images"] = attachments;
     }
+
+    debugPrint("PRODUCT UPDATE DATA => $data");
 
     return data;
   }
@@ -111,6 +118,44 @@ class AddEditProductItem extends StatelessWidget {
     );
   }
 
+  int _getCurrentMainCategoryId(BuildContext context) {
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+
+    return selectCubit.mainCategoryId ?? categoryId;
+  }
+
+  int? _getCurrentSubCategoryId(BuildContext context) {
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+
+    return selectCubit.subCategoryId ?? subCategoryId;
+  }
+
+  void _syncFilterWithProductCategory(BuildContext context) {
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+    final changeCategoryCubit = context.read<ChangeCategoryCubit>();
+
+    changeCategoryCubit
+      ..mainCategory = selectCubit.mainCategory
+      ..mainCategoryId = selectCubit.mainCategoryId ?? categoryId
+      ..subCategory = selectCubit.subCategory
+      ..subCategoryId = selectCubit.subCategoryId ?? subCategoryId
+      ..changeCategoryState();
+  }
+
+  void _refreshProductsWithCurrentCategory(BuildContext context) {
+    final selectCubit = context.read<SelectProductPhotosCubit>();
+
+    context.read<GetProductsCubit>().getProducts(
+      categoryId: selectCubit.mainCategoryId ?? categoryId,
+      subCategoryId: selectCubit.subCategoryId ?? subCategoryId,
+    );
+  }
+
+  void _afterProductChanged(BuildContext context) {
+    _syncFilterWithProductCategory(context);
+    _refreshProductsWithCurrentCategory(context);
+  }
+
   Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
@@ -118,8 +163,14 @@ class AddEditProductItem extends StatelessWidget {
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          title: Text("تأكيد الحذف",style: Styles.inter24600black(context),),
-          content: Text("هل أنت متأكد أنك تريد حذف المنتج؟",style: Styles.font18500Grey900(context),),
+          title: Text(
+            "تأكيد الحذف",
+            style: Styles.inter24600black(context),
+          ),
+          content: Text(
+            "هل أنت متأكد أنك تريد حذف المنتج؟",
+            style: Styles.font18500Grey900(context),
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
               AppConstants.sp10(dialogContext),
@@ -130,7 +181,10 @@ class AddEditProductItem extends StatelessWidget {
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
-              child: Text("إلغاء",style: Styles.inter18500Black(context),),
+              child: Text(
+                "إلغاء",
+                style: Styles.inter18500Black(context),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -166,7 +220,7 @@ class AddEditProductItem extends StatelessWidget {
               listener: (context, createState) {
                 if (createState is CreateProductSuccessState) {
                   cherryToast(text: createState.message, context: context);
-                  context.read<GetProductsCubit>().getProducts();
+                  _afterProductChanged(context);
                   NavigationUtils.navigateBack(context: context);
                 } else if (createState is CreateProductErrorState) {
                   cherryToast(
@@ -195,6 +249,21 @@ class AddEditProductItem extends StatelessWidget {
                       return;
                     }
 
+                    final int currentCategoryId =
+                    _getCurrentMainCategoryId(context);
+
+                    final int? currentSubCategoryId =
+                    _getCurrentSubCategoryId(context);
+
+                    if (currentCategoryId == 0) {
+                      cherryToast(
+                        text: "اختر الصنف الرئيسى",
+                        context: context,
+                        isSuccess: false,
+                      );
+                      return;
+                    }
+
                     final attachments =
                     await _prepareAttachments(context);
 
@@ -202,6 +271,8 @@ class AddEditProductItem extends StatelessWidget {
                       data: _buildProductData(
                         attachments: attachments,
                         addImages: attachments.isNotEmpty,
+                        currentCategoryId: currentCategoryId,
+                        currentSubCategoryId: currentSubCategoryId,
                       ),
                     );
                   },
@@ -217,12 +288,9 @@ class AddEditProductItem extends StatelessWidget {
               listener: (context, editState) {
                 if (editState is EditProductSuccessState) {
                   cherryToast(text: editState.message, context: context);
-                  context.read<GetProductsCubit>().getProducts(
-                    categoryId:
-                    context.read<ChangeCategoryCubit>().mainCategoryId,
-                    subCategoryId:
-                    context.read<ChangeCategoryCubit>().subCategoryId,
-                  );
+
+                  _afterProductChanged(context);
+
                   NavigationUtils.navigateBack(context: context);
                 } else if (editState is EditProductErrorState) {
                   cherryToast(
@@ -256,14 +324,35 @@ class AddEditProductItem extends StatelessWidget {
                       return;
                     }
 
+                    final int currentCategoryId =
+                    _getCurrentMainCategoryId(context);
+
+                    final int? currentSubCategoryId =
+                    _getCurrentSubCategoryId(context);
+
+                    if (currentCategoryId == 0) {
+                      cherryToast(
+                        text: "اختر الصنف الرئيسى",
+                        context: context,
+                        isSuccess: false,
+                      );
+                      return;
+                    }
+
                     final attachments =
                     await _prepareAttachments(context);
+
+                    debugPrint(
+                      "SEND UPDATE PRODUCT => mainCategoryId: $currentCategoryId, subCategoryId: $currentSubCategoryId",
+                    );
 
                     context.read<EditProductCubit>().editProduct(
                       id: productData!.id!,
                       data: _buildProductData(
                         attachments: attachments,
                         addImages: attachments.isNotEmpty,
+                        currentCategoryId: currentCategoryId,
+                        currentSubCategoryId: currentSubCategoryId,
                       ),
                     );
                   },
@@ -283,18 +372,17 @@ class AddEditProductItem extends StatelessWidget {
               padding: EdgeInsets.all(AppConstants.width20(context)),
               decoration: BoxDecoration(
                 color: AppColors.redColor,
-                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.sp10(context),
+                ),
               ),
               child: BlocConsumer<DeleteProductCubit, DeleteProductStates>(
                 listener: (context, deleteState) {
                   if (deleteState is DeleteProductSuccessState) {
                     cherryToast(text: deleteState.message, context: context);
-                    context.read<GetProductsCubit>().getProducts(
-                      categoryId:
-                      context.read<ChangeCategoryCubit>().mainCategoryId,
-                      subCategoryId:
-                      context.read<ChangeCategoryCubit>().subCategoryId,
-                    );
+
+                    _afterProductChanged(context);
+
                     NavigationUtils.navigateBack(context: context);
                   } else if (deleteState is DeleteProductErrorState) {
                     cherryToast(

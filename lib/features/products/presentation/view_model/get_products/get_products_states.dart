@@ -9,4 +9,7 @@ class GetProductsSuccessState extends GetProductsStates{
 
   GetProductsSuccessState({required this.productsModel});
 }
-class GetProductsErrorState extends GetProductsStates{}
+class GetProductsErrorState extends GetProductsStates{
+  final String error;
+  GetProductsErrorState({this.error = "حدث خطأ، يرجى المحاولة مجددًا"});
+}
