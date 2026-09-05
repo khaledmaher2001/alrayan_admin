@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\user\\\\StudioProjects\\\\mostakbal_watan\" 2>&1)",
+      "Read(//c/Users/user/StudioProjects/mostakbal_watan/**)",
+      "Bash(ls \"C:\\\\Users\\\\user\\\\StudioProjects\\\\mostakbal_watan\\\\android\\\\app\\\\src\\\\main\" 2>&1)",
+      "Read(//c/Users/user/StudioProjects/mostakbal_watan/android/app/src/main/**)",
+      "Bash(flutter clean *)"
+    ]
+  }
+}

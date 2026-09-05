@@ -2,7 +2,10 @@ import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
+import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/order_item.dart';
+import 'package:alrayan_admin/features/orders/presentation/view/widgets/order_status_filter_sheet.dart';
+import 'package:alrayan_admin/features/orders/presentation/view/widgets/orders_stats_row.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/status_filter_list.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_states.dart';
@@ -20,7 +23,10 @@ class OrdersViewBody extends StatefulWidget {
 
 class _OrdersViewBodyState extends State<OrdersViewBody> {
   final ScrollController scrollController = ScrollController();
+  final TextEditingController searchController = TextEditingController();
   bool isLoading = false;
+  bool isSearching = false;
+  String searchQuery = "";
 
   Future<void> pagination() async {
     final cubit = context.read<GetOrdersCubit>();
@@ -54,6 +60,11 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
   @override
   void initState() {
     scrollController.addListener(pagination);
+    // The status-filter card counts come from the home dashboard stats,
+    // which are otherwise only fetched once at app startup — refresh them
+    // here too so a newly-created order shows up in the counts as soon as
+    // this tab is opened, not just after a full app relaunch.
+    context.read<GetHomeStatisticsCubit>().getHomeStatistics();
     super.initState();
   }
 
@@ -61,7 +72,16 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
   void dispose() {
     scrollController.removeListener(pagination);
     scrollController.dispose();
+    searchController.dispose();
     super.dispose();
+  }
+
+  void _closeSearch() {
+    setState(() {
+      isSearching = false;
+      searchQuery = "";
+      searchController.clear();
+    });
   }
 
   @override
@@ -70,14 +90,13 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
       child: Column(
         children: [
           SizedBox(height: AppConstants.height10(context)),
-          Text(
-            "الطلبات",
-            textAlign: TextAlign.center,
-            style: Styles.inter18500Black(context),
+          Padding(
+            padding: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
+            child: isSearching ? _buildSearchBar(context) : _buildHeader(context),
           ),
           SizedBox(height: AppConstants.height20(context)),
           const StatusFilterList(),
-          SizedBox(height: AppConstants.height20(context)),
+          SizedBox(height: AppConstants.height15(context)),
 
           Expanded(
             child: BlocBuilder<GetOrdersCubit, GetOrdersStates>(
@@ -89,27 +108,41 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                   final selectedStatus =
                   filterCubit.status[filterCubit.selectedFilterIndex];
 
-                  final displayOrders = List.of(getOrdersCubit.ordersList);
+                  final query = searchQuery.trim().toLowerCase();
+                  final displayOrders = query.isEmpty
+                      ? List.of(getOrdersCubit.ordersList)
+                      : getOrdersCubit.ordersList
+                      .where((o) => (o.orderNumber ?? '').toLowerCase().contains(query))
+                      .toList();
 
-                  if (selectedStatus != "" && selectedStatus != "pending") {
-                    displayOrders.sort(
-                          (a, b) => DateTime.parse(
-                        b.createdAt ?? "",
-                      ).compareTo(
-                        DateTime.parse(a.createdAt ?? ""),
-                      ),
-                    );
-                  }
+                  final today = DateTime.now();
+                  final todayCount = getOrdersCubit.ordersList.where((o) {
+                    if (o.createdAt == null) return false;
+                    final created = DateTime.tryParse(o.createdAt!)?.toLocal();
+                    return created != null &&
+                        created.year == today.year &&
+                        created.month == today.month &&
+                        created.day == today.day;
+                  }).length;
 
-                  return displayOrders.isNotEmpty
-                      ? Column(
+                  final totalDisplayed =
+                      getOrdersCubit.ordersModel?.data?.metadata?.totalItems ??
+                          getOrdersCubit.ordersList.length;
+
+                  return Column(
                     children: [
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(bottom: AppConstants.height15(context)),
+                        child: OrdersStatsRow(totalDisplayed: totalDisplayed, todayCount: todayCount),
+                      ),
                       Expanded(
-                        child: RefreshIndicator(
+                        child: displayOrders.isNotEmpty
+                            ? RefreshIndicator(
                           onRefresh: () async {
-                            await getOrdersCubit.getOrders(
-                              status: selectedStatus,
-                            );
+                            await Future.wait([
+                              getOrdersCubit.getOrders(status: selectedStatus),
+                              context.read<GetHomeStatisticsCubit>().getHomeStatistics(),
+                            ]);
                           },
                           child: ListView.separated(
                             controller: scrollController,
@@ -136,9 +169,16 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                                 ),
                             itemCount: displayOrders.length,
                           ),
+                        )
+                            : Center(
+                          child: query.isEmpty
+                              ? SvgPicture.asset(AssetData.emptyCategory)
+                              : Text(
+                            "لا توجد طلبات مطابقة",
+                            style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
+                          ),
                         ),
                       ),
-
                       if (isLoading)
                         Padding(
                           padding: EdgeInsets.all(
@@ -150,9 +190,6 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                           ),
                         ),
                     ],
-                  )
-                      : Center(
-                    child: SvgPicture.asset(AssetData.emptyCategory),
                   );
                 }
 
@@ -161,6 +198,116 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    "الطلبات",
+                    textAlign: TextAlign.center,
+                    style: Styles.inter18500Black(context),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppConstants.height5(context) / 2),
+            Text(
+              "متابعة وإدارة طلبات المتجر",
+              textAlign: TextAlign.center,
+              style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
+            ),
+          ],
+        ),
+        PositionedDirectional(
+          start: 0,
+          child: Row(
+            children: [
+              _HeaderIconButton(
+                asset: AssetData.search,
+                onTap: () => setState(() => isSearching = true),
+              ),
+            ],
+          ),
+        ),
+        PositionedDirectional(
+          end: 0,
+          child: Row(
+            children: [
+              _HeaderIconButton(
+                asset: AssetData.filter,
+                onTap: () => showOrderStatusFilterSheet(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Row(
+      children: [
+        _HeaderIconButton(icon: Icons.arrow_forward_rounded, onTap: _closeSearch),
+        SizedBox(width: AppConstants.width10(context)),
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: AppConstants.width15(context)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
+              border: Border.all(color: const Color(0xffE3E7EC)),
+            ),
+            child: TextField(
+              controller: searchController,
+              autofocus: true,
+              textAlign: TextAlign.right,
+              style: Styles.inter14500black(context),
+              onChanged: (value) => setState(() => searchQuery = value),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "ابحث برقم الطلب",
+                hintStyle: Styles.hintText(context),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({this.asset, this.icon, required this.onTap});
+
+  final String? asset;
+  final IconData? icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: AppConstants.width50(context) * 0.9,
+        height: AppConstants.width50(context) * 0.9,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+          border: Border.all(color: const Color(0xffE3E7EC)),
+        ),
+        child: asset != null
+            ? SvgPicture.asset(asset!, width: AppConstants.width20(context),color: Colors.black87,)
+            : Icon(icon, size: AppConstants.width20(context), color: Colors.black87),
       ),
     );
   }

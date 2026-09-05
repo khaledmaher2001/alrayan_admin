@@ -40,6 +40,24 @@ class CouponsRepoImpl implements CouponsRepo {
     }
   }
   @override
+  Future<Either<Failure, String>> updateCoupon({required int couponId, required Map<String,dynamic> data}) async {
+    try {
+      var response = await apiService!.patchData(
+        endPoint: "${EndPoints.coupons}/$couponId",
+        data: data,
+        sendToken: true,
+      );
+      return right(response.data["message"]);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
   Future<Either<Failure, String>> deleteCoupon({required int couponId}) async {
     try {
       var response = await apiService!.deleteData(

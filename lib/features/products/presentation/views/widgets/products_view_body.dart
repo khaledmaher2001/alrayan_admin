@@ -24,6 +24,22 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
   TextEditingController search = TextEditingController();
   ScrollController scrollController = ScrollController();
   bool isLoading = false;
+  Timer? _searchDebounce;
+
+  void _searchProducts(String value) {
+    context.read<GetProductsCubit>().getProducts(
+      categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
+      subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+      name: value.trim(),
+    );
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      _searchProducts(value);
+    });
+  }
 
   Future<void> pagination() async {
     final cubit = context.read<GetProductsCubit>();
@@ -55,13 +71,10 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
     scrollController.addListener(pagination);
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = context.read<GetProductsCubit>().state;
-      if (state is GetProductsInitState || state is GetProductsErrorState) {
-        context.read<GetProductsCubit>().getProducts(
-          categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-          subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
-        );
-      }
+      context.read<GetProductsCubit>().getProducts(
+        categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
+        subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
+      );
     });
   }
 
@@ -70,6 +83,7 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
     scrollController.removeListener(pagination);
     scrollController.dispose();
     search.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -85,12 +99,12 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
               textInputType: TextInputType.text,
               controller: search,
               hintText: "ابحث عن المنتج...",
+              onChange: _onSearchChanged,
               onFilledSubmit: (value) {
-                context.read<GetProductsCubit>().getProducts(
-                  categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-                  subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
-                  name: value.trim(),
-                );
+                // Enter/search-key press searches immediately, skipping
+                // the debounce wait.
+                _searchDebounce?.cancel();
+                _searchProducts(value);
               },
             ),
           ),

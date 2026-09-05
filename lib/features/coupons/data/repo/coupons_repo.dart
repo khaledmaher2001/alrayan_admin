@@ -6,5 +6,6 @@ abstract class CouponsRepo{
   Future<Either<Failure,String>> createCoupon({required Map<String,dynamic> data});
   Future<Either<Failure, CouponsModel>> getCoupons({required int page});
   Future<Either<Failure, String>> deleteCoupon({required int couponId});
+  Future<Either<Failure, String>> updateCoupon({required int couponId, required Map<String,dynamic> data});
 
 }

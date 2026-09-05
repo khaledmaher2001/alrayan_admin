@@ -2,28 +2,75 @@ class OfferBannerModel {
   bool? success;
   String? message;
   List<Data>? data;
+  BannerMetadata? metadata;
+  BannerLinks? links;
 
-  OfferBannerModel({this.success, this.message, this.data});
+  OfferBannerModel({
+    this.success,
+    this.message,
+    this.data,
+    this.metadata,
+    this.links,
+  });
 
+  // `/banners` now returns a paginated `data: { items, metadata, links }`
+  // instead of a bare array.
   OfferBannerModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
+    final rawData = json['data'] as Map<String, dynamic>?;
+    if (rawData != null) {
+      data = (rawData['items'] as List? ?? [])
+          .map((v) => Data.fromJson(v))
+          .toList();
+      metadata = rawData['metadata'] != null
+          ? BannerMetadata.fromJson(rawData['metadata'])
+          : null;
+      links = rawData['links'] != null
+          ? BannerLinks.fromJson(rawData['links'])
+          : null;
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    return data;
+    final Map<String, dynamic> json = new Map<String, dynamic>();
+    json['success'] = this.success;
+    json['message'] = this.message;
+    json['data'] = {
+      'items': this.data?.map((v) => v.toJson()).toList(),
+    };
+    return json;
+  }
+}
+
+class BannerMetadata {
+  int? totalItems;
+  int? itemsPerPage;
+  int? totalPages;
+  int? currentPage;
+
+  BannerMetadata({
+    this.totalItems,
+    this.itemsPerPage,
+    this.totalPages,
+    this.currentPage,
+  });
+
+  BannerMetadata.fromJson(Map<String, dynamic> json) {
+    totalItems = json['totalItems'];
+    itemsPerPage = json['itemsPerPage'];
+    totalPages = json['totalPages'];
+    currentPage = json['currentPage'];
+  }
+}
+
+class BannerLinks {
+  bool? hasNext;
+
+  BannerLinks({this.hasNext});
+
+  BannerLinks.fromJson(Map<String, dynamic> json) {
+    hasNext = json['hasNext'];
   }
 }
 
@@ -34,6 +81,7 @@ class Data {
   String? title;
   String? description;
   String? link;
+  String? type;
 
   Data(
       {this.id,
@@ -41,7 +89,8 @@ class Data {
         this.product,
         this.title,
         this.description,
-        this.link});
+        this.link,
+        this.type});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -51,6 +100,7 @@ class Data {
     title = json['title'];
     description = json['description'];
     link = json['link'];
+    type = json['type'];
   }
 
   Map<String, dynamic> toJson() {
@@ -63,6 +113,7 @@ class Data {
     data['title'] = this.title;
     data['description'] = this.description;
     data['link'] = this.link;
+    data['type'] = this.type;
     return data;
   }
 }

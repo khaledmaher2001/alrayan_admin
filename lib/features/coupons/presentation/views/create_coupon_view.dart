@@ -1,9 +1,12 @@
+import 'package:alrayan_admin/features/coupons/data/models/coupons_model.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/create_coupon_view_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CreateCouponView extends StatelessWidget {
-  const CreateCouponView({super.key});
+  const CreateCouponView({super.key, this.editingCoupon});
+
+  final Items? editingCoupon;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +17,7 @@ class CreateCouponView extends StatelessWidget {
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
-      child: Scaffold(body: CreateCouponViewBody()),
+      child: Scaffold(body: CreateCouponViewBody(editingCoupon: editingCoupon)),
     );
   }
 }

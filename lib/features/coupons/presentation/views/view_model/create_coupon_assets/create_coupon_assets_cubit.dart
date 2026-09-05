@@ -36,6 +36,7 @@ class CreateCouponAssetsCubit extends Cubit<CreateCouponAssetsState> {
   DateTime? selectedEndDate;
   String? couponType;
   String? usersType;
+  bool isHidden = false;
 
   void clearAllData() {
     selectedProducts.clear();
@@ -53,10 +54,14 @@ class CreateCouponAssetsCubit extends Cubit<CreateCouponAssetsState> {
     minOrderAmountController.clear();
     maxDiscountAmountController.clear();
     usageLimitController.clear();
+    usageLimitPerUserController.clear();
+    splitValueController.clear();
+    numberOfSplitsController.clear();
     selectedStartDate = null;
     selectedEndDate = null;
     couponType = null;
     usersType = null;
+    isHidden = false;
   }
 
   void selectCouponType({required String type}) {
@@ -66,7 +71,18 @@ class CreateCouponAssetsCubit extends Cubit<CreateCouponAssetsState> {
 
   void selectUsersType({required String type}) {
     usersType = type;
+    if (usersType != "all") {
+      isHidden = false;
+    }
+    if (usersType != "specific_users") {
+      selectedUsers.clear();
+    }
     emit(SelectUsersTypeSuccessState());
+  }
+
+  void toggleIsHidden(bool value) {
+    isHidden = usersType == "all" ? value : false;
+    emit(ToggleIsHiddenSuccessState());
   }
 
   void selectProducts({required prod.Items instance}) {
@@ -86,6 +102,11 @@ class CreateCouponAssetsCubit extends Cubit<CreateCouponAssetsState> {
 
   void removeUser({required user.Items instance}) {
     selectedUsers.remove(instance);
+    emit(SelectUserSuccessState());
+  }
+
+  void setSelectedUsers(List<user.Items> users) {
+    selectedUsers = users;
     emit(SelectUserSuccessState());
   }
 

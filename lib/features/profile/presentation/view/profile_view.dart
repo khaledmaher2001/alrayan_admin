@@ -2,7 +2,6 @@ import 'package:alrayan_admin/features/profile/presentation/view/widgets/profile
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
@@ -15,9 +14,7 @@ class ProfileView extends StatelessWidget {
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
-      child: const Scaffold(
-        body: ProfileViewBody(),
-      ),
+      child: const Scaffold(body: ProfileViewBody()),
     );
   }
 }

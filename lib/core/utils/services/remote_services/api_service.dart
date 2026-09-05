@@ -115,6 +115,28 @@ class ApiService {
     );
     return response;
   }
+  Future<Response> patchDataWithImage({required String endPoint,
+    bool sendToken = true,
+    FormData? data,
+    String? baseUrl,
+    Map<String, dynamic>? query,
+    void Function(int, int)? onSendProgress,
+    void Function(int, int)? onReceiveProgress}) async {
+    _dio.options.headers = {
+      "accept":"*/*",
+      "Content-Type": "multipart/form-data",
+      "lang":CacheKeysManger.getUserLanguageFromCache(),
+      if (sendToken)
+        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
+    };
+    var response = await _dio.patch(
+      "${baseUrl ?? EndPoints.baseUrl}$endPoint",
+      data: data,
+      queryParameters: query,
+      onSendProgress: onSendProgress,
+    );
+    return response;
+  }
   Future<Response> patchData({
     required String endPoint,
     bool sendToken = true,

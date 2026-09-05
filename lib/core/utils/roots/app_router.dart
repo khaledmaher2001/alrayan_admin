@@ -4,6 +4,7 @@ import 'package:alrayan_admin/features/auth/presentation/view/login_view.dart';
 import '../../../features/auth/presentation/view/otp_view.dart';
 import '../../../features/auth/presentation/view/register_view.dart';
 import '../../../features/main_layout/presentation/views/main_layout_view.dart';
+import '../../../features/onboarding/presentation/views/onboarding_view.dart';
 import '../../../features/splash/presentation/views/splash_view.dart';
 
 abstract class AppRouter {
@@ -16,6 +17,11 @@ abstract class AppRouter {
     GoRoute(
       path: "/mainLayoutView",
       builder: (context, state) => MainLayoutView(),
+    ),
+    //  Onboarding Routes
+    GoRoute(
+      path: "/onBoardingView",
+      builder: (context, state) => const OnBoardingView(),
     ),
     //  Login Routes
     GoRoute(

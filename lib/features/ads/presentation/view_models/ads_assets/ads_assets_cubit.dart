@@ -18,6 +18,7 @@ class AdsAssetsCubit extends Cubit<AdsAssetsState> {
   static AdsAssetsCubit get(context) => BlocProvider.of(context);
 
   File? newImage;
+  String? existingImageUrl;
   bool _isFileTooLarge(File file, {int maxMB = 30}) {
     final fileSizeInBytes = file.lengthSync();
     return fileSizeInBytes > maxMB * 1024 * 1024;
@@ -71,6 +72,26 @@ class AdsAssetsCubit extends Cubit<AdsAssetsState> {
   void removeProduct() {
     selectedProduct = null; // deselect
     emit(SelectAdsProductSuccessState());
+  }
+
+  void reset() {
+    newImage = null;
+    existingImageUrl = null;
+    adsType = null;
+    selectedProduct = null;
+    emit(AdsAssetsInitial());
+  }
+
+  void prefillFromBanner({
+    required String? type,
+    required Items? product,
+    required String? imageUrl,
+  }) {
+    newImage = null;
+    adsType = type;
+    selectedProduct = product;
+    existingImageUrl = imageUrl;
+    emit(AdsAssetsInitial());
   }
 
 }

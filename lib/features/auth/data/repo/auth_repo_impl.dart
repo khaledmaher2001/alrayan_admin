@@ -1,4 +1,3 @@
-
 import 'package:alrayan_admin/features/auth/data/models/update_settings_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -19,16 +18,15 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   Future<Either<Failure, LoginModel>> userLogin({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     try {
-      String subscriptionId =
-      OneSignal.User.pushSubscription.id.toString();
+      String subscriptionId = OneSignal.User.pushSubscription.id.toString();
       final response = await apiService.postData(
         endPoint: EndPoints.login,
         data: {
-          'identifier': email,
+          'identifier': identifier,
           'password': password,
           'playerId': subscriptionId,
         },
@@ -39,7 +37,8 @@ class AuthRepoImpl implements AuthRepo {
         return Right(loginResponse); // Success case
       } else {
         return Left(
-            ServerFailure('Unexpected status code: ${response.statusCode}'));
+          ServerFailure('Unexpected status code: ${response.statusCode}'),
+        );
       }
     } catch (e) {
       print("FFFFFFFFFFFFFFF:${e.toString()}");
@@ -51,6 +50,7 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
+
   @override
   Future<Either<Failure, RegisterModel>> userRegister({
     required String name,
@@ -59,8 +59,7 @@ class AuthRepoImpl implements AuthRepo {
     required String phone,
   }) async {
     try {
-      String subscriptionId =
-      OneSignal.User.pushSubscription.id.toString();
+      String subscriptionId = OneSignal.User.pushSubscription.id.toString();
       final response = await apiService.postData(
         endPoint: EndPoints.register,
         data: {
@@ -68,7 +67,7 @@ class AuthRepoImpl implements AuthRepo {
           'email': email,
           'password': password,
           "phoneNumber": phone,
-          "playerId":subscriptionId
+          "playerId": subscriptionId,
         },
       );
 
@@ -76,9 +75,11 @@ class AuthRepoImpl implements AuthRepo {
         final registerResponse = RegisterModel.fromJson(response.data);
         return Right(registerResponse);
       } else {
-
-        return Left(ServerFailure(
-            'Unexpected status code: ${response.statusCode}, Message: ${response.statusMessage}'));
+        return Left(
+          ServerFailure(
+            'Unexpected status code: ${response.statusCode}, Message: ${response.statusMessage}',
+          ),
+        );
       }
     } catch (e) {
       print("GGGGGGGGGGGGGGGGGGGG:${e.toString()}");
@@ -107,12 +108,14 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
+
   @override
   Future<Either<Failure, String>> sendOtp({required String email}) async {
     try {
-      var response = await apiService.postData(endPoint: EndPoints.sendOTP, data: {
-        "email": email,
-      });
+      var response = await apiService.postData(
+        endPoint: EndPoints.sendOTP,
+        data: {"email": email},
+      );
       print("------------- otp is ------------------");
       print(response.data["success"]);
       return right(response.data["message"]);
@@ -126,10 +129,16 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
+
   @override
-  Future<Either<Failure, bool>> verifyOtp({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, bool>> verifyOtp({
+    required Map<String, dynamic> data,
+  }) async {
     try {
-      var response = await apiService.postData(endPoint: EndPoints.verifyOTP, data: data);
+      var response = await apiService.postData(
+        endPoint: EndPoints.verifyOTP,
+        data: data,
+      );
       return right(response.data["success"]);
     } catch (e) {
       if (e is DioException) {
@@ -140,9 +149,11 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
+
   @override
-  Future<Either<Failure, String>> resetPassword(
-      {required Map<String, dynamic> data}) async {
+  Future<Either<Failure, String>> resetPassword({
+    required Map<String, dynamic> data,
+  }) async {
     try {
       var response = await apiService.postData(
         endPoint: EndPoints.resetPassword,
@@ -157,9 +168,11 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
+
   @override
-  Future<Either<Failure, String>> forgetPassword(
-      {required String email}) async {
+  Future<Either<Failure, String>> forgetPassword({
+    required String email,
+  }) async {
     try {
       var response = await apiService.postData(
         endPoint: EndPoints.forgetPassword,
@@ -179,7 +192,57 @@ class AuthRepoImpl implements AuthRepo {
   }
 
   @override
-  Future<Either<Failure, UpdateSettingsModel>> updateSettings({required Map<String,dynamic> data}) async{
+  Future<Either<Failure, bool>> toggleAppStatus() async {
+    try {
+      var response = await apiService.patchData(
+        endPoint: EndPoints.toggleAppStatus,
+        sendToken: true,
+      );
+      final isOpen = response.data['data']?['isOpen'] as bool? ?? false;
+      return right(isOpen);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> toggleMaintenance() async {
+    try {
+      var response = await apiService.patchData(
+        endPoint: EndPoints.toggleMaintenance,
+        sendToken: true,
+      );
+      final maintenance =
+          response.data['data']?['maintenance'] as bool? ?? false;
+      return right(maintenance);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> logout() async {
+    try {
+      await apiService.postData(endPoint: EndPoints.logout, sendToken: true);
+      return right(true);
+    } catch (e) {
+      if (e is DioException) return left(ServerFailure.fromDioError(e));
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UpdateSettingsModel>> updateSettings({
+    required Map<String, dynamic> data,
+  }) async {
     try {
       var response = await apiService.putData(
         endPoint: EndPoints.updateSettings,
@@ -195,5 +258,4 @@ class AuthRepoImpl implements AuthRepo {
       }
     }
   }
-
 }

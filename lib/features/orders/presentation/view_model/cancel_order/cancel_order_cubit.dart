@@ -6,11 +6,16 @@ class CancelOrderCubit extends Cubit<CancelOrderStates> {
   CancelOrderCubit(this.repo) : super(CancelOrderInitState());
   OrdersRepo? repo;
 
-
-  Future<void> cancelOrder({required int orderId}) async {
+  /// [data] is forwarded verbatim as the request body — pass
+  /// `{"reason": "..."}` where the cancel dialog collects one, or omit it to
+  /// keep the previous no-body behaviour.
+  Future<void> cancelOrder({
+    required int orderId,
+    Map<String, dynamic>? data,
+  }) async {
     emit(CancelOrderLoadingState());
 
-    var result = await repo!.cancelOrder(orderId:orderId );
+    var result = await repo!.cancelOrder(orderId: orderId, data: data);
     return result.fold(
       (failure) {
         emit(CancelOrderErrorState(error: failure.errMessage));

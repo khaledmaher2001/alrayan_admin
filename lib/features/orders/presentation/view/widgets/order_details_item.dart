@@ -45,6 +45,8 @@ class OrderDetailsItem extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: DefaultCachedNetworkImage(
+                  imageWidth: MediaQuery.of(context).size.width*.28,
+                  imageHeight: MediaQuery.of(context).size.width*.3,
                   imageUrl: items![index].productImages!.firstOrNull ??
                       "https://purepng.com/public/uploads/large/purepng.com-headphoneelectronicsheadset-headphone-941524670894v2zxb.png",
                   fit: BoxFit.contain,
@@ -60,11 +62,27 @@ class OrderDetailsItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min, // <- let content define its height
                   children: [
-                    Text(
-                      "${items![index].quantity.toString()}x ${items![index].productName!}",
+                    RichText(
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Styles.inter14600black(context).copyWith(fontWeight: FontWeight.w600),
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "${items![index].quantity} ",
+                            style: Styles.inter18500Black(context).copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryColor,
+                              fontSize: MediaQuery.of(context).size.height*.026
+                            ),
+                          ),
+                          TextSpan(
+                            text: items![index].productName ?? "",
+                            style: Styles.inter14600black(context).copyWith(
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     Text(
@@ -90,6 +108,31 @@ class OrderDetailsItem extends StatelessWidget {
                         ),
 
                       ],
+                    ),
+                    SizedBox(height: AppConstants.height10(context)),
+                    Container(
+                      padding: EdgeInsets.all(AppConstants.sp10(context)),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.shade100,
+                        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                            "الوحدة",
+                              style: Styles.inter14600black(context).copyWith(
+                                color: AppColors.primaryColor
+                              ),
+                            ),
+                          ),
+                          Text(
+                            items![index].unit??"",
+                            style: Styles.inter16400white(context).copyWith(color: AppColors.primarySwatchColor),
+                          ),
+
+                        ],
+                      ),
                     ),
                   ],
                 ),

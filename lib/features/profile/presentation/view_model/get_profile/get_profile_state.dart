@@ -17,5 +17,3 @@ final class GetProfileErrorState extends GetProfileStates {
 
   GetProfileErrorState(this.error);
 }
-
-

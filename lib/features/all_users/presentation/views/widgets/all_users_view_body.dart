@@ -1,14 +1,14 @@
-import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/search_widget.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../../core/shared_widgets/custom_loading_item.dart';
 import '../../../../../core/utils/assets/assets.dart';
+import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
+import '../../../../../core/utils/navigation_utility.dart';
 import '../../view_models/get_all_users/get_all_users_cubit.dart';
 import '../../view_models/get_all_users/get_all_users_states.dart';
 import 'all_users_item.dart';
@@ -70,12 +70,7 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
       child: Column(
         children: [
           SizedBox(height: AppConstants.height20(context)),
-          CustomAppBar(
-            title: 'جميع عملاء ماركت الريان',
-            textColor: Colors.black,
-            hasBack: true,
-            withNotifications: false,
-          ),
+          const _UsersHeader(),
           SizedBox(height: AppConstants.height20(context)),
           Padding(
             padding: EdgeInsets.symmetric(
@@ -95,7 +90,24 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
               },
             ),
           ),
-          SizedBox(height: AppConstants.height20(context)),
+          SizedBox(height: AppConstants.height10(context)),
+          BlocBuilder<GetAllUsersCubit, GetAllUsersStates>(
+            builder: (context, state) {
+              final totalItems = context
+                  .read<GetAllUsersCubit>()
+                  .allUsersModel
+                  ?.data
+                  ?.metadata
+                  ?.totalItems;
+              if (totalItems == null) return const SizedBox.shrink();
+              return Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppConstants.width20(context),
+                ),
+                child: _UsersSummaryCard(totalItems: totalItems),
+              );
+            },
+          ),
           Expanded(
             child: BlocBuilder<GetAllUsersCubit, GetAllUsersStates>(
               builder: (context, state) {
@@ -129,6 +141,8 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
                                         .isNotEmpty) {
                                       return Column(
                                         children: [
+                                          if(index==0)
+                                            SizedBox(height: AppConstants.height10(context),),
                                           AllUsersItem(
                                             userData: context
                                                 .read<GetAllUsersCubit>()
@@ -185,6 +199,126 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
                 }
                 return const CustomLoadingItem();
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UsersHeader extends StatelessWidget {
+  const _UsersHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            children: [
+              Text('العملاء', style: Styles.inter18500Black(context)),
+              SizedBox(height: AppConstants.height5(context) / 2),
+              Text(
+                'جميع عملاء ماركت الريان',
+                style: Styles.inter10400grey(context),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: InkWell(
+              onTap: () => NavigationUtils.navigateBack(context: context),
+              child: Container(
+                height: AppConstants.width20(context) * 2.2,
+                width: AppConstants.width20(context) * 2.2,
+                padding: EdgeInsets.all(AppConstants.sp5(context)),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.gray.withOpacity(.2),
+                ),
+                child: SvgPicture.asset(
+                  AssetData.back,
+                  color: Colors.black,
+                  fit: BoxFit.scaleDown,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UsersSummaryCard extends StatelessWidget {
+  const _UsersSummaryCard({required this.totalItems});
+
+  final int totalItems;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppConstants.sp15(context)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            spreadRadius: 1,
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("ملخص العملاء", style: Styles.inter14600black(context)),
+          SizedBox(height: AppConstants.height5(context) / 2),
+          Text("نظرة سريعة", style: Styles.inter10400grey(context)),
+          SizedBox(height: AppConstants.height10(context)),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(AppConstants.sp10(context)),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryColor,
+              borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(AppConstants.sp10(context)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.sp10(context),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: AppColors.secondaryColor,
+                    size: AppConstants.sp20(context),
+                  ),
+                ),
+                SizedBox(width: AppConstants.width10(context)),
+                Text(
+                  "إجمالي العملاء",
+                  style: Styles.inter14500black(
+                    context,
+                  ).copyWith(color: Colors.white),
+                ),
+                const Spacer(),
+                Text(
+                  "$totalItems",
+                  style: Styles.inter18500Black(
+                    context,
+                  ).copyWith(color: Colors.white),
+                ),
+              ],
             ),
           ),
         ],

@@ -28,13 +28,15 @@ class Data {
   String? accessToken;
   String? tokenType;
   String? expiresIn;
+  String? role;
 
   Data(
       {this.isEmailVerified,
         this.email,
         this.accessToken,
         this.tokenType,
-        this.expiresIn});
+        this.expiresIn,
+        this.role});
 
   Data.fromJson(Map<String, dynamic> json) {
     isEmailVerified = json['isEmailVerified'];
@@ -42,6 +44,7 @@ class Data {
     accessToken = json['accessToken'];
     tokenType = json['token_type'];
     expiresIn = json['expires_in'];
+    role = json['role'];
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +54,7 @@ class Data {
     data['accessToken'] = this.accessToken;
     data['token_type'] = this.tokenType;
     data['expires_in'] = this.expiresIn;
+    data['role'] = this.role;
     return data;
   }
 }

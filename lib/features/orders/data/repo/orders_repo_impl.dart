@@ -13,9 +13,15 @@ class OrdersRepoImpl implements OrdersRepo {
   OrdersRepoImpl(this.apiService);
 
   @override
-  Future<Either<Failure, OrdersModel>> getOrders({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, OrdersModel>> getOrders({
+    required Map<String, dynamic> data,
+  }) async {
     try {
-      var response = await apiService!.get(endPoint: EndPoints.orders, query: data, sendToken: true);
+      var response = await apiService!.get(
+        endPoint: EndPoints.orders,
+        query: data,
+        sendToken: true,
+      );
       var result = OrdersModel.fromJson(response.data);
       return right(result);
     } catch (e) {
@@ -28,10 +34,14 @@ class OrdersRepoImpl implements OrdersRepo {
       }
     }
   }
+
   @override
   Future<Either<Failure, Items>> getOrderDetails({required int orderId}) async {
     try {
-      var response = await apiService!.get(endPoint: "${EndPoints.orders}/$orderId",sendToken: true);
+      var response = await apiService!.get(
+        endPoint: "${EndPoints.orders}/$orderId",
+        sendToken: true,
+      );
       var result = Items.fromJson(response.data["data"]);
       return right(result);
     } catch (e) {
@@ -44,7 +54,10 @@ class OrdersRepoImpl implements OrdersRepo {
   }
 
   @override
-  Future<Either<Failure, String>> changeOrderStatus({required int orderId, required Map<String, dynamic> data}) async {
+  Future<Either<Failure, String>> changeOrderStatus({
+    required int orderId,
+    required Map<String, dynamic> data,
+  }) async {
     try {
       var response = await apiService!.patchData(
         endPoint: "${EndPoints.orders}/$orderId",
@@ -63,10 +76,32 @@ class OrdersRepoImpl implements OrdersRepo {
   }
 
   @override
-  Future<Either<Failure, String>> cancelOrder({required int orderId}) async {
+  Future<Either<Failure, String>> cancelOrder({
+    required int orderId,
+    Map<String, dynamic>? data,
+  }) async {
     try {
       var response = await apiService!.putData(
         endPoint: "${EndPoints.orders}/$orderId/cancel",
+        data: data,
+      );
+      return right(response.data["message"]);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> reopenOrder({required int orderId}) async {
+    try {
+      var response = await apiService!.patchData(
+        endPoint: "${EndPoints.orders}/$orderId/reopen",
       );
       return right(response.data["message"]);
     } catch (e) {

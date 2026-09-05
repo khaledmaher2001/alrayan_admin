@@ -321,7 +321,10 @@ class TopSellingProducts {
   TopSellingProducts.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    image = json['Image'];
+    // API sends this field as lowercase 'image' like every other field
+    // here (camelCase) — keeping the old 'Image' key as a fallback in
+    // case some responses still use it.
+    image = json['image'] ?? json['Image'];
     totalSold = json['totalSold'];
     revenue = json['revenue'];
     averagePrice = json['averagePrice'];
@@ -331,7 +334,7 @@ class TopSellingProducts {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
-    data['Image'] = this.image;
+    data['image'] = this.image;
     data['totalSold'] = this.totalSold;
     data['revenue'] = this.revenue;
     data['averagePrice'] = this.averagePrice;

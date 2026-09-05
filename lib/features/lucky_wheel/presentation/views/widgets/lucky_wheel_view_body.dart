@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
+import 'package:alrayan_admin/core/shared_widgets/shimmer_helpers.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -32,6 +33,12 @@ class LuckyWheelViewBody extends StatelessWidget {
         final isWheelActive = cubit.luckyWheelModel?.data?.isActive ?? false;
         final probPercent = (cubit.totalProbability * 100).clamp(0.0, 100.0);
         final isTogglingWheel = state is GetLuckyWheelToggleLoadingState;
+        final hasExpiredItems = rewards.any((r) {
+          final date = r.expiresAt == null || r.expiresAt!.isEmpty
+              ? null
+              : DateTime.tryParse(r.expiresAt!);
+          return date != null && date.isBefore(DateTime.now());
+        });
 
         return MultiBlocListener(
           listeners: [
@@ -56,38 +63,47 @@ class LuckyWheelViewBody extends StatelessWidget {
             ),
           ],
           child: SafeArea(
-            child: Stack(
+            child: Column(
               children: [
-                Column(
-                  children: [
-                    SizedBox(height: AppConstants.height20(context)),
-                    CustomAppBar(
-                      title: 'عجلة الحظ',
-                      hasBack: true,
-                      textColor: Colors.black,
-                    ),
-                    SizedBox(height: AppConstants.height10(context)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: AppConstants.width20(context)),
-                      child: _WheelStatusBar(
-                        isActive: isWheelActive,
-                        isToggling: isTogglingWheel,
-                        itemCount: rewards.length,
-                        probPercent: probPercent,
-                        onToggle: cubit.toggleSpinWheel,
+                SizedBox(height: AppConstants.height20(context)),
+                CustomAppBar(
+                  title: 'عجلة الحظ',
+                  hasBack: true,
+                  textColor: Colors.black,
+                  withNotifications: false,
+                ),
+                SizedBox(height: AppConstants.height15(context)),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: AppConstants.width20(context)),
+                  child: _WheelStatusBar(
+                    isActive: isWheelActive,
+                    isToggling: isTogglingWheel,
+                    itemCount: rewards.length,
+                    activeItemCount: rewards.where((r) => r.isActive == true).length,
+                    probPercent: probPercent,
+                    hasExpiredItems: hasExpiredItems,
+                    onToggle: cubit.toggleSpinWheel,
+                  ),
+                ),
+                SizedBox(height: AppConstants.height20(context)),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: AppConstants.width20(context)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'عناصر العجلة',
+                          style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: AppConstants.height10(context)),
-                    Expanded(child: _buildBody(context, state, cubit)),
-                  ],
+                      _buildAddButton(context, cubit),
+                    ],
+                  ),
                 ),
-                Positioned(
-                  bottom: AppConstants.height20(context),
-                  left: AppConstants.width20(context),
-                  right: AppConstants.width20(context),
-                  child: _buildAddButton(context, cubit),
-                ),
+                SizedBox(height: AppConstants.height10(context)),
+                Expanded(child: _buildBody(context, state, cubit)),
               ],
             ),
           ),
@@ -102,7 +118,7 @@ class LuckyWheelViewBody extends StatelessWidget {
     GetLuckyWheelItemsCubit cubit,
   ) {
     if (state is GetLuckyWheelItemsLoadingState) {
-      return const Center(child: CircularProgressIndicator());
+      return const _WheelItemsShimmer();
     }
 
     if (state is GetLuckyWheelItemsErrorState) {
@@ -144,7 +160,6 @@ class LuckyWheelViewBody extends StatelessWidget {
               style: Styles.inter14500black(context).copyWith(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppConstants.height20(context) * 4),
           ],
         ),
       );
@@ -154,8 +169,8 @@ class LuckyWheelViewBody extends StatelessWidget {
       onRefresh: cubit.getLuckyWheelItems,
       child: ListView.separated(
         padding: EdgeInsets.only(
-          top: AppConstants.height10(context),
-          bottom: AppConstants.height20(context) * 4,
+          top: AppConstants.height5(context),
+          bottom: AppConstants.height20(context),
         ),
         itemCount: rewards.length,
         separatorBuilder: (context, i) =>
@@ -189,20 +204,16 @@ class LuckyWheelViewBody extends StatelessWidget {
     final isLastSlot = count == _kMaxItems - 1;
 
     String label;
-    IconData icon;
     if (count >= _kMaxItems) {
-      label = 'وصلت للحد الأقصى ($_kMaxItems جوائز)';
-      icon = Icons.lock_outline;
+      label = 'وصلت للحد الأقصى';
     } else if (probFull) {
-      label = 'الاحتمالية مكتملة 100%';
-      icon = Icons.lock_outline;
+      label = 'الاحتمالية مكتملة';
     } else {
-      label = 'إضافة جائزة جديدة ($count/$_kMaxItems)';
-      icon = Icons.add;
+      label = 'إضافة عنصر';
     }
 
-    return ElevatedButton.icon(
-      onPressed: canAdd
+    return InkWell(
+      onTap: canAdd
           ? () => NavigationUtils.navigateTo(
                 context: context,
                 destinationScreen: CreateEditLuckyItemView(
@@ -211,20 +222,37 @@ class LuckyWheelViewBody extends StatelessWidget {
                 ),
               )
           : null,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryColor,
-        disabledBackgroundColor: Colors.grey.shade300,
-        foregroundColor: Colors.white,
-        minimumSize:
-            Size(double.infinity, AppConstants.height20(context) * 2.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+      borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppConstants.width15(context),
+          vertical: AppConstants.height10(context) - 2,
         ),
-      ),
-      icon: Icon(icon, size: 20),
-      label: Text(
-        label,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        decoration: BoxDecoration(
+          color: canAdd ? Colors.white : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
+          border: Border.all(
+            color: canAdd ? AppColors.secondaryColor : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              canAdd ? Icons.add : Icons.lock_outline,
+              size: 16,
+              color: canAdd ? AppColors.secondaryColor : Colors.grey.shade500,
+            ),
+            SizedBox(width: AppConstants.width5(context)),
+            Text(
+              label,
+              style: Styles.inter14500black(context).copyWith(
+                color: canAdd ? AppColors.secondaryColor : Colors.grey.shade500,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -235,107 +263,203 @@ class _WheelStatusBar extends StatelessWidget {
     required this.isActive,
     required this.isToggling,
     required this.itemCount,
+    required this.activeItemCount,
     required this.probPercent,
+    required this.hasExpiredItems,
     required this.onToggle,
   });
 
   final bool isActive;
   final bool isToggling;
   final int itemCount;
+  final int activeItemCount;
   final double probPercent;
+  final bool hasExpiredItems;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final isExact = (probPercent - 100).abs() < 0.5;
     final probColor = isExact
-        ? Colors.green
+        ? const Color(0xFF1C9A6C)
         : probPercent > 100
             ? Colors.red
             : Colors.orange;
+    final canToggleOn = isExact && !hasExpiredItems;
+    final canToggle = isActive ? true : canToggleOn;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppConstants.width15(context),
-        vertical: AppConstants.height10(context),
-      ),
+      padding: EdgeInsets.all(AppConstants.sp15(context)),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
+        ],
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('تفعيل العجلة',
-                      style: Styles.inter16500black(context)),
-                  Text(
-                    isActive ? 'نشطة' : 'متوقفة',
-                    style: Styles.inter14500black(context)
-                        .copyWith(color: isActive ? Colors.green : Colors.grey),
-                  ),
-                ],
-              ),
               isToggling
                   ? const SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Switch(
-                          value: isActive,
-                          onChanged: isExact ? (_) => onToggle() : null,
-                          activeThumbColor: Colors.white,
-                          activeTrackColor: AppColors.primaryColor,
-                        ),
-                        if (!isExact)
-                          Text(
-                            'يجب أن تكتمل 100%',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.orange.shade700,
-                            ),
-                          ),
-                      ],
+                  : Switch(
+                      value: isActive,
+                      onChanged: canToggle ? (_) => onToggle() : null,
+                      activeThumbColor: Colors.white,
+                      activeTrackColor: AppColors.primaryColor,
                     ),
-            ],
-          ),
-          SizedBox(height: AppConstants.height10(context)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'الجوائز: $itemCount/$_kMaxItems',
-                style: Styles.inter14500black(context)
-                    .copyWith(color: Colors.grey),
-              ),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  Text('حالة العجلة', style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700)),
+                  SizedBox(height: AppConstants.height5(context)),
                   Container(
-                    width: 8,
-                    height: 8,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppConstants.width10(context),
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                        shape: BoxShape.circle, color: probColor),
-                  ),
-                  SizedBox(width: AppConstants.width5(context)),
-                  Text(
-                    'الاحتمالية: ${probPercent.toStringAsFixed(1)}%',
-                    style: Styles.inter14500black(context)
-                        .copyWith(color: probColor),
+                      color: (isActive ? const Color(0xFF1C9A6C) : Colors.grey).withOpacity(.12),
+                      borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
+                    ),
+                    child: Text(
+                      isActive ? 'نشطة' : 'متوقفة',
+                      style: Styles.inter12500Black(context).copyWith(
+                        color: isActive ? const Color(0xFF1C9A6C) : Colors.grey.shade700,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
+          if (hasExpiredItems || !isExact) ...[
+            SizedBox(height: AppConstants.height5(context)),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Text(
+                hasExpiredItems ? 'يوجد جوائز منتهية الصلاحية' : 'يجب أن تكتمل الاحتمالية 100%',
+                style: Styles.inter10400grey(context).copyWith(
+                  color: hasExpiredItems ? AppColors.primaryColor : Colors.orange.shade700,
+                ),
+              ),
+            ),
+          ],
+          SizedBox(height: AppConstants.height15(context)),
+          Divider(color: Colors.grey.shade200, height: 1),
+          SizedBox(height: AppConstants.height15(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('مجموع الاحتمالات', style: Styles.inter10400grey(context)),
+                    SizedBox(height: AppConstants.height5(context) / 2),
+                    Text(
+                      '${probPercent.toStringAsFixed(0)}%',
+                      style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: AppConstants.height20(context) * 1.5,
+                child: VerticalDivider(color: Colors.grey.shade200, width: 1),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text('الجوائز المفعلة', style: Styles.inter10400grey(context)),
+                    SizedBox(height: AppConstants.height5(context) / 2),
+                    Text(
+                      '$activeItemCount من $itemCount',
+                      style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppConstants.height10(context)),
+          Row(
+            children: [
+              Text(
+                '${probPercent.toStringAsFixed(0)}%',
+                style: Styles.inter12500Black(context).copyWith(color: probColor, fontWeight: FontWeight.w700),
+              ),
+              SizedBox(width: AppConstants.width10(context)),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
+                  child: LinearProgressIndicator(
+                    value: (probPercent / 100).clamp(0.0, 1.0),
+                    minHeight: AppConstants.height10(context) - 3,
+                    color: probColor,
+                    backgroundColor: probColor.withOpacity(.1),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _WheelItemsShimmer extends StatelessWidget {
+  const _WheelItemsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return appShimmer(
+      child: ListView.separated(
+        padding: EdgeInsets.only(
+          top: AppConstants.height5(context),
+          bottom: AppConstants.height20(context),
+        ),
+        itemCount: 4,
+        separatorBuilder: (context, i) => SizedBox(height: AppConstants.height15(context)),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
+            child: Container(
+              padding: EdgeInsets.all(AppConstants.sp15(context)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  shimmerCircle(size: AppConstants.width20(context) * 1.4),
+                  SizedBox(width: AppConstants.width10(context)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        shimmerBox(context, width: MediaQuery.of(context).size.width * .4, height: AppConstants.height15(context)),
+                        SizedBox(height: AppConstants.height10(context)),
+                        shimmerBox(context, width: MediaQuery.of(context).size.width * .25, height: AppConstants.height10(context)),
+                        SizedBox(height: AppConstants.height10(context)),
+                        shimmerBox(context, width: MediaQuery.of(context).size.width * .3, height: AppConstants.height10(context)),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: AppConstants.width10(context)),
+                  shimmerCircle(size: 40),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

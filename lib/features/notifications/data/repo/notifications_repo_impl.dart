@@ -31,6 +31,51 @@ class NotificationsRepoImpl implements NotificationsRepo {
     }
   }
   @override
+  Future<Either<Failure, String>> markAllAsRead() async {
+    try {
+      // No bulk "mark all read" endpoint exists, so every unread page is
+      // walked first to collect ids, then each one is marked read.
+      final unreadIds = <int>[];
+      var page = 1;
+      while (true) {
+        final response = await apiService.get(
+          endPoint: EndPoints.userNotification,
+          sendToken: true,
+          query: {"page": page, "limit": 100},
+        );
+        final model = NotificationsModel.fromJson(response.data);
+        final items = model.data?.items ?? [];
+        unreadIds.addAll(
+          items
+              .where((item) =>
+                  (item.recipients?.isNotEmpty ?? false) &&
+                  item.recipients!.first.isRead == false)
+              .map((item) => item.id!),
+        );
+        if (items.isEmpty || model.data?.links?.hasNext != true) break;
+        page++;
+      }
+
+      await Future.wait(
+        unreadIds.map(
+          (id) => apiService.patchData(
+            endPoint: EndPoints.readNotification(id),
+            sendToken: true,
+          ),
+        ),
+      );
+      return const Right("");
+    } catch (e) {
+      log("markAllAsRead Exception:: ${e.toString()}");
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
   Future<Either<Failure, String>> readMarkNotification({required int notificationId}) async {
     try {
       var response = await apiService.patchData(

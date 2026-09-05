@@ -12,12 +12,19 @@ class RowItem extends StatelessWidget {
   final FontWeight? fontWeight;
   @override
   Widget build(BuildContext context) {
-    return  Row(
+    return  Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: Text(title,style: Styles.inter14500black(context).copyWith(
-            color: discount==true?AppColors.redColor: titleColor??Color(0xff9CA4AB),
-          fontWeight: fontWeight,
-        ),)),
+        Row(
+          children: [
+            Expanded(
+              child: Text(title,style: Styles.inter14500black(context).copyWith(
+              color: discount==true?AppColors.redColor: titleColor??Color(0xff9CA4AB),
+                        fontWeight: fontWeight,
+                      ),),
+            ),
+          ],
+        ),
         SizedBox(width: AppConstants.width5(context),),
         Text(discount==true?"- $value":value,style: Styles.inter14500black(context).copyWith(
           color: discount==true?AppColors.redColor:valueColor??Colors.black,

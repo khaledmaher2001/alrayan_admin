@@ -7,6 +7,8 @@ class AssetData {
   static const logoBackSecondry="assets/images/logo_back_secondry.png";
   static const acwad = "assets/images/acwad.png";
   static const nav="assets/images/nav.png";
+  static const closed="assets/images/closed.svg";
+  static const open="assets/images/open.svg";
   static const navCart="assets/images/nav_cart.svg";
   static const processing="assets/images/processing.svg";
   static const payment="assets/images/payment.svg";
@@ -14,6 +16,7 @@ class AssetData {
   static const onboarding1="assets/images/onboarding1.png";
   static const onboarding2="assets/images/onboarding2.png";
   static const onboarding3="assets/images/onboarding3.png";
+  static const onboardingPattern="assets/images/onboarding_pattern.png";
   static const dropDown="assets/images/drop_down.svg";
   static const back="assets/images/back.svg";
   static const view = "assets/images/view.svg";
@@ -103,6 +106,7 @@ class AssetData {
   static const ads="assets/images/account_icons/ads.svg";
   static const support="assets/images/account_icons/support.svg";
   static const version="assets/images/account_icons/version.svg";
+  static const loyaltyPoints="assets/images/account_icons/loyalty_points.svg";
 
   //Coupons Icons
   static const couponBg="assets/images/coupons_icons/coupon_bg.png";
@@ -136,6 +140,7 @@ class AssetData {
   static const confirmed="assets/images/admin_home/confirmed.svg";
   static const coupons="assets/images/admin_home/coupons.svg";
   static const accountStatus="assets/images/admin_home/account_status.svg";
+  static const settings="assets/images/admin_home/settings.svg";
 
 
 }

@@ -1,4 +1,8 @@
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
+import 'package:alrayan_admin/features/home/data/models/inventory_analytics_model.dart';
+import 'package:alrayan_admin/features/home/data/models/low_stock_config_model.dart';
+import 'package:alrayan_admin/features/home/data/models/low_stock_product_model.dart';
+import 'package:alrayan_admin/features/home/data/models/sales_report_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:alrayan_admin/core/errors/failure.dart';
@@ -17,6 +21,145 @@ class HomeRepoImpl implements HomeRepo {
     try {
       var response = await apiService!.get(endPoint: EndPoints.homeStatistics, sendToken: true);
       var result = HomeStatisticsModel.fromJson(response.data);
+      return right(result);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, InventoryAnalyticsResponseModel>>
+  getInventoryAnalytics({
+    int page = 1,
+    int limit = 20,
+    String? search,
+  }) async {
+    try {
+      var response = await apiService!.get(
+        endPoint: EndPoints.inventoryAnalytics,
+        sendToken: true,
+        query: {
+          'page': page,
+          'limit': limit,
+          if (search != null && search.isNotEmpty) 'search': search,
+        },
+      );
+      final result = InventoryAnalyticsResponseModel.fromJson(response.data);
+      return right(result);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, LowStockProductsResponseModel>> getLowStockProducts({
+    int? threshold,
+    int page = 1,
+    int limit = 20,
+    String? search,
+  }) async {
+    try {
+      var response = await apiService!.get(
+        endPoint: EndPoints.lowStockProducts,
+        sendToken: true,
+        query: {
+          // Omitted so the server falls back to the configured low-stock
+          // threshold instead of a hardcoded default.
+          if (threshold != null) 'threshold': threshold,
+          'page': page,
+          'limit': limit,
+          if (search != null && search.isNotEmpty) 'search': search,
+        },
+      );
+      final result = LowStockProductsResponseModel.fromJson(response.data);
+      return right(result);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, LowStockConfigModel>> getLowStockConfig() async {
+    try {
+      var response = await apiService!.get(
+        endPoint: EndPoints.lowStockConfig,
+        sendToken: true,
+      );
+      final result = LowStockConfigModel.fromJson(response.data);
+      return right(result);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, LowStockConfigModel>> updateLowStockConfig({
+    required int threshold,
+  }) async {
+    try {
+      var response = await apiService!.patchData(
+        endPoint: EndPoints.lowStockConfig,
+        sendToken: true,
+        data: {'threshold': threshold},
+      );
+      // Some responses come back without a usable body; fall back to the
+      // threshold we just sent so the UI still reflects the update.
+      final result = response.data is Map<String, dynamic>
+          ? LowStockConfigModel.fromJson(response.data)
+          : LowStockConfigModel(threshold: threshold);
+      return right(result);
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, SalesReportModel>> getSalesReport({
+    required String startDate,
+    required String endDate,
+    String type = '',
+  }) async {
+    try {
+      var response = await apiService!.get(
+        endPoint: EndPoints.salesReport,
+        sendToken: true,
+        query: {
+          'startDate': startDate,
+          'endDate': endDate,
+          'type': type,
+        },
+      );
+      var result = SalesReportModel.fromJson(response.data);
       return right(result);
     } catch (e) {
       debugPrint(e.toString());

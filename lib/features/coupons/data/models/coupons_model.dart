@@ -81,6 +81,8 @@ class Items {
   int? createdBy;
   bool? isSplitCoupon;
   int? totalSplits;
+  bool? isHidden;
+  List<int>? applicableUserGroups;
   List<Products>? products;
   List<Categories>? categories;
 
@@ -108,6 +110,8 @@ class Items {
         this.createdBy,
         this.totalSplits,
         this.isSplitCoupon,
+        this.isHidden,
+        this.applicableUserGroups,
         this.products,
         this.categories});
 
@@ -159,6 +163,12 @@ class Items {
     createdBy = json['createdBy'];
     totalSplits = json['totalSplits'];
     isSplitCoupon = json['isSplitCoupon'];
+    isHidden = json['isHidden'];
+    if (json['applicableUserGroups'] != null && json['applicableUserGroups'] is List) {
+      applicableUserGroups = (json['applicableUserGroups'] as List)
+          .map((e) => (e as num).toInt())
+          .toList();
+    }
     if (json['products'] != null && json['products'] is List) {
       products = <Products>[];
       (json['products'] as List).forEach((v) {
@@ -207,6 +217,8 @@ class Items {
     data['createdBy'] = this.createdBy;
     data['totalSplits'] = this.totalSplits;
     data['isSplitCoupon'] = this.isSplitCoupon;
+    data['isHidden'] = this.isHidden;
+    data['applicableUserGroups'] = this.applicableUserGroups;
     if (this.products != null) {
       data['products'] = this.products!.map((v) => v.toJson()).toList();
     }

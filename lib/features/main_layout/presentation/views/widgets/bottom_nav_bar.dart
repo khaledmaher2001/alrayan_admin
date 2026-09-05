@@ -14,24 +14,21 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> icons = [
       AssetData.home,
-      AssetData.category,
       AssetData.orders,
+      AssetData.category,
       AssetData.products,
-      AssetData.profile,
     ];
     List<String> activeIcons = [
       AssetData.activeHome,
-      AssetData.activeCategory,
       AssetData.activeOrders,
+      AssetData.activeCategory,
       AssetData.activeProducts,
-      AssetData.activeProfile,
     ];
     List<String> titles = [
      "home".tr(),
-     "category".tr(),
      "orders".tr(),
+     "category".tr(),
      "products".tr(),
-     "account".tr(),
     ];
     return BlocBuilder<ChangeNavBarStatusCubit, ChangeNavBarStatusState>(builder: (context, state) {
       return Container(
@@ -56,6 +53,7 @@ class BottomNavBar extends StatelessWidget {
               activeIcon: activeIcons[index],
               title: titles[index],
               index: index,
+              showNewBadge: icons[index] == AssetData.orders,
             ),
           ),
         ),

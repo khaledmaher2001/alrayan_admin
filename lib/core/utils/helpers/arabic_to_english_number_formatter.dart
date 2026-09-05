@@ -39,3 +39,19 @@ class ArabicToEnglishNumberFormatter extends TextInputFormatter {
     );
   }
 }
+
+/// Rejects a leading "0" — used on Egyptian mobile number fields where the
+/// "+20" country code prefix is shown separately and the number is entered
+/// without the local trunk zero (e.g. "1012345678", not "01012345678").
+class NoLeadingZeroFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isNotEmpty && newValue.text.startsWith('0')) {
+      return oldValue;
+    }
+    return newValue;
+  }
+}

@@ -6,14 +6,21 @@ import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
+import 'package:alrayan_admin/features/coupons/data/models/coupons_model.dart';
 import 'package:alrayan_admin/features/coupons/data/repo/coupons_repo_impl.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon/create_coupon_states.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/edit_coupon/edit_coupon_cubit.dart';
+import 'package:alrayan_admin/features/coupons/presentation/views/view_model/edit_coupon/edit_coupon_states.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/get_coupons/get_coupons_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/custom_coupon_field.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_category_bottom_sheet.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_product_bottom_sheet.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/widgets/select_users_bottom_sheet.dart';
+import 'package:alrayan_admin/features/all_users/data/models/all_users_model.dart' as user;
+import 'package:alrayan_admin/features/all_users/data/repo/all_users_repo_impl.dart';
+import 'package:alrayan_admin/features/categories/data/models/categories_model.dart' as cat;
+import 'package:alrayan_admin/features/products/data/models/products_model.dart' as prod;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +33,9 @@ import '../../../../../../core/utils/text_styles/styles.dart';
 import '../view_model/create_coupon_assets/create_coupon_assets_cubit.dart';
 
 class CreateCouponViewBody extends StatefulWidget {
-  const CreateCouponViewBody({super.key});
+  const CreateCouponViewBody({super.key, this.editingCoupon});
+
+  final Items? editingCoupon;
 
   @override
   State<CreateCouponViewBody> createState() => _CreateCouponViewBodyState();
@@ -35,11 +44,123 @@ class CreateCouponViewBody extends StatefulWidget {
 class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
   late CreateCouponAssetsCubit couponAssetsCubit;
 
+  bool get isEditing => widget.editingCoupon != null;
+
   @override
   void initState() {
     couponAssetsCubit = context.read<CreateCouponAssetsCubit>();
-    couponAssetsCubit.clearAllData();
+    if (isEditing) {
+      _prefillFromCoupon(widget.editingCoupon!);
+      final userIds = widget.editingCoupon!.applicableUserGroups ?? [];
+      if (userIds.isNotEmpty) {
+        _loadSelectedUsers(userIds);
+      }
+    } else {
+      couponAssetsCubit.clearAllData();
+    }
     super.initState();
+  }
+
+  Future<void> _loadSelectedUsers(List<int> ids) async {
+    final repo = getIt<AllUsersRepoImpl>();
+    final results = await Future.wait(ids.map((id) => repo.getUserById(id)));
+    final users = <user.Items>[];
+    for (final result in results) {
+      result.fold((_) {}, (detail) => users.add(
+        user.Items(
+          id: detail.id,
+          fullName: detail.fullName,
+          email: detail.email,
+          gender: detail.gender,
+          phoneNumber: detail.phoneNumber,
+          isEmailVerified: detail.isEmailVerified,
+          role: detail.role,
+          createdAt: detail.createdAt,
+        ),
+      ));
+    }
+    if (!mounted) return;
+    couponAssetsCubit.setSelectedUsers(users);
+  }
+
+  void _prefillFromCoupon(Items coupon) {
+    couponAssetsCubit.clearAllData();
+    couponAssetsCubit.codeController.text = coupon.code ?? "";
+    couponAssetsCubit.descriptionArController.text = coupon.description?.ar ?? "";
+    couponAssetsCubit.descriptionEnController.text = coupon.description?.en ?? "";
+    couponAssetsCubit.discountValueController.text = coupon.discountValue?.toString() ?? "";
+    couponAssetsCubit.maxDiscountAmountController.text = coupon.maxDiscountAmount?.toString() ?? "";
+    couponAssetsCubit.minOrderAmountController.text = coupon.minOrderAmount?.toString() ?? "";
+    couponAssetsCubit.usageLimitController.text = coupon.usageLimit?.toString() ?? "";
+    couponAssetsCubit.usageLimitPerUserController.text = coupon.usageLimitPerUser?.toString() ?? "";
+    couponAssetsCubit.splitValueController.text = coupon.splitValue?.toString() ?? "";
+    if (coupon.validFrom != null) {
+      couponAssetsCubit.startDateController.text = coupon.validFrom!;
+      couponAssetsCubit.selectedStartDate = DateTime.tryParse(coupon.validFrom!);
+    }
+    if (coupon.validTo != null) {
+      couponAssetsCubit.endDateController.text = coupon.validTo!;
+      couponAssetsCubit.selectedEndDate = DateTime.tryParse(coupon.validTo!);
+    }
+    couponAssetsCubit.couponType = coupon.isSplitCoupon == true ? "fixed_split" : coupon.discountType;
+    couponAssetsCubit.selectedProducts = (coupon.products ?? []).map(_productFromCouponProduct).toList();
+    couponAssetsCubit.selectedCategories = (coupon.categories ?? []).map(_categoryFromCouponCategory).toList();
+    // selectedUsers is filled in separately by _loadSelectedUsers, since it
+    // needs an async lookup (the coupon only carries user ids, not names).
+    couponAssetsCubit.usersType =
+        (coupon.applicableUserGroups ?? []).isNotEmpty ? "specific_users" : "all";
+    couponAssetsCubit.isHidden = coupon.isHidden ?? false;
+  }
+
+  // coupon.products/categories (coupons_model) and the product/category pickers'
+  // Items/Data (products_model/categories_model) are separate generated models
+  // for the same shape; this remaps one into the other so an existing
+  // product-specific or category-specific coupon shows its selections when edited.
+  prod.Items _productFromCouponProduct(Products product) {
+    return prod.Items.fromJson({
+      'id': product.id,
+      'name': {'ar': product.name, 'en': product.name},
+      'price': product.price,
+      'images': product.images?.map((img) => {'id': img.id, 'attach': img.attach}).toList(),
+    });
+  }
+
+  cat.Data _categoryFromCouponCategory(Categories category) {
+    return cat.Data.fromJson({
+      'id': category.id,
+      'icon': null,
+      'name': {'ar': category.name, 'en': category.name},
+    });
+  }
+
+  Map<String, dynamic> _buildCouponPayload() {
+    return {
+      "code": couponAssetsCubit.codeController.text.trim(),
+      "description": {
+        "en": couponAssetsCubit.descriptionEnController.text.trim(),
+        "ar": couponAssetsCubit.descriptionArController.text.trim(),
+      },
+      "discountType": couponAssetsCubit.couponType == "fixed_split" ? "fixed_amount" : couponAssetsCubit.couponType,
+      "discountValue":
+          couponAssetsCubit.couponType == "free_shipping" ? "0" : couponAssetsCubit.discountValueController.text.trim(),
+      if (couponAssetsCubit.couponType != "free_shipping")
+        "maxDiscountAmount": couponAssetsCubit.maxDiscountAmountController.text.trim(),
+      if (couponAssetsCubit.couponType != "free_shipping")
+        "minOrderAmount": couponAssetsCubit.minOrderAmountController.text.trim(),
+      "status": "active",
+      "validFrom": couponAssetsCubit.startDateController.text.trim(),
+      "validTo": couponAssetsCubit.endDateController.text.trim(),
+      "usageLimit": couponAssetsCubit.usageLimitController.text.trim(),
+      "usageLimitPerUser": couponAssetsCubit.usageLimitPerUserController.text.trim(),
+      "applicableCategories": couponAssetsCubit.selectedCategories.map((e) => e.id).toList(),
+      "applicableProducts": couponAssetsCubit.selectedProducts.map((e) => e.id).toList(),
+      "applicableUserGroups": couponAssetsCubit.usersType == "specific_users"
+          ? couponAssetsCubit.selectedUsers.map((e) => e.id).toList()
+          : <int?>[],
+      "isStackable": false,
+      "splitValue": couponAssetsCubit.couponType == "fixed_split" ? couponAssetsCubit.splitValueController.text.trim() : null,
+      "isHidden": couponAssetsCubit.usersType == "all" ? couponAssetsCubit.isHidden : false,
+    };
   }
 
   @override
@@ -48,7 +169,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
       child: Column(
         children: [
           SizedBox(height: AppConstants.height10(context)),
-          CustomAppBar(title: "انشاء كوبون خصم", hasBack: true,textColor: Colors.black,),
+          CustomAppBar(title: isEditing ? "تعديل الكوبون" : "انشاء كوبون خصم", hasBack: true,textColor: Colors.black,withNotifications: false,),
           SizedBox(height: AppConstants.height10(context)),
           BlocBuilder<CreateCouponAssetsCubit, CreateCouponAssetsState>(
             builder: (context, state) {
@@ -99,9 +220,69 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       }
                                       return null;
                                     },
-                                    value: null,
+                                    value: couponAssetsCubit.usersType == "all"
+                                        ? 'كل المستخدمين'
+                                        : couponAssetsCubit.usersType == "specific_users"
+                                            ? 'مستخدمين محددين'
+                                            : null,
                                   ),
                                 ],
+                              ),
+                              SizedBox(height: AppConstants.height15(context)),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppConstants.sp20(context),
+                                  vertical: AppConstants.sp10(context),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: couponAssetsCubit.usersType != "all"
+                                      ? Colors.grey.shade100
+                                      : couponAssetsCubit.isHidden
+                                          ? Colors.orange.shade50
+                                          : const Color(0xffF7F7F8),
+                                  borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+                                  border: Border.all(
+                                    color: couponAssetsCubit.usersType != "all"
+                                        ? Colors.grey.shade300
+                                        : couponAssetsCubit.isHidden
+                                            ? Colors.orange
+                                            : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("إخفاء الكوبون", style: Styles.inter14600black(context)),
+                                          SizedBox(height: AppConstants.height5(context) / 2),
+                                          Text(
+                                            couponAssetsCubit.usersType != "all"
+                                                ? "غير متاح: لا يمكن إخفاء كوبون مخصص لمستخدمين محددين"
+                                                : couponAssetsCubit.isHidden
+                                                    ? "الكوبون مخفي ولن يظهر إلا لمن أرسلت له الكود"
+                                                    : "الكوبون ظاهر لكل المستخدمين",
+                                            style: Styles.inter12500Black(context).copyWith(
+                                              color: couponAssetsCubit.usersType != "all"
+                                                  ? Colors.grey.shade600
+                                                  : couponAssetsCubit.isHidden
+                                                      ? Colors.orange.shade800
+                                                      : Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: couponAssetsCubit.usersType == "all" ? couponAssetsCubit.isHidden : false,
+                                      activeThumbColor: Colors.orange,
+                                      onChanged: couponAssetsCubit.usersType == "all"
+                                          ? (value) => couponAssetsCubit.toggleIsHidden(value)
+                                          : null,
+                                    ),
+                                  ],
+                                ),
                               ),
                               if (context.read<CreateCouponAssetsCubit>().usersType == "specific_users")
                                 Column(
@@ -292,7 +473,14 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       }
                                       return null;
                                     },
-                                    value: null,
+                                    value: const {
+                                      "fixed_split": 'كوبون مجزئ',
+                                      "free_shipping": 'شحن مجاني',
+                                      "percentage": 'خصم نسبة مئوية',
+                                      "fixed_amount": 'خصم قيمة ثابتة بالجنية',
+                                      "product_specific": 'خصم علي منتج معين',
+                                      "category_specific": 'خصم علي قسم معين',
+                                    }[couponAssetsCubit.couponType],
                                   ),
                                 ],
                               ),
@@ -769,59 +957,70 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppConstants.width10(context)),
-            child: BlocProvider(
-              create: (context) => CreateCouponCubit(getIt<CouponsRepoImpl>()),
-              child: BlocConsumer<CreateCouponCubit, CreateCouponStates>(
-                listener: (context, state) {
-                  if (state is CreateCouponSuccessState) {
-                    toast(text: state.message, color: Colors.green);
-                    couponAssetsCubit.clearAllData();
-                    context.read<GetCouponsCubit>().getCoupons();
-                    NavigationUtils.navigateBack(context: context);
-                  } else if (state is CreateCouponErrorState) {
-                    toast(text: state.error, color: AppColors.redColor);
-                  }
-                },
-                builder: (context, state) {
-                  return state is CreateCouponLoadingState
-                      ? const CustomLoadingItem()
-                      : DefaultButton(
-                          onPress: () {
-                            if (couponAssetsCubit.createCouponFormKey.currentState!.validate()) {
-                              context.read<CreateCouponCubit>().createCoupon(
-                                data: {
-                                  "code": couponAssetsCubit.codeController.text.trim(),
-                                  "description": {
-                                    "en": couponAssetsCubit.descriptionEnController.text.trim(),
-                                    "ar": couponAssetsCubit.descriptionArController.text.trim(),
-                                  },
-                                  "discountType": couponAssetsCubit.couponType=="fixed_split"?"fixed_amount":couponAssetsCubit.couponType,
-                                  "discountValue": couponAssetsCubit.couponType=="free_shipping"?"0":couponAssetsCubit.discountValueController.text.trim(),
-                                  if(couponAssetsCubit.couponType!="free_shipping")
-                                  "maxDiscountAmount":couponAssetsCubit.maxDiscountAmountController.text.trim(),
-                                  if(couponAssetsCubit.couponType!="free_shipping")
-                                  "minOrderAmount": couponAssetsCubit.minOrderAmountController.text.trim(),
-                                  "status": "active",
-                                  "validFrom":couponAssetsCubit.startDateController.text.trim(),
-                                  "validTo":couponAssetsCubit.endDateController.text.trim(),
-                                  "usageLimit": couponAssetsCubit.usageLimitController.text.trim(),
-                                  "usageLimitPerUser": couponAssetsCubit.usageLimitPerUserController.text.trim(),
-                                  "applicableCategories": couponAssetsCubit.selectedCategories.map((e)=>e.id).toList(),
-                                  "applicableProducts": couponAssetsCubit.selectedProducts.map((e)=>e.id).toList(),
-                                  "applicableUserGroups": couponAssetsCubit.selectedUsers.map((e)=>e.id).toList(),
-                                  "isStackable": false,
-                                  "splitValue": couponAssetsCubit.couponType=="fixed_split"?couponAssetsCubit.splitValueController.text.trim():null,
+            child: isEditing
+                ? BlocProvider(
+                    create: (context) => EditCouponCubit(getIt<CouponsRepoImpl>()),
+                    child: BlocConsumer<EditCouponCubit, EditCouponStates>(
+                      listener: (context, state) {
+                        if (state is EditCouponSuccessState) {
+                          toast(text: state.message, color: Colors.green);
+                          couponAssetsCubit.clearAllData();
+                          context.read<GetCouponsCubit>().getCoupons();
+                          NavigationUtils.navigateBack(context: context);
+                        } else if (state is EditCouponErrorState) {
+                          toast(text: state.error, color: AppColors.redColor);
+                        }
+                      },
+                      builder: (context, state) {
+                        return state is EditCouponLoadingState
+                            ? const CustomLoadingItem()
+                            : DefaultButton(
+                                onPress: () {
+                                  if (couponAssetsCubit.createCouponFormKey.currentState!.validate()) {
+                                    context.read<EditCouponCubit>().updateCoupon(
+                                      couponId: widget.editingCoupon!.id!,
+                                      data: _buildCouponPayload(),
+                                    );
+                                  }
                                 },
+                                text: "حفظ التعديلات",
+                                borderRadius: AppConstants.sp10(context),
+                                height: AppConstants.height15(context),
                               );
-                            }
-                          },
-                          text: "انشاء الكوبون",
-                          borderRadius: AppConstants.sp10(context),
-                          height: AppConstants.height15(context),
-                        );
-                },
-              ),
-            ),
+                      },
+                    ),
+                  )
+                : BlocProvider(
+                    create: (context) => CreateCouponCubit(getIt<CouponsRepoImpl>()),
+                    child: BlocConsumer<CreateCouponCubit, CreateCouponStates>(
+                      listener: (context, state) {
+                        if (state is CreateCouponSuccessState) {
+                          toast(text: state.message, color: Colors.green);
+                          couponAssetsCubit.clearAllData();
+                          context.read<GetCouponsCubit>().getCoupons();
+                          NavigationUtils.navigateBack(context: context);
+                        } else if (state is CreateCouponErrorState) {
+                          toast(text: state.error, color: AppColors.redColor);
+                        }
+                      },
+                      builder: (context, state) {
+                        return state is CreateCouponLoadingState
+                            ? const CustomLoadingItem()
+                            : DefaultButton(
+                                onPress: () {
+                                  if (couponAssetsCubit.createCouponFormKey.currentState!.validate()) {
+                                    context.read<CreateCouponCubit>().createCoupon(
+                                      data: _buildCouponPayload(),
+                                    );
+                                  }
+                                },
+                                text: "انشاء الكوبون",
+                                borderRadius: AppConstants.sp10(context),
+                                height: AppConstants.height15(context),
+                              );
+                      },
+                    ),
+                  ),
           ),
           SizedBox(height: AppConstants.height20(context)),
         ],

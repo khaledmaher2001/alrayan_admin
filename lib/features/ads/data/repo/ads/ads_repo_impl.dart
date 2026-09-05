@@ -32,11 +32,45 @@ class AdsRepoImpl implements AdsRepo{
   }
 
   @override
-  Future<Either<Failure, OfferBannerModel>> getBanner()async {
+  Future<Either<Failure, OfferBannerModel>> getBanner({
+    int page = 1,
+    int limit = 10,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
     try {
-      final response = await apiService.get(endPoint: EndPoints.getOfferBanner,sendToken: true);
+      final response = await apiService.get(
+        endPoint: EndPoints.getOfferBanner,
+        sendToken: true,
+        query: {
+          'page': page,
+          'limit': limit,
+          if (search != null && search.isNotEmpty) 'search': search,
+          if (sortBy != null && sortBy.isNotEmpty) 'sortBy': sortBy,
+          if (sortOrder != null && sortOrder.isNotEmpty) 'sortOrder': sortOrder,
+        },
+      );
       var result= OfferBannerModel.fromJson(response.data);
       return Right(result);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      } else {
+        return left(ServerFailure(e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> updateBanner({required int id, required data, void Function(int, int)? onSendProgress}) async {
+    try {
+      var response = await apiService.patchDataWithImage(
+        endPoint: "${EndPoints.getOfferBanner}/$id",
+        data: FormData.fromMap(data),
+        onSendProgress: onSendProgress,
+      );
+      return Right(response.data['success']);
     } catch (e) {
       if (e is DioException) {
         return left(ServerFailure.fromDioError(e));

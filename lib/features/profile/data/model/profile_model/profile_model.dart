@@ -3,7 +3,6 @@ class ProfileModel {
   String? message;
   Data? data;
 
-
   ProfileModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
     message = json['message'];
@@ -34,7 +33,5 @@ class Data {
     phoneNumber = json['phoneNumber'];
     isEmailVerified = json['isEmailVerified'];
     playerIds = json['playerIds'].cast<String>();
-
   }
 }
-

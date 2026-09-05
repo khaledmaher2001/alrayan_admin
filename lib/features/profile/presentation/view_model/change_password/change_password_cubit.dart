@@ -6,7 +6,7 @@ class ChangePasswordCubit extends Cubit<ChangePasswordStates> {
   ChangePasswordCubit(this.productsRepo) : super(ChangePasswordInitialState());
   ProfileRepo? productsRepo;
 
-  Future<void> changePassword({required Map<String,dynamic> data}) async {
+  Future<void> changePassword({required Map<String, dynamic> data}) async {
     emit(ChangePasswordLoadingState());
 
     var result = await productsRepo!.changePassword(data: data);

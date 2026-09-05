@@ -14,7 +14,10 @@ class ProfileRepoImpl implements ProfileRepo {
   @override
   Future<Either<Failure, ProfileModel>> getProfile() async {
     try {
-      final response = await apiService.get(endPoint: EndPoints.profile, sendToken: true);
+      final response = await apiService.get(
+        endPoint: EndPoints.profile,
+        sendToken: true,
+      );
       final dynamic profileData = response.data;
       final ProfileModel profile = ProfileModel.fromJson(profileData);
       return Right(profile);
@@ -30,10 +33,11 @@ class ProfileRepoImpl implements ProfileRepo {
   }
 
   @override
-  Future<Either<Failure, String>> changePassword({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, String>> changePassword({
+    required Map<String, dynamic> data,
+  }) async {
     try {
-
-     await apiService.postData(
+      await apiService.postData(
         endPoint: EndPoints.changePassword,
         data: data,
         sendToken: true,

@@ -11,17 +11,25 @@ class LoginCubit extends Cubit<LoginStates> {
   final AuthRepo loginRepo;
 
   Future<void> userlogin({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     emit(LoginLoadingState());
    final result = await loginRepo.userLogin(
-      email: email,
+      identifier: identifier,
       password: password,
     );
      result.fold((failure) {
       emit(LoginErrorState(failure.errMessage));
     }, (data) async {
+      final role = data.data?.role;
+      // Only block when the server actually reports a non-admin role;
+      // if it's missing we can't verify it, so let the login through.
+      if (role != null && role.toLowerCase() != 'admin') {
+        emit(LoginErrorState("غير مصرح لك بالدخول"));
+        return;
+      }
+      await CacheHelper.saveData(key: "token", value: data.data!.accessToken);
       emit(LoginSuccessState(data));
     });
   }

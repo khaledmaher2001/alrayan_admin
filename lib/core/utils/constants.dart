@@ -25,6 +25,8 @@ class AppConstants {
         return "تم التوصيل";
       case "cancelled":
         return "تم الإلغاء";
+      case "refunded":
+        return "تم الاسترداد";
       default:
         return "منتهي الصلاحية";
     }

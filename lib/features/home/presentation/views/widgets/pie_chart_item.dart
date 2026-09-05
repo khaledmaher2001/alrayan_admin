@@ -10,18 +10,21 @@ class PieChartItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, double> dataMap = instance.ordersByStatus!.length>0?{
-      AppConstants.getStatusText(instance.ordersByStatus![4].status!): instance.ordersByStatus![4].percentage?.toDouble() ?? 0,
-      AppConstants.getStatusText(instance.ordersByStatus![1].status!): instance.ordersByStatus![1].percentage?.toDouble() ?? 0,
-      AppConstants.getStatusText(instance.ordersByStatus![3].status!): instance.ordersByStatus![3].percentage?.toDouble() ?? 0,
-      AppConstants.getStatusText(instance.ordersByStatus![0].status!): instance.ordersByStatus![0].percentage?.toDouble() ?? 0,
-      AppConstants.getStatusText(instance.ordersByStatus![2].status!): instance.ordersByStatus![2].percentage?.toDouble() ?? 0,
-    }:{
-      "مكتمل": 0,
-      "قيد التنفيذ": 0,
-      "ملغي": 0,
-      "قيد المراجعة": 0,
-      "قيد الشحن": 0,
+    const List<String> knownStatuses = ['pending', 'shipped', 'confirmed', 'delivered', 'cancelled', 'refunded'];
+
+    OrdersByStatus getStatusData(String status) {
+      return instance.ordersByStatus?.firstWhere(
+            (o) => o.status == status,
+            orElse: () => OrdersByStatus(status: status, count: 0, percentage: 0),
+          ) ??
+          OrdersByStatus(status: status, count: 0, percentage: 0);
+    }
+
+    final statusDataList = knownStatuses.map(getStatusData).toList();
+
+    Map<String, double> dataMap = {
+      for (final data in statusDataList)
+        AppConstants.getStatusText(data.status): data.percentage?.toDouble() ?? 0.0,
     };
 
     final colorList = <Color>[
@@ -30,6 +33,7 @@ class PieChartItem extends StatelessWidget {
       Colors.blue.withOpacity(0.8),
       Colors.green.withOpacity(0.8),
       Colors.red.withOpacity(0.8),
+      Colors.grey.withOpacity(0.8),
     ];
 
     return Padding(
@@ -40,22 +44,30 @@ class PieChartItem extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(dataMap.length, (index) {
-              String key = dataMap.keys.elementAt(index);
-              Color color = colorList[index];
-              return Row(
-                children: [
-                  Container(
-                    width: 16,
-                    height: 16,
-                    color: color,
-                  ),
-                  SizedBox(width:AppConstants.width5(context) ),
-                  Text(
-                    key,
-                    style: Styles.inter14500black(context),
-                  ),
-                ],
+            children: List.generate(statusDataList.length, (index) {
+              final data = statusDataList[index];
+              final Color color = colorList[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      color: color,
+                    ),
+                    SizedBox(width: AppConstants.width5(context)),
+                    Text(
+                      AppConstants.getStatusText(data.status),
+                      style: Styles.inter14500black(context),
+                    ),
+                    SizedBox(width: AppConstants.width5(context)),
+                    Text(
+                      '(${data.count ?? 0})',
+                      style: Styles.inter10400grey(context),
+                    ),
+                  ],
+                ),
               );
             }),
           ),

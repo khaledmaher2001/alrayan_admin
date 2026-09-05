@@ -3,6 +3,7 @@ import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomCouponField extends StatelessWidget {
   const CustomCouponField({
@@ -11,6 +12,8 @@ class CustomCouponField extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.keyboardType, required this.validationText, this.onTap, this.readOnly=false, this.onChange,
+    this.inputFormatters,
+    this.validator,
   });
 
   final String title, hint,validationText;
@@ -19,6 +22,8 @@ class CustomCouponField extends StatelessWidget {
   final Function()? onTap;
   final Function(String)? onChange;
   final bool readOnly;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +43,9 @@ class CustomCouponField extends StatelessWidget {
             if (value == null || value.isEmpty) {
               return validationText;
             }
+            if (validator != null) {
+              return validator!(value);
+            }
             return null;
           },
           onChange: onChange ,
@@ -48,6 +56,7 @@ class CustomCouponField extends StatelessWidget {
           textInputType: keyboardType,
           controller: controller,
           readOnly: readOnly,
+          formatter: inputFormatters,
           contentPaddingVertical: AppConstants.height15(context),
         ),
       ],

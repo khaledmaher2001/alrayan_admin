@@ -7,11 +7,15 @@ import '../models/settings_model.dart';
 import '../models/update_settings_model.dart';
 
 abstract class AuthRepo {
-  Future<Either<Failure, LoginModel>> userLogin(
-      {required String email, required String password});
+  Future<Either<Failure, LoginModel>> userLogin({
+    required String identifier,
+    required String password,
+  });
   Future<Either<Failure, SettingsModel>> getSettings();
-  Future<Either<Failure, UpdateSettingsModel>> updateSettings({required Map<String,dynamic> data});
-  Future<Either<Failure,RegisterModel>>userRegister({
+  Future<Either<Failure, UpdateSettingsModel>> updateSettings({
+    required Map<String, dynamic> data,
+  });
+  Future<Either<Failure, RegisterModel>> userRegister({
     required String name,
     required String email,
     required String password,
@@ -19,8 +23,11 @@ abstract class AuthRepo {
   });
   Future<Either<Failure, bool>> verifyOtp({required Map<String, dynamic> data});
   Future<Either<Failure, String>> sendOtp({required String email});
-  Future<Either<Failure, String>> resetPassword(
-      {required Map<String, dynamic> data});
+  Future<Either<Failure, String>> resetPassword({
+    required Map<String, dynamic> data,
+  });
   Future<Either<Failure, String>> forgetPassword({required String email});
-
+  Future<Either<Failure, bool>> toggleAppStatus();
+  Future<Either<Failure, bool>> toggleMaintenance();
+  Future<Either<Failure, bool>> logout();
 }

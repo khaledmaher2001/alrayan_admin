@@ -48,10 +48,14 @@ class _SplashViewBodyState extends State<SplashViewBody>
 
   void navigate({int seconds = 2}) {
     Future.delayed(Duration(seconds: seconds), () async {
-      if (CacheKeysManger.tokenStatus() != "") {
-        GoRouter.of(context).pushReplacement("/mainLayoutView");
+      if (CacheKeysManger.onBoardingStatus()) {
+        if (CacheKeysManger.tokenStatus() != "") {
+          GoRouter.of(context).pushReplacement("/mainLayoutView");
+        } else {
+          GoRouter.of(context).pushReplacement("/loginView");
+        }
       } else {
-        GoRouter.of(context).pushReplacement("/loginView");
+        GoRouter.of(context).pushReplacement("/onBoardingView");
       }
     });
   }

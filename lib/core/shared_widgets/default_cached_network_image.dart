@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../utils/colors/colors.dart';
+
 class DefaultCachedNetworkImage extends StatelessWidget {
   final String? imageUrl;
   final String? char;
@@ -38,11 +40,12 @@ class DefaultCachedNetworkImage extends StatelessWidget {
         ),
       ),
       errorWidget: (context, url, error) =>  Container(decoration:BoxDecoration(
-        color: color??Colors.white38,
+        color: color??AppColors.primaryColor.shade50,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),child: Center(child: Text(char??"",style: Styles.DIN24500(context).copyWith(
-        color: Colors.white
-      ),))),
+      ),child: Center(child: Padding(
+        padding: EdgeInsets.all(AppConstants.sp20(context)),
+        child: Image.asset(AssetData.logoWhite,fit: BoxFit.fill,),
+      ))),
       fit: fit??BoxFit.cover,
     );
   }

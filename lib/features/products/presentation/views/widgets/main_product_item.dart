@@ -4,6 +4,7 @@ import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart
 import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
 import 'package:alrayan_admin/features/product_details/presentation/views/products_details_view.dart';
 import 'package:alrayan_admin/features/products/data/repo/products_repo_impl.dart';
+import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/toggle_product_hidden/toggle_product_hidden_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/toggle_product_hidden/toggle_product_hidden_states.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,12 @@ class _MainProductItemState extends State<MainProductItem> {
       create: (_) => ToggleProductHiddenCubit(getIt.get<ProductsRepoImpl>()),
       child: BlocConsumer<ToggleProductHiddenCubit, ToggleProductHiddenStates>(
         listener: (context, state) {
-          if (state is ToggleProductHiddenErrorState) {
+          if (state is ToggleProductHiddenSuccessState) {
+            context.read<GetProductsCubit>().updateHiddenLocally(
+                  widget.productDetails.id!,
+                  _isHidden,
+                );
+          } else if (state is ToggleProductHiddenErrorState) {
             setState(() => _isHidden = !_isHidden);
             toast(text: state.error, color: Colors.red);
           }

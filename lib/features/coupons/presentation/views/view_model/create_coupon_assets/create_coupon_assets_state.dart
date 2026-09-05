@@ -12,5 +12,6 @@ class SelectUsersTypeSuccessState extends CreateCouponAssetsState {}
 class SelectProductSuccessState extends CreateCouponAssetsState {}
 class SelectUserSuccessState extends CreateCouponAssetsState {}
 class SelectCategoriesSuccessState extends CreateCouponAssetsState {}
+class ToggleIsHiddenSuccessState extends CreateCouponAssetsState {}
 
 

@@ -4,7 +4,6 @@ import 'package:alrayan_admin/features/main_layout/presentation/views/widgets/bo
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/orders_view.dart';
 import 'package:alrayan_admin/features/products/presentation/views/products_view.dart';
-import 'package:alrayan_admin/features/profile/presentation/view/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,10 +19,9 @@ class MainLayoutView extends StatefulWidget {
 class _MainLayoutViewState extends State<MainLayoutView> {
   List<Widget> screens = [
     HomeView(),
-    CategoriesView(),
     OrdersView(),
+    CategoriesView(),
     ProductsView(),
-    ProfileView(),
   ];
 
   @override
@@ -34,20 +32,18 @@ class _MainLayoutViewState extends State<MainLayoutView> {
         builder: (context, state) {
           return AnnotatedRegion(
             value: SystemUiOverlayStyle(
-              statusBarColor: Colors.white,
+              statusBarColor: Colors.transparent,
               statusBarIconBrightness: Brightness.dark,
               systemNavigationBarColor: Colors.white,
               statusBarBrightness: Brightness.dark,
             ),
             child: Scaffold(
               resizeToAvoidBottomInset: false,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(child: screens[ChangeNavBarStatusCubit.get(context).currentIndex]),
-                    const BottomNavBar(),
-                  ],
-                ),
+              body: Column(
+                children: [
+                  Expanded(child: screens[ChangeNavBarStatusCubit.get(context).currentIndex]),
+                  const BottomNavBar(),
+                ],
               ),
             ),
           );

@@ -1,4 +1,3 @@
-
 sealed class ChangePasswordStates {}
 
 final class ChangePasswordInitialState extends ChangePasswordStates {}
@@ -16,5 +15,3 @@ final class ChangePasswordErrorState extends ChangePasswordStates {
 
   ChangePasswordErrorState(this.error);
 }
-
-

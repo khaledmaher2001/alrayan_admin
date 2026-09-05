@@ -357,18 +357,3 @@ class RegisterView extends StatelessWidget {
     );
   }
 }
-
-class NoLeadingZeroFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    // If the new text is not empty and starts with '0',
-    // revert back to the old value (reject the change).
-    if (newValue.text.isNotEmpty && newValue.text.startsWith('0')) {
-      return oldValue;
-    }
-    return newValue;
-  }
-}

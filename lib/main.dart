@@ -20,11 +20,21 @@ import 'package:alrayan_admin/features/coupons/data/repo/coupons_repo_impl.dart'
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/create_coupon_assets/create_coupon_assets_cubit.dart';
 import 'package:alrayan_admin/features/coupons/presentation/views/view_model/get_coupons/get_coupons_cubit.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_cubit.dart';
+import 'package:alrayan_admin/features/loyalty_settings/data/repo/loyalty_settings_repo_impl.dart';
+import 'package:alrayan_admin/features/loyalty_settings/presentation/view_model/get_loyalty_config/get_loyalty_config_cubit.dart';
+import 'package:alrayan_admin/features/loyalty_settings/presentation/view_model/update_loyalty_config/update_loyalty_config_cubit.dart';
+import 'package:alrayan_admin/features/delivery_settings/data/repo/delivery_settings_repo_impl.dart';
+import 'package:alrayan_admin/features/delivery_settings/presentation/view_model/get_app_settings/get_app_settings_cubit.dart';
+import 'package:alrayan_admin/features/delivery_settings/presentation/view_model/update_app_settings/update_app_settings_cubit.dart';
 import 'package:alrayan_admin/features/lucky_wheel/data/repo/lucky_wheel_repo_impl.dart';
 import 'package:alrayan_admin/features/lucky_wheel/presentation/view_models/get_lucky_wheel_items/get_lucky_wheel_items_cubit.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/notifications/data/repo/notifications_repo_impl.dart';
 import 'package:alrayan_admin/features/notifications/presenatation/view_model/get_notifications/get_notifications_cubit.dart';
+import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
+import 'package:alrayan_admin/features/orders/data/services/orders_socket_service.dart';
+import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
+import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:alrayan_admin/features/products/data/repo/products_repo_impl.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/change_category/change_category_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
@@ -43,92 +53,24 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import 'core/utils/roots/app_router.dart';
 import 'core/utils/services/local_services/cache_helper.dart';
+import 'core/utils/services/local_services/local_notification_service.dart';
 import 'core/utils/services/remote_services/service_locator.dart';
 import 'core/utils/theme/app_theme.dart';
 import 'features/auth/presentation/view_model/forget_password/forget_password_cubit.dart';
 import 'features/auth/presentation/view_model/get_settings/get_settings_cubit.dart';
+import 'features/auth/presentation/view_model/logout/logout_cubit.dart';
 import 'features/auth/presentation/view_model/reset_password/reset_password_cubit.dart';
+import 'features/auth/presentation/view_model/toggle_app_status/toggle_app_status_cubit.dart';
+import 'features/auth/presentation/view_model/toggle_maintenance/toggle_maintenance_cubit.dart';
 import 'features/auth/presentation/view_model/user_login/login_cubit.dart';
+import 'features/auth/presentation/view_model/user_login/login_state.dart';
 import 'features/auth/presentation/view_model/user_register/register_cubit.dart';
 import 'features/home/data/repo/home_repo_impl.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
-
-const AndroidNotificationChannel _androidNotificationChannel =
-AndroidNotificationChannel(
-  'high_importance_channel_v1',
-  'High Importance Notifications',
-  description: 'This channel is used for important notifications.',
-  importance: Importance.max,
-  playSound: true,
-  sound: RawResourceAndroidNotificationSound('notification_sound'),
-);
-
-Future<void> initializeLocalNotifications() async {
-  const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const DarwinInitializationSettings initializationSettingsIOS =
-  DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(_androidNotificationChannel);
-}
-
-Future<void> showLocalNotificationWithSound({
-  required String title,
-  required String body,
-}) async {
-  const AndroidNotificationDetails androidDetails =
-  AndroidNotificationDetails(
-    'high_importance_channel_v1',
-    'High Importance Notifications',
-    channelDescription: 'This channel is used for important notifications.',
-    importance: Importance.max,
-    priority: Priority.high,
-    playSound: true,
-    sound: RawResourceAndroidNotificationSound('notification_sound'),
-  );
-
-  const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-    presentAlert: true,
-    presentBadge: true,
-    presentSound: true,
-    sound: 'notification_sound.aiff',
-  );
-
-  const NotificationDetails notificationDetails = NotificationDetails(
-    android: androidDetails,
-    iOS: iosDetails,
-  );
-
-  await flutterLocalNotificationsPlugin.show(
-    DateTime.now().millisecondsSinceEpoch ~/ 1000,
-    title,
-    body,
-    notificationDetails,
-  );
-}
 
 Future<void> setupOneSignalForegroundNotifications() async {
   OneSignal.Notifications.addForegroundWillDisplayListener((event) async {
@@ -138,10 +80,7 @@ Future<void> setupOneSignalForegroundNotifications() async {
     final title = notification.title ?? 'الريان - أدمن';
     final body = notification.body ?? '';
 
-    await showLocalNotificationWithSound(
-      title: title,
-      body: body,
-    );
+    await LocalNotificationService.showWithSound(title: title, body: body);
   });
 }
 
@@ -159,10 +98,8 @@ Future<void> main() async {
 
   await OneSignal.Notifications.requestPermission(true);
 
-  await initializeLocalNotifications();
+  await LocalNotificationService.initialize();
   await setupOneSignalForegroundNotifications();
-
-  print("Token : ${CacheKeysManger.tokenStatus()}");
 
   runApp(
     EasyLocalization(
@@ -191,28 +128,110 @@ class AlRayanAdmin extends StatelessWidget {
         BlocProvider(create: (context) => AdsAssetsCubit()),
         BlocProvider(create: (context) => FilePickerCubit(getIt())),
         BlocProvider(create: (context) => CreateCouponAssetsCubit()),
-        BlocProvider(create: (context) => LoginCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => GetAllUsersCubit(getIt.get<AllUsersRepoImpl>())),
-        BlocProvider(create: (context) => RegisterCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => ForgetPasswordCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => ResetPasswordCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => GetTopUsersCubit(getIt<TopUsersRepoImpl>())),
-        BlocProvider(create: (context) => GetTopProductsCubit(getIt<TopProductsRepoImpl>())),
-        BlocProvider(create: (context) => GetReviewsCubit(getIt<ReviewRepoImpl>())),
-        BlocProvider(create: (context) => GetReviewsSummeryCubit(getIt<ReviewRepoImpl>())),
-        BlocProvider(create: (context) => GetSettingsCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => UpdateSettingsCubit(getIt.get<AuthRepoImpl>())),
-        BlocProvider(create: (context) => GetNotificationsCubit(getIt.get<NotificationsRepoImpl>())),
-        BlocProvider(create: (context) => GetCategoriesCubit(getIt.get<CategoriesRepoImpl>())..getCategories()),
-        BlocProvider(create: (context) => GetSubCategoriesCubit(getIt<CategoriesRepoImpl>())),
+        BlocProvider(
+          create: (context) => LoginCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetAllUsersCubit(getIt.get<AllUsersRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => RegisterCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => ForgetPasswordCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => ResetPasswordCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetTopUsersCubit(getIt<TopUsersRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetTopProductsCubit(getIt<TopProductsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetReviewsCubit(getIt<ReviewRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetReviewsSummeryCubit(getIt<ReviewRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetSettingsCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => UpdateSettingsCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => ToggleAppStatusCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ToggleMaintenanceCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetNotificationsCubit(getIt.get<NotificationsRepoImpl>()),
+        ),
+        // Provided at the root (not inside OrdersView) so the realtime
+        // socket subscription and the "new order" state stay alive no
+        // matter which tab is currently showing.
+        BlocProvider(
+          create: (context) => GetOrdersCubit(getIt<OrdersRepoImpl>()),
+        ),
+        BlocProvider(create: (context) => OrderStatusFilterCubit()),
+        BlocProvider(
+          create: (context) =>
+              GetCategoriesCubit(getIt.get<CategoriesRepoImpl>())
+                ..getCategories(),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetSubCategoriesCubit(getIt<CategoriesRepoImpl>()),
+        ),
         BlocProvider(create: (context) => ChangeCategoryCubit()),
-        BlocProvider(create: (context) => GetProductsCubit(getIt.get<ProductsRepoImpl>())),
-        BlocProvider(create: (context) => OfferBannerCubit(getIt.get<AdsRepoImpl>())),
-        BlocProvider(create: (context) => GetProfileCubit(getIt.get<ProfileRepoImpl>())),
-        BlocProvider(create: (context) => GetCouponsCubit(getIt.get<CouponsRepoImpl>())..getCoupons()),
-        BlocProvider(create: (context) => GetLuckyWheelItemsCubit(getIt.get<LuckyWheelRepoImpl>())),
-        BlocProvider(create: (context) => GetZonesCubit(getIt.get<ZonesRepoImpl>())),
-        BlocProvider(create: (context) => GetHomeStatisticsCubit(getIt.get<HomeRepoImpl>())),
+        BlocProvider(
+          create: (context) => GetProductsCubit(getIt.get<ProductsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => OfferBannerCubit(getIt.get<AdsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetProfileCubit(getIt.get<ProfileRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetCouponsCubit(getIt.get<CouponsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetLuckyWheelItemsCubit(getIt.get<LuckyWheelRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => GetZonesCubit(getIt.get<ZonesRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetHomeStatisticsCubit(getIt.get<HomeRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) => LogoutCubit(getIt.get<AuthRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetLoyaltyConfigCubit(getIt.get<LoyaltySettingsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              UpdateLoyaltyConfigCubit(getIt.get<LoyaltySettingsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              GetAppSettingsCubit(getIt.get<DeliverySettingsRepoImpl>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              UpdateAppSettingsCubit(getIt.get<DeliverySettingsRepoImpl>()),
+        ),
       ],
       child: const _AdminAppBootstrap(),
     );
@@ -226,7 +245,8 @@ class _AdminAppBootstrap extends StatefulWidget {
   State<_AdminAppBootstrap> createState() => _AdminAppBootstrapState();
 }
 
-class _AdminAppBootstrapState extends State<_AdminAppBootstrap> {
+class _AdminAppBootstrapState extends State<_AdminAppBootstrap>
+    with WidgetsBindingObserver {
   StreamSubscription<InternetConnectionStatus>? _subscription;
   bool _isRefreshing = false;
   bool _didInitialLoad = false;
@@ -234,13 +254,16 @@ class _AdminAppBootstrapState extends State<_AdminAppBootstrap> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initInternetHandling();
   }
 
   Future<void> _initInternetHandling() async {
     await _checkConnectivityAndApply(forceRefreshWhenOnline: true);
 
-    _subscription = InternetConnectionChecker().onStatusChange.listen((_) async {
+    _subscription = InternetConnectionChecker().onStatusChange.listen((
+      _,
+    ) async {
       if (!mounted) return;
       await _checkConnectivityAndApply(forceRefreshWhenOnline: false);
     });
@@ -287,6 +310,7 @@ class _AdminAppBootstrapState extends State<_AdminAppBootstrap> {
 
   Future<void> _refreshAppData() async {
     if (_isRefreshing) return;
+    if (CacheKeysManger.tokenStatus().isEmpty) return;
 
     _isRefreshing = true;
 
@@ -294,10 +318,7 @@ class _AdminAppBootstrapState extends State<_AdminAppBootstrap> {
       _didInitialLoad = true;
 
       context.read<GetAllUsersCubit>().getAllUsers(
-        data: {
-          'page': 1,
-          'limit': 12,
-        },
+        data: {'page': 1, 'limit': 12},
       );
       context.read<GetTopUsersCubit>().getTopUsers();
       context.read<GetTopProductsCubit>().getTopProducts();
@@ -306,45 +327,78 @@ class _AdminAppBootstrapState extends State<_AdminAppBootstrap> {
       context.read<GetSettingsCubit>().getSettings();
       context.read<GetNotificationsCubit>().getNotifications();
       context.read<GetCategoriesCubit>().getCategories();
-      context.read<GetProductsCubit>().getProducts();
-      context.read<OfferBannerCubit>().fetchOfferBanners();
       context.read<GetProfileCubit>().getProfile();
-      context.read<GetCouponsCubit>().getCoupons();
-      context.read<GetLuckyWheelItemsCubit>().getLuckyWheelItems();
-      context.read<GetZonesCubit>().getZones(withLoading: true);
       context.read<GetHomeStatisticsCubit>().getHomeStatistics();
+      context.read<GetAppSettingsCubit>().getAppSettings();
+
+      final filterCubit = context.read<OrderStatusFilterCubit>();
+      context.read<GetOrdersCubit>().getOrders(
+        status: filterCubit.status[filterCubit.selectedFilterIndex],
+      );
+      getIt<OrdersSocketService>().connect();
     } finally {
       _isRefreshing = false;
     }
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (CacheKeysManger.tokenStatus().isEmpty) return;
+
+    if (state == AppLifecycleState.paused) {
+      // Let the connection go instead of leaving a socket the OS may
+      // silently kill while backgrounded — resuming reconnects clean.
+      getIt<OrdersSocketService>().disconnect();
+    } else if (state == AppLifecycleState.resumed) {
+      // Don't trust a socket that survived backgrounding — a suspended
+      // connection can report "connected" without actually being alive, so
+      // always start fresh.
+      getIt<OrdersSocketService>().forceReconnect();
+
+      // The socket was down for the whole background stretch, so any
+      // order:created events that fired during it are gone for good —
+      // resync via REST to backfill whatever was missed.
+      if (mounted) {
+        final filterCubit = context.read<OrderStatusFilterCubit>();
+        context.read<GetOrdersCubit>().getOrders(
+          status: filterCubit.status[filterCubit.selectedFilterIndex],
+        );
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _subscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: "الريان - أدمن",
-      theme: themeDataLight,
-      debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: Stack(
-            children: [
-              child ?? const SizedBox.shrink(),
-              const NoInternetOverlay(),
-            ],
-          ),
-        );
-      },
+    return BlocListener<LoginCubit, LoginStates>(
+      listenWhen: (_, state) => state is LoginSuccessState,
+      listener: (context, _) => _refreshAppData(),
+      child: MaterialApp.router(
+        title: "الريان - أدمن",
+        theme: themeDataLight,
+        debugShowCheckedModeBanner: false,
+        routerConfig: AppRouter.router,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+            child: Stack(
+              children: [
+                child ?? const SizedBox.shrink(),
+                const NoInternetOverlay(),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

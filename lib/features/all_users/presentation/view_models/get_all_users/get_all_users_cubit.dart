@@ -12,6 +12,11 @@ class GetAllUsersCubit extends Cubit<GetAllUsersStates> {
   AllUsersModel? allUsersModel;
   int page = 1;
 
+  void removeUser(int id) {
+    allUsersList.removeWhere((u) => u.id == id);
+    emit(GetAllUsersSuccessState(model: allUsersModel!));
+  }
+
   Future<void> getAllUsers({required var data, bool withLoading = true}) async {
     if (withLoading) {
       allUsersModel = null;

@@ -43,6 +43,14 @@ class LuckyWheelItem extends StatelessWidget {
   final int itemCount;
   final double usedProbabilityWithoutThis;
 
+  bool get isExpired {
+    final expiresAt = instance.expiresAt;
+    if (expiresAt == null || expiresAt.isEmpty) return false;
+    final date = DateTime.tryParse(expiresAt);
+    if (date == null) return false;
+    return date.isBefore(DateTime.now());
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<EditLuckyItemCubit, EditLuckyItemState>(
@@ -54,159 +62,194 @@ class LuckyWheelItem extends StatelessWidget {
             final isDeletingThis = deleteState is DeleteLuckyItemLoadingState &&
                 context.read<DeleteLuckyItemCubit>().deletingItemId == instance.id;
             final canDelete = itemCount > _kMinItems;
+            final probabilityPercent =
+                ((instance.probability is num ? (instance.probability as num).toDouble() : 0.0) * 100)
+                    .toStringAsFixed(0);
 
             return Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: AppConstants.width20(context),
               ),
               child: Container(
+                padding: EdgeInsets.all(AppConstants.sp15(context)),
                 decoration: BoxDecoration(
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                  color: AppColors.gray.withAlpha(25),
+                  boxShadow: [
+                    BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
+                  ],
                 ),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(AppConstants.sp10(context)),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadiusDirectional.horizontal(
-                            start: Radius.circular(AppConstants.sp10(context)),
-                          ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: AppConstants.width20(context) * 1.4,
+                      height: AppConstants.width20(context) * 1.4,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.primaryColor, width: 1.5),
+                      ),
+                      child: Text(
+                        "${index + 1}",
+                        style: Styles.inter14600gray(context).copyWith(
                           color: AppColors.primaryColor,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "${index + 1}",
-                            style: Styles.DIN24500(context),
-                          ),
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(width: AppConstants.width10(context)),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.all(AppConstants.sp15(context)),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                    ),
+                    SizedBox(width: AppConstants.width10(context)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            instance.displayText?.isNotEmpty == true
+                                ? instance.displayText!
+                                : (_rewardTypeAr[instance.type] ?? instance.type ?? ''),
+                            style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          SizedBox(height: AppConstants.height5(context)),
+                          Wrap(
+                            spacing: AppConstants.width5(context),
+                            runSpacing: AppConstants.height5(context) / 2,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppConstants.width10(context) - 2,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
+                                ),
+                                child: Text(
+                                  _rewardTypeAr[instance.type] ?? instance.type ?? '',
+                                  style: Styles.inter10400grey(context).copyWith(color: Colors.black),
+                                ),
+                              ),
+                              if (instance.discountType != null)
+                                Text(
+                                  _discountTypeAr[instance.discountType] ?? instance.discountType!,
+                                  style: Styles.inter10400grey(context),
+                                ),
+                              if (instance.couponCode != null && instance.couponCode!.isNotEmpty)
+                                Text(instance.couponCode!, style: Styles.inter10400grey(context)),
+                            ],
+                          ),
+                          if (isExpired) ...[
+                            SizedBox(height: AppConstants.height5(context)),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppConstants.sp5(context),
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withAlpha(25),
+                                borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 14, color: Colors.red),
+                                  SizedBox(width: AppConstants.width5(context)),
+                                  Text(
+                                    'انتهت صلاحية هذا العنصر',
+                                    style: Styles.inter14600gray(context).copyWith(
+                                      color: Colors.red,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: AppConstants.height5(context)),
+                          Text(
+                            'نسبة الظهور $probabilityPercent%',
+                            style: Styles.inter12500Black(context).copyWith(
+                              color: AppColors.primaryColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: AppConstants.width10(context)),
+                    isTogglingThis
+                        ? const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                        : SmallSwitch(
+                      value: instance.isActive ?? false,
+                      onChanged: (v) {
+                        context.read<EditLuckyItemCubit>().editLuckyItem(
+                          itemId: instance.id!,
+                          data: {'isActive': v},
+                        );
+                      },
+                    ),
+
+                    isDeletingThis
+                        ? Padding(
+                            padding: EdgeInsets.all(AppConstants.sp10(context)),
+                            child: SizedBox(
+                              width: AppConstants.width15(context),
+                              height: AppConstants.width15(context),
+                              child: const CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, color: Colors.black87),
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                NavigationUtils.navigateTo(
+                                  context: context,
+                                  destinationScreen: CreateEditLuckyItemView(
+                                    existingItem: instance,
+                                    usedProbability: usedProbabilityWithoutThis,
+                                  ),
+                                );
+                              } else if (value == 'delete' && canDelete) {
+                                _confirmDelete(context);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
                                   children: [
-                                    Container(
-                                      padding: EdgeInsets.all(AppConstants.sp5(context)),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-                                        color: AppColors.primaryColor.withAlpha(25),
-                                      ),
-                                      child: Text(
-                                        _rewardTypeAr[instance.type] ?? instance.type ?? '',
-                                        style: Styles.inter14500black(context),
-                                      ),
+                                    SvgPicture.asset(AssetData.edit, width: AppConstants.width15(context)),
+                                    SizedBox(width: AppConstants.width10(context)),
+                                    Text("تعديل", style: Styles.inter14500black(context)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                enabled: canDelete,
+                                child: Row(
+                                  children: [
+                                    Opacity(
+                                      opacity: canDelete ? 1 : .4,
+                                      child: SvgPicture.asset(AssetData.delete, width: AppConstants.width15(context)),
                                     ),
-                                    if (instance.discountType != null) ...[
-                                      SizedBox(height: AppConstants.height5(context)),
-                                      Text(
-                                        _discountTypeAr[instance.discountType] ??
-                                            instance.discountType!,
-                                        style: Styles.inter14600gray(context)
-                                            .copyWith(color: Colors.black),
-                                      ),
-                                    ],
-                                    if (instance.couponCode != null &&
-                                        instance.couponCode!.isNotEmpty) ...[
-                                      SizedBox(height: AppConstants.height5(context)),
-                                      Text(
-                                        instance.couponCode!,
-                                        style: Styles.inter14600gray(context),
-                                      ),
-                                    ],
-                                    SizedBox(height: AppConstants.height5(context)),
+                                    SizedBox(width: AppConstants.width10(context)),
                                     Text(
-                                      instance.displayText ?? '',
-                                      style: Styles.inter14600gray(context),
-                                    ),
-                                    SizedBox(height: AppConstants.height10(context)),
-                                    Row(
-                                      children: [
-                                        _ActionButton(
-                                          icon: AssetData.edit,
-                                          onTap: () => NavigationUtils.navigateTo(
-                                            context: context,
-                                            destinationScreen: CreateEditLuckyItemView(
-                                              existingItem: instance,
-                                              usedProbability: usedProbabilityWithoutThis,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: AppConstants.width10(context)),
-                                        isDeletingThis
-                                            ? const SizedBox(
-                                                width: 32,
-                                                height: 32,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              )
-                                            : Opacity(
-                                                opacity: canDelete ? 1.0 : 0.35,
-                                                child: _ActionButton(
-                                                  icon: AssetData.delete,
-                                                  onTap: canDelete
-                                                      ? () => _confirmDelete(context)
-                                                      : null,
-                                                ),
-                                              ),
-                                      ],
+                                      canDelete ? "حذف" : "حذف (الحد الأدنى $_kMinItems جوائز)",
+                                      style: Styles.inter14500black(context).copyWith(
+                                        color: canDelete ? AppColors.redColor : Colors.grey,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'نسبة ظهوره',
-                                    style: Styles.inter14600gray(context)
-                                        .copyWith(color: Colors.black),
-                                  ),
-                                  SizedBox(height: AppConstants.height5(context)),
-                                  Text(
-                                    '%${((instance.probability is num ? (instance.probability as num).toDouble() : 0.0) * 100).toStringAsFixed(0)}',
-                                    style: Styles.DIN20500(context)
-                                        .copyWith(color: AppColors.primaryColor),
-                                  ),
-                                  SizedBox(height: AppConstants.height10(context)),
-                                  Text(
-                                    'تفعيل العنصر',
-                                    style: Styles.inter14600gray(context)
-                                        .copyWith(color: Colors.black),
-                                  ),
-                                  SizedBox(height: AppConstants.height5(context)),
-                                  isTogglingThis
-                                      ? const SizedBox(
-                                          width: 32,
-                                          height: 32,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : SmallSwitch(
-                                          value: instance.isActive ?? false,
-                                          onChanged: (v) {
-                                            context
-                                                .read<EditLuckyItemCubit>()
-                                                .editLuckyItem(
-                                              itemId: instance.id!,
-                                              data: {'isActive': v},
-                                            );
-                                          },
-                                        ),
-                                ],
-                              ),
                             ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             );
@@ -217,53 +260,55 @@ class LuckyWheelItem extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final bool? shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('حذف الجائزة'),
-        content: Text('هل تريد حذف "${instance.displayText ?? ''}"؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('إلغاء'),
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            "تأكيد الحذف",
+            style: Styles.inter24600black(context),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('حذف'),
+          content: Text(
+            "هل أنت متأكد أنك تريد حذف الجائزة؟",
+            style: Styles.font18500Grey900(context),
           ),
-        ],
-      ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppConstants.sp10(dialogContext),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                "إلغاء",
+                style: Styles.inter18500Black(context),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.redColor,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(
+                "حذف",
+                style: Styles.inter16400white(context),
+              ),
+            ),
+          ],
+        );
+      },
     );
-    if (confirmed == true && context.mounted) {
+    if (shouldDelete == true && context.mounted) {
       context.read<DeleteLuckyItemCubit>().deleteLuckyItem(
             itemId: instance.id!,
           );
     }
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.icon, this.onTap});
-  final String icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: Container(
-        padding: EdgeInsets.all(AppConstants.sp5(context)),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: SvgPicture.asset(
-          icon,
-          width: MediaQuery.of(context).size.width * .06,
-        ),
-      ),
-    );
   }
 }

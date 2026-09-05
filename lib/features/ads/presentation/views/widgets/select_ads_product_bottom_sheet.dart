@@ -64,6 +64,7 @@ class _SelectAdsProductBottomSheetState
   @override
   void initState() {
     context.read<GetProductsCubit>().page = 1;
+    context.read<GetProductsCubit>().getProducts();
     scrollController.addListener(pagination);
     super.initState();
   }
@@ -181,6 +182,7 @@ class _SelectAdsProductBottomSheetState
                                               MediaQuery.of(context).size.width * .2,
                                               imageWidth:
                                               MediaQuery.of(context).size.width * .2,
+                                              fit: BoxFit.contain,
                                             ),
                                             Expanded(
                                               child: Padding(
@@ -191,10 +193,14 @@ class _SelectAdsProductBottomSheetState
                                                     Text(
                                                       product.name?.ar ?? '',
                                                       style: Styles.inter16500black(context),
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
                                                     ),
                                                     Text(
                                                       product.description?.ar ?? '',
                                                       style: Styles.inter14600gray(context),
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
                                                     ),
                                                     Text(
                                                       "${product.price} جنية",

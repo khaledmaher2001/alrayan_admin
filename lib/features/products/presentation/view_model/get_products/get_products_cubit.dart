@@ -11,6 +11,13 @@ class GetProductsCubit extends Cubit<GetProductsStates> {
   List<Items> productsList = [];
   int page = 1;
 
+  void updateHiddenLocally(int productId, bool newIsHidden) {
+    final index = productsList.indexWhere((p) => p.id == productId);
+    if (index != -1) {
+      productsList[index].isHidden = newIsHidden;
+    }
+  }
+
   Future<void> getProducts({int? categoryId, String? name, int? subCategoryId, bool withLoading = true}) async {
     print("Called Nowwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
     print(categoryId);
