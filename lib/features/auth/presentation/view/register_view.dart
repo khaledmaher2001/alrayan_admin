@@ -1,6 +1,6 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_snackbar.dart';
-import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/auth/data/repo/auth_repo_impl.dart';
 import 'package:alrayan_admin/features/auth/presentation/view/otp_view.dart';
@@ -48,7 +48,7 @@ class RegisterView extends StatelessWidget {
           if (state is RegisterSuccessState) {
             customSnackBar(
               message: state.registerModel.message!,
-              color: Colors.green,
+              color: DsColor.success,
               context: context,
             );
             NavigationUtils.navigateReplacement(
@@ -62,7 +62,7 @@ class RegisterView extends StatelessWidget {
           if (state is RegisterErrorState) {
             customSnackBar(
               message: state.errorMessage,
-              color: Colors.red,
+              color: DsColor.danger,
               context: context,
             );
           }
@@ -190,7 +190,7 @@ class RegisterView extends StatelessWidget {
                                     child: DefaultTextFormField(
                                       validation: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return "يجب ادخال هذا الحقل";
+                                          return "s_this_field_is_required".tr();
                                         }
                                         if (value.length < 10 ||
                                             value[0].toString() != "1" ||
@@ -200,7 +200,7 @@ class RegisterView extends StatelessWidget {
                                               "2",
                                               "5",
                                             ].contains(value[1].toString())) {
-                                          return "يجب ادخال رقم هاتف صحيح";
+                                          return "s_enter_a_valid_phone_number".tr();
                                         }
                                         return null;
                                       },
@@ -211,7 +211,7 @@ class RegisterView extends StatelessWidget {
                                         ),
                                         NoLeadingZeroFormatter(),
                                       ],
-                                      hintText: "رقم الهاتف",
+                                      hintText: "s_phone_number".tr(),
                                       maxLength: 10,
                                       prefixIcon: Column(
                                         mainAxisAlignment:
@@ -227,7 +227,7 @@ class RegisterView extends StatelessWidget {
                                               "+20  |",
                                               style: Styles.inter16400white(
                                                 context,
-                                              ).copyWith(color: Colors.grey),
+                                              ).copyWith(color: DsColor.textMuted),
                                             ),
                                           ),
                                         ],

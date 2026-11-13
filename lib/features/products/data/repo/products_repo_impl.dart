@@ -12,9 +12,17 @@ class ProductsRepoImpl implements ProductsRepo {
   ProductsRepoImpl(this.apiService);
 
   @override
-  Future<Either<Failure, ProductsModel>> getProducts({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, ProductsModel>> getProducts({
+    required Map<String, dynamic> data,
+    CancelToken? cancelToken,
+  }) async {
     try {
-      var response = await apiService!.get(endPoint: EndPoints.products, query: data, sendToken: true);
+      var response = await apiService!.get(
+        endPoint: EndPoints.products,
+        query: data,
+        sendToken: true,
+        cancelToken: cancelToken,
+      );
       var result = ProductsModel.fromJson(response.data);
       return right(result);
     } catch (e) {
@@ -30,10 +38,11 @@ class ProductsRepoImpl implements ProductsRepo {
   }
 
   @override
-  Future<Either<Failure, Data>> getProductDetails({required int productId}) async {
+  Future<Either<Failure, Items>> getProductDetails({required int productId}) async {
     try {
       var response = await apiService!.get(endPoint: "${EndPoints.products}/$productId", sendToken: true);
-      var result = Data.fromJson(response.data["data"]);
+      // GET products/{id} returns the product itself (same shape as a list item).
+      var result = Items.fromJson(response.data["data"]);
       return right(result);
     } catch (e) {
       if (e is DioException) {

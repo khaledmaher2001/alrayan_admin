@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failure.dart';
@@ -11,7 +12,12 @@ import '../models/remittance_model.dart';
 abstract class DeliveryRepo {
   Future<Either<Failure, DeliveryAccountsModel>> getDeliveryAccounts({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   });
+
+  /// One courier by user id (null when there is no such courier). The
+  /// backend has no "get one" endpoint, so this pages through the accounts list.
+  Future<Either<Failure, DeliveryAccount?>> findDeliveryAccount(int userId);
 
   Future<Either<Failure, DeliveryStatisticsModel>> getDeliveryStatistics();
 
@@ -31,14 +37,17 @@ abstract class DeliveryRepo {
   Future<Either<Failure, DeliveryTransactionsModel>> getDeliveryTransactions({
     required int userId,
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   });
 
   Future<Either<Failure, ReleaseLogsModel>> getReleaseLogs({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   });
 
   Future<Either<Failure, RemittancesModel>> getRemittances({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   });
 
   Future<Either<Failure, String>> approveRemittance(int id);

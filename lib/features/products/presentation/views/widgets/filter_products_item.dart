@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_dropdown_formfield.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
@@ -27,7 +29,7 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
   @override
   void initState() {
     cubit = context.read<ChangeCategoryCubit>();
-    allLabel = isEn ? "All" : "الكل";
+    allLabel = isEn ? "All" : "s_all".tr();
     if (cubit.mainCategory == null || cubit.mainCategory!.isEmpty) {
       cubit
         ..mainCategory = allLabel
@@ -57,8 +59,8 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
                     if (state is GetCategoriesErrorState) {
                       return IconButton(
                         onPressed: () => context.read<GetCategoriesCubit>().getCategories(),
-                        icon: const Icon(Icons.refresh, color: Colors.redAccent),
-                        tooltip: "إعادة تحميل التصنيفات",
+                        icon: const Icon(Icons.refresh, color: DsColor.danger),
+                        tooltip: "s_reload_categories".tr(),
                       );
                     }
                     if (state is! GetCategoriesSuccessState) {
@@ -68,7 +70,7 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
                     final categories = state.categoriesModel.data ?? [];
 
                     return CustomDropDownButton(
-                      hintText: "اختر الصنف",
+                      hintText: "s_choose_a_category_2".tr(),
                       value: cubit.mainCategory,
                       items: [
                         allLabel,
@@ -135,7 +137,7 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
                     final isEnabled = subItems.isNotEmpty;
 
                     return CustomDropDownButton(
-                      hintText: "اختر الصنف الفرعى",
+                      hintText: "s_choose_a_subcategory".tr(),
                       value: cubit.subCategory,
                       items: subItems
                           .map(
@@ -166,7 +168,7 @@ class _FilterProductsItemState extends State<FilterProductsItem> {
                           : null,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "اختر الصنف الفرعى";
+                          return "s_choose_a_subcategory".tr();
                         }
                         return null;
                       },

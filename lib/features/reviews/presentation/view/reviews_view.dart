@@ -1,10 +1,10 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/features/reviews/presentation/view/widgets/review_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../core/shared_widgets/custom_loading_item.dart';
@@ -25,8 +25,6 @@ class ReviewsView extends StatefulWidget {
 
 class _ReviewsViewState extends State<ReviewsView> {
   final ScrollController scrollController = ScrollController();
-  bool isLoading = false;
-  int page = 1;
 
   /// -------- Helpers --------
   double calcPercentage(int? value, int total) {
@@ -34,30 +32,24 @@ class _ReviewsViewState extends State<ReviewsView> {
     return (value / total) * 100;
   }
 
-  void pagination() async {
-    final cubit = context.read<GetReviewsCubit>();
-    final totalPages = cubit.reviewsModel?.data?.metadata?.totalPages ?? 1;
-
-    if (page < totalPages &&
-        scrollController.position.pixels ==
-            scrollController.position.maxScrollExtent) {
-      setState(() {
-        isLoading = true;
-        page++;
-      });
-
-      await cubit.getReviews(page: page, withLoading: false);
-
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetReviewsCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,8 +58,7 @@ class _ReviewsViewState extends State<ReviewsView> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: AppConstants.height20(context)),
-            CustomAppBar(title: "تقييمات العملاء".tr(),textColor: Colors.black,withNotifications: false,hasBack: true,),
+            CustomAppBar(title: "s_customer_reviews".tr(),textColor: Colors.black,withNotifications: false,hasBack: true,),
             SizedBox(height: AppConstants.height30(context)),
             Expanded(
               child: Padding(
@@ -79,11 +70,10 @@ class _ReviewsViewState extends State<ReviewsView> {
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: () async {
-                          page = 1;
                           await context
                               .read<GetReviewsSummeryCubit>()
                               .getReviewsSummery();
-                          await context.read<GetReviewsCubit>().getReviews(page: 1);
+                          await context.read<GetReviewsCubit>().getReviews();
                         },
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -133,7 +123,7 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           itemCount: 5,
                                           ignoreGestures: true,
                                           allowHalfRating: true,
-                                          glowColor: const Color(0xffF5BE00),
+                                          glowColor: const Color(0xFFF5A623),
                                           itemPadding: EdgeInsetsDirectional.only(
                                               end:
                                               AppConstants.width10(context)),
@@ -168,8 +158,8 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           title: "5_stars".tr(),
                                           percentage: calcPercentage(
                                               distribution?.i5, totalReviews),
-                                          main: const Color(0xFF4CAF50),
-                                          back: const Color(0xFFE8F5E9),
+                                          main: const Color(0xFFF5A623),
+                                          back: DsColor.fill,
                                         ),
                                         SizedBox(
                                             height:
@@ -179,8 +169,8 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           title: "4_stars".tr(),
                                           percentage: calcPercentage(
                                               distribution?.i4, totalReviews),
-                                          main: const Color(0xFF26A69A),
-                                          back: const Color(0xFFE0F2F1),
+                                          main: const Color(0xFFF5A623),
+                                          back: DsColor.fill,
                                         ),
                                         SizedBox(
                                             height:
@@ -190,8 +180,8 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           title: "3_stars".tr(),
                                           percentage: calcPercentage(
                                               distribution?.i3, totalReviews),
-                                          main: const Color(0xFFFFC107),
-                                          back: const Color(0xFFFFF8E1),
+                                          main: const Color(0xFFF5A623),
+                                          back: DsColor.fill,
                                         ),
                                         SizedBox(
                                             height:
@@ -201,8 +191,8 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           title: "2_stars".tr(),
                                           percentage: calcPercentage(
                                               distribution?.i2, totalReviews),
-                                          main: const Color(0xFFFF9800),
-                                          back: const Color(0xFFFFF3E0),
+                                          main: const Color(0xFFF5A623),
+                                          back: DsColor.fill,
                                         ),
                                         SizedBox(
                                             height:
@@ -212,8 +202,8 @@ class _ReviewsViewState extends State<ReviewsView> {
                                           title: "1_stars".tr(),
                                           percentage: calcPercentage(
                                               distribution?.i1, totalReviews),
-                                          main: const Color(0xFFF44336),
-                                          back: const Color(0xFFFFEBEE),
+                                          main: const Color(0xFFF5A623),
+                                          back: DsColor.fill,
                                         ),
                                       ],
                                     );
@@ -233,7 +223,7 @@ class _ReviewsViewState extends State<ReviewsView> {
                                         allowHalfRating: true,
                                         itemCount: 5,
                                         ignoreGestures: true,
-                                        glowColor: const Color(0xffF5BE00),
+                                        glowColor: const Color(0xFFF5A623),
                                         itemPadding: EdgeInsetsDirectional.only(end: AppConstants.width10(context)),
                                         unratedColor: AppColors.greyColor[300],
                                         itemBuilder: (context, _) => SvgPicture.asset(AssetData.star),
@@ -247,31 +237,31 @@ class _ReviewsViewState extends State<ReviewsView> {
                                       ReviewSummeryItem(
                                           title: "5_stars".tr(),
                                           percentage: 0,
-                                          back:Color(0xffD9D9D9), main: Color(0xffD9D9D9),
+                                          back: DsColor.fill, main: DsColor.border,
                                       ),
                                       SizedBox(height: AppConstants.height20(context)),
                                       ReviewSummeryItem(
                                         title: "4_stars".tr(),
                                         percentage: 0,
-                                        back:Color(0xffD9D9D9), main: Color(0xffD9D9D9),
+                                        back: DsColor.fill, main: DsColor.border,
                                       ),
                                       SizedBox(height: AppConstants.height20(context)),
                                       ReviewSummeryItem(
                                         title: "3_stars".tr(),
                                         percentage: 0,
-                                        back:Color(0xffD9D9D9), main: Color(0xffD9D9D9),
+                                        back: DsColor.fill, main: DsColor.border,
                                       ),
                                       SizedBox(height: AppConstants.height20(context)),
                                       ReviewSummeryItem(
                                         title: "2_stars".tr(),
                                         percentage: 0,
-                                        back:Color(0xffD9D9D9), main: Color(0xffD9D9D9),
+                                        back: DsColor.fill, main: DsColor.border,
                                       ),
                                       SizedBox(height: AppConstants.height20(context)),
                                       ReviewSummeryItem(
                                         title: "1_stars".tr(),
                                         percentage: 0,
-                                        back:Color(0xffD9D9D9), main: Color(0xffD9D9D9),
+                                        back: DsColor.fill, main: DsColor.border,
                                       ),
                                     ],
                                   );
@@ -335,12 +325,18 @@ class _ReviewsViewState extends State<ReviewsView> {
                         ),
                       ),
                     ),
-                    if (isLoading)
-                      Padding(
-                        padding: EdgeInsets.all(AppConstants.sp15(context)),
-                        child:
-                        CustomLoadingItem(size: AppConstants.sp30(context)),
-                      ),
+                    BlocBuilder<GetReviewsCubit, GetReviewsState>(
+                      builder: (context, _) {
+                        if (!context.read<GetReviewsCubit>().isLoadingMore) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: EdgeInsets.all(AppConstants.sp15(context)),
+                          child: CustomLoadingItem(
+                              size: AppConstants.sp30(context)),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

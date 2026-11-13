@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -48,10 +49,8 @@ class DeliveryOrderItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          color: Colors.grey.shade200,
-          boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 6),
-          ],
+          color: DsColor.border,
+          border: Border.all(color: DsColor.border),
         ),
         child: Expanded(
           child: Column(
@@ -93,7 +92,7 @@ class DeliveryOrderItem extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppConstants.height10(context)),
-              Divider(color: Colors.grey.shade100, height: 1),
+              Divider(color: DsColor.fill, height: 1),
               SizedBox(height: AppConstants.height10(context)),
               Row(
                 children: [
@@ -107,7 +106,7 @@ class DeliveryOrderItem extends StatelessWidget {
                   Icon(
                     Icons.person_outline,
                     size: AppConstants.sp15(context),
-                    color: Colors.grey.shade500,
+                    color: DsColor.textMuted,
                   ),
                   SizedBox(width: AppConstants.width5(context) / 2),
                   Text(
@@ -116,7 +115,7 @@ class DeliveryOrderItem extends StatelessWidget {
                         : "unassigned_order".tr(),
                     style: Styles.inter12500Black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ],
               ),

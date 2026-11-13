@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -36,13 +37,13 @@ class NoInternetOverlay extends StatelessWidget {
                     ),
                     SizedBox(height: AppConstants.height10(context)),
                     Text(
-                      "لا يوجد اتصال بالإنترنت",
+                      "s_no_internet_connection".tr(),
                       style: Styles.inter18500Black(context),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 10),
                     Text(
-                      "يبدو أنك غير متصل بالإنترنت. يُرجى التحقق من اتصالك ثم المحاولة مرة أخرى.",
+                      "s_you_seem_to_be_offline_please_check_".tr(),
                       style: Styles.inter14600gray(context),
                     ),
                   ],

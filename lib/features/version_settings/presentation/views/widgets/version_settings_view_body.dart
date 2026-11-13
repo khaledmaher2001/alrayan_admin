@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -64,9 +65,8 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height20(context)),
           CustomAppBar(
-            title: "أعدادات النسخة",
+            title: "s_version_settings".tr(),
             textColor: Colors.black,
             hasBack: true,
             withNotifications: false,
@@ -128,7 +128,7 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "اعدادات نسخة الاندرويد",
+                            "s_android_version_settings".tr(),
                             style: Styles.inter16500black(context),
                           ),
                           Container(
@@ -146,29 +146,29 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                           ),
                           SizedBox(height: AppConstants.height10(context)),
                           CustomCouponField(
-                            title: "رقم النسخة الحالية",
-                            hint: "رقم النسخة الحالية",
+                            title: "s_current_version_number".tr(),
+                            hint: "s_current_version_number".tr(),
                             controller: androidVersionController,
                             keyboardType: TextInputType.number,
-                            validationText: "من فضلك ادخل رقم النسخة الحالية",
+                            validationText: "s_please_enter_the_current_version_num".tr(),
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "اللينك الخاص بتحديث نسخة الاندرويد",
-                            hint: "اللينك الخاص بتحديث نسخة الاندرويد",
+                            title: "s_android_update_link".tr(),
+                            hint: "s_android_update_link".tr(),
                             controller: androidUrlController,
                             keyboardType: TextInputType.url,
                             validationText:
-                            "من فضلك ادخل اللينك الخاص بتحديث نسخة الاندرويد",
+                            "s_please_enter_the_android_update_link".tr(),
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "اقصي موعد لتجديد نسخة الاندرويد",
-                            hint: "اقصي موعد لتجديد نسخة الاندرويد",
+                            title: "s_android_update_deadline".tr(),
+                            hint: "s_android_update_deadline".tr(),
                             readOnly: true,
                             controller: androidEndDateController,
                             keyboardType: TextInputType.number,
-                            validationText: "يجب ادخال هذا الحقل",
+                            validationText: "s_this_field_is_required".tr(),
                             onTap: () async {
                               // افتح اختيار التاريخ فقط
                               final DateTime initialDate =
@@ -201,7 +201,7 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                           SizedBox(height: AppConstants.height20(context)),
 
                           Text(
-                            "اعدادات نسخة الايفون",
+                            "s_iphone_version_settings".tr(),
                             style: Styles.inter16500black(context),
                           ),
                           Container(
@@ -219,29 +219,29 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                           ),
                           SizedBox(height: AppConstants.height10(context)),
                           CustomCouponField(
-                            title: "رقم النسخة الحالية",
-                            hint: "رقم النسخة الحالية",
+                            title: "s_current_version_number".tr(),
+                            hint: "s_current_version_number".tr(),
                             controller: iosVersionController,
                             keyboardType: TextInputType.number,
-                            validationText: "من فضلك ادخل رقم النسخة الحالية",
+                            validationText: "s_please_enter_the_current_version_num".tr(),
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "اللينك الخاص بتحديث نسخة الايفون",
-                            hint: "اللينك الخاص بتحديث نسخة الايفون",
+                            title: "s_iphone_update_link".tr(),
+                            hint: "s_iphone_update_link".tr(),
                             controller: iosUrlController,
                             keyboardType: TextInputType.url,
                             validationText:
-                            "من فضلك ادخل اللينك الخاص بتحديث نسخة الايفون",
+                            "s_please_enter_the_iphone_update_link".tr(),
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "اقصي موعد لتجديد نسخة الايفون",
-                            hint: "اقصي موعد لتجديد نسخة الايفون",
+                            title: "s_iphone_update_deadline".tr(),
+                            hint: "s_iphone_update_deadline".tr(),
                             readOnly: true,
                             controller: iosEndDateController,
                             keyboardType: TextInputType.number,
-                            validationText: "يجب ادخال هذا الحقل",
+                            validationText: "s_this_field_is_required".tr(),
                             onTap: () async {
                               // افتح اختيار التاريخ فقط
                               final DateTime initialDate =
@@ -321,7 +321,7 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                   backgroundColor: state is UpdateSettingsLoadingState
                       ? AppColors.primaryColor.shade500
                       : AppColors.primaryColor,
-                  text: state is UpdateSettingsLoadingState ? "" : "تحديث البيانات",
+                  text: state is UpdateSettingsLoadingState ? "" : "s_update".tr(),
                   borderRadius: AppConstants.sp10(context),
                 );
               },
@@ -329,8 +329,8 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                 if (state is UpdateSettingsSuccessState) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("تم تحديث البيانات بنجاح"),
-                      backgroundColor: Colors.green,
+                      content: Text("s_saved".tr()),
+                      backgroundColor: DsColor.success,
                     ),
                   );
                   context.read<GetSettingsCubit>().getSettings();
@@ -338,7 +338,7 @@ class _VersionSettingsViewBodyState extends State<VersionSettingsViewBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.errorMessage),
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                     ),
                   );
                 }

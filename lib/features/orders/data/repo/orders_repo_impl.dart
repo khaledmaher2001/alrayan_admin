@@ -15,12 +15,14 @@ class OrdersRepoImpl implements OrdersRepo {
   @override
   Future<Either<Failure, OrdersModel>> getOrders({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   }) async {
     try {
       var response = await apiService!.get(
         endPoint: EndPoints.orders,
         query: data,
         sendToken: true,
+        cancelToken: cancelToken,
       );
       var result = OrdersModel.fromJson(response.data);
       return right(result);

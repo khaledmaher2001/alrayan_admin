@@ -1,9 +1,7 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/notification_bell_button.dart';
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
-import 'package:alrayan_admin/features/all_users/presentation/views/all_users_view.dart';
 import 'package:alrayan_admin/features/auth/presentation/view_model/get_settings/get_settings_cubit.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_cubit.dart';
@@ -15,6 +13,13 @@ import 'package:alrayan_admin/features/home/presentation/views/widgets/most_orde
 import 'package:alrayan_admin/features/home/presentation/views/widgets/reviews_summary_statistics.dart';
 import 'package:alrayan_admin/features/home/presentation/views/widgets/top_customer_item.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_cubit.dart';
+import 'package:alrayan_admin/features/profile/presentation/view_model/get_profile/get_profile_state.dart';
+import 'package:alrayan_admin/core/utils/services/remote_services/api_service.dart';
+import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
+import 'package:alrayan_admin/features/complaints/data/admin_complaints_repo.dart';
+import 'package:alrayan_admin/features/complaints/presentation/admin_complaints_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -31,211 +36,129 @@ class _HomeViewBodyState extends State<HomeViewBody> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<GetProfileCubit, GetProfileStates>(
+      builder: (context, profileState) {
+        final profile = profileState is GetProfileSuccessState ? profileState.model.data : null;
+        // The figures need the "orders" or "reports" permission (server rule);
+        // other staff get a simple start page instead of an endless skeleton.
+        if (profile != null && !profile.can("orders") && !profile.can("reports")) {
+          return _StaffStartPage(name: profile.fullName);
+        }
+        return _buildStats(context, profile?.fullName);
+      },
+    );
+  }
+
+  Widget _buildStats(BuildContext context, String? name) {
     return BlocBuilder<GetHomeStatisticsCubit, GetHomeStatisticsStates>(
       builder: (context, state) {
+        if (state is GetHomeStatisticsErrorState) {
+          return SafeArea(
+            child: _HomeMessage(
+              icon: Icons.wifi_off_rounded,
+              title: "home_load_failed".tr(),
+              action: TextButton(
+                onPressed: () => context.read<GetHomeStatisticsCubit>().getHomeStatistics(),
+                child: Text("home_retry".tr(), style: DsText.bodyStrong.copyWith(color: DsColor.primary)),
+              ),
+            ),
+          );
+        }
         if (state is GetHomeStatisticsSuccessState) {
           final overview = state.model.overview;
           final ordersByStatus = state.model.orderStats?.ordersByStatus ?? [];
-          final pendingCount = ordersByStatus
-              .firstWhere(
-                (s) => s.status == "pending",
-                orElse: () => OrdersByStatus(count: 0),
-              )
-              .count ??
-              0;
+          final pendingCount = ordersByStatus.firstWhere((s) => s.status == "pending", orElse: () => OrdersByStatus(count: 0)).count ?? 0;
           // "قيد التوصيل" = كل طلب اتأكد ولسه ماوصلش للعميل (تم تأكيده +
           // تم الشحن) — "طلبات جديدة" فوق دي بتغطي pending لوحدها، وتم
           // التسليم مش جزء من "قيد التوصيل".
-          final inDeliveryCount = ordersByStatus
-              .where((s) => s.status == "confirmed" || s.status == "shipped")
-              .fold<int>(0, (sum, s) => sum + (s.count ?? 0));
+          final inDeliveryCount = ordersByStatus.where((s) => s.status == "confirmed" || s.status == "shipped").fold<int>(0, (sum, s) => sum + (s.count ?? 0));
 
           return RefreshIndicator(
             onRefresh: () async {
-              await Future.wait([
-                context.read<GetHomeStatisticsCubit>().getHomeStatistics(),
-                context.read<GetSettingsCubit>().getSettings(),
-              ]);
+              await Future.wait([context.read<GetHomeStatisticsCubit>().getHomeStatistics(), context.read<GetSettingsCubit>().getSettings()]);
             },
             child: SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppConstants.width20(context),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: DsSpace.page),
                   child: Column(
                     children: [
-                      SizedBox(height: AppConstants.height20(context)),
+                      const SizedBox(height: DsSpace.md),
                       Row(
                         children: [
-                          InkWell(
-                            onTap: () => Scaffold.of(context).openDrawer(),
-                            child: Icon(
-                              Icons.menu,
-                              size: AppConstants.sp30(context),
-                            ),
-                          ),
-                          SizedBox(width: AppConstants.width10(context)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  "أهلا بك، مدير النظام",
-                                  style: Styles.inter18500Black(context),
-                                ),
-                                Text(
-                                  "نظرة سريعة على أداء متجرك",
-                                  style: Styles.inter14500black(
-                                    context,
-                                  ).copyWith(color: AppColors.gray),
-                                ),
+                                Text(_hello(name), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.title),
+                                Text("home_subtitle".tr(), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.caption.copyWith(fontSize: 13)),
                               ],
                             ),
                           ),
-                          SizedBox(width: AppConstants.width10(context)),
-              
-                          NotificationBellButton(
-                            backgroundColor: Colors.white,
-                          ),
+                          const SizedBox(width: DsSpace.sm),
+                          const NotificationBellButton(),
                         ],
                       ),
-                      SizedBox(height: AppConstants.height20(context)),
-                      DashboardPeriodSelector(
-                        selected: _period,
-                        onChanged: (period) => setState(() => _period = period),
-                      ),
-                      SizedBox(height: AppConstants.height20(context)),
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: TotalSalesHeroCard(
-                                period: _period,
-                                recentStats: state.model.recentStats,
-                                trends: state.model.trends,
-                              ),
-                            ),
-                            SizedBox(width: AppConstants.width10(context)),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: DashboardStatCard(
-                                      icon: Icons.shopping_bag_outlined,
-                                      iconBackground: AppColors.primaryColor,
-                                      title: "عدد الطلبات",
-                                      value: "${overview?.totalOrders ?? 0}",
-                                    ),
-                                  ),
-                                  SizedBox(height: AppConstants.height10(context)),
-                                  Expanded(
-                                    child: DashboardStatCard(
-                                      icon: Icons.people_outline,
-                                      iconBackground: Colors.green,
-                                      title: "عدد العملاء",
-                                      value: "${overview?.totalCustomers ?? 0}",
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: AppConstants.height10(context)),
-                      _UserManagementCard(),
-                      SizedBox(height: AppConstants.height10(context)),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DashboardQuickStatCard(
-                              icon: Icons.shopping_bag,
-                              iconColor: AppColors.primaryColor,
-                              title: "طلبات جديدة",
-                              value: "$pendingCount",
-                              onTap: () => context
-                                  .read<ChangeNavBarStatusCubit>()
-                                  .changeNavBarIndex(1),
-                            ),
-                          ),
-                          SizedBox(width: AppConstants.width10(context)),
-                          Expanded(
-                            child: DashboardQuickStatCard(
-                              icon: Icons.local_shipping_outlined,
-                              iconColor: Colors.blue,
-                              title: "قيد التوصيل",
-                              value: "$inDeliveryCount",
-                              onTap: () => context
-                                  .read<ChangeNavBarStatusCubit>()
-                                  .changeNavBarIndex(1),
-                            ),
-                          ),
-                          SizedBox(width: AppConstants.width10(context)),
-                          Expanded(
-                            child: DashboardQuickStatCard(
-                              icon: Icons.warning_amber_rounded,
-                              iconColor: Colors.orange,
-                              title: "مخزون منخفض",
-                              value:
-                                  "${state.lowStockProductsTotal ?? state.lowStockProducts.length}",
-                              onTap: () => NavigationUtils.navigateTo(
-                                context: context,
-                                destinationScreen: const LowStockProductsView(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.height20(context)),
-                      SalesPerformanceSection(
+                      const SizedBox(height: DsSpace.lg),
+                      DashboardPeriodSelector(selected: _period, onChanged: (period) => setState(() => _period = period)),
+                      const SizedBox(height: DsSpace.md),
+                      TotalSalesHeroCard(
                         period: _period,
+                        recentStats: state.model.recentStats,
                         trends: state.model.trends,
-                        overview: overview,
+                        totalOrders: overview?.totalOrders,
+                        totalCustomers: overview?.totalCustomers,
                       ),
-                      SizedBox(height: AppConstants.height10(context)),
-                      OrderStatusDonutSection(
-                        ordersByStatus: ordersByStatus,
-                        totalOrders: overview?.totalOrders ?? 0,
-                      ),
-                      SizedBox(height: AppConstants.height20(context)),
-                      Row(
+                      DsSectionHeader(title: "home_needs_action".tr()),
+                      DsGroup(
                         children: [
-                          Expanded(
-                            child: Text(
-                              "أبرز الأداء",
-                              style: Styles.inter16500black(context),
-                            ),
+                          DashboardActionRow(
+                            icon: Icons.shopping_bag_outlined,
+                            title: "home_new_orders".tr(),
+                            count: pendingCount,
+                            tone: DsColor.warning,
+                            toneBg: DsColor.warningBg,
+                            onTap: () => context.read<ChangeNavBarStatusCubit>().changeNavBarIndex(1),
+                          ),
+                          DashboardActionRow(
+                            icon: Icons.local_shipping_outlined,
+                            title: "home_in_delivery".tr(),
+                            count: inDeliveryCount,
+                            tone: DsColor.info,
+                            toneBg: DsColor.infoBg,
+                            onTap: () => context.read<ChangeNavBarStatusCubit>().changeNavBarIndex(1),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DashboardActionRow(
+                                icon: Icons.inventory_2_outlined,
+                                title: "home_low_stock".tr(),
+                                count: state.lowStockProductsTotal ?? state.lowStockProducts.length,
+                                tone: DsColor.danger,
+                                toneBg: DsColor.dangerBg,
+                                onTap: () => NavigationUtils.navigateTo(context: context, destinationScreen: const LowStockProductsView()),
+                              ),
+                              const _ComplaintsNeedsAction(),
+                            ],
                           ),
                         ],
                       ),
-                      SizedBox(height: AppConstants.height10(context)),
-                      if (state.model.reviewStats != null) ...[
-                        ReviewsSummaryStatistic(instance: state.model.reviewStats!),
-                        SizedBox(height: AppConstants.height15(context)),
-                      ],
+                      const SizedBox(height: DsSpace.section),
+                      SalesPerformanceSection(period: _period, trends: state.model.trends, overview: overview),
+                      const SizedBox(height: DsSpace.md),
+                      OrderStatusDonutSection(ordersByStatus: ordersByStatus, totalOrders: overview?.totalOrders ?? 0),
+                      DsSectionHeader(title: "home_highlights".tr()),
+                      if (state.model.reviewStats != null) ...[ReviewsSummaryStatistic(instance: state.model.reviewStats!), const SizedBox(height: DsSpace.md)],
                       if ((state.model.topCustomers ?? []).isNotEmpty) ...[
-                        TopCustomerItem(
-                          instance: state.model.topCustomers!.first,
-                          fromHome: true,
-                          index: 0,
-                        ),
-                        SizedBox(height: AppConstants.height15(context)),
+                        TopCustomerItem(instance: state.model.topCustomers!.first, fromHome: true, index: 0),
+                        const SizedBox(height: DsSpace.md),
                       ],
                       if ((state.model.productStats?.topSellingProducts ?? []).isNotEmpty)
-                        MostOrderedItem(
-                          instance: state.model.productStats!.topSellingProducts!.first,
-                          fromHome: true,
-                        ),
-                      SizedBox(height: AppConstants.height20(context)),
-                      InventoryAnalyticsSection(
-                        items: state.inventoryAnalytics,
-                        error: state.inventoryAnalyticsError,
-                      ),
-                      SizedBox(height: AppConstants.height20(context)),
+                        MostOrderedItem(instance: state.model.productStats!.topSellingProducts!.first, fromHome: true),
+                      const SizedBox(height: DsSpace.section),
+                      InventoryAnalyticsSection(items: state.inventoryAnalytics, error: state.inventoryAnalyticsError),
+                      const SizedBox(height: DsSpace.section),
                     ],
                   ),
                 ),
@@ -245,12 +168,9 @@ class _HomeViewBodyState extends State<HomeViewBody> {
         } else {
           return RefreshIndicator(
             onRefresh: () async {
-              await Future.wait([
-                context.read<GetHomeStatisticsCubit>().getHomeStatistics(),
-                context.read<GetSettingsCubit>().getSettings(),
-              ]);
+              await Future.wait([context.read<GetHomeStatisticsCubit>().getHomeStatistics(), context.read<GetSettingsCubit>().getSettings()]);
             },
-            child:  SafeArea(child: const HomeViewBodyShimmer()),
+            child: SafeArea(child: const HomeViewBodyShimmer()),
           );
         }
       },
@@ -264,40 +184,25 @@ class HomeViewBodyShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+      baseColor: DsColor.border,
+      highlightColor: DsColor.fill,
       child: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppConstants.width20(context),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
           child: Column(
             children: [
               SizedBox(height: AppConstants.height20(context)),
               Row(
                 children: [
-                  _shimmerBox(
-                    context,
-                    width: AppConstants.sp30(context),
-                    height: AppConstants.sp30(context),
-                    radius: AppConstants.sp5(context),
-                  ),
+                  _shimmerBox(context, width: AppConstants.sp30(context), height: AppConstants.sp30(context), radius: AppConstants.sp5(context)),
                   SizedBox(width: AppConstants.width10(context)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _shimmerBox(
-                          context,
-                          width: MediaQuery.of(context).size.width * .38,
-                          height: AppConstants.height15(context),
-                        ),
+                        _shimmerBox(context, width: MediaQuery.of(context).size.width * .38, height: AppConstants.height15(context)),
                         SizedBox(height: AppConstants.height10(context) / 2),
-                        _shimmerBox(
-                          context,
-                          width: MediaQuery.of(context).size.width * .48,
-                          height: AppConstants.height10(context),
-                        ),
+                        _shimmerBox(context, width: MediaQuery.of(context).size.width * .48, height: AppConstants.height10(context)),
                       ],
                     ),
                   ),
@@ -311,12 +216,7 @@ class HomeViewBodyShimmer extends StatelessWidget {
                   for (var i = 0; i < 3; i++) ...[
                     if (i > 0) SizedBox(width: AppConstants.width10(context)),
                     Expanded(
-                      child: _shimmerBox(
-                        context,
-                        width: double.infinity,
-                        height: AppConstants.height20(context) * 2,
-                        radius: AppConstants.sp30(context),
-                      ),
+                      child: _shimmerBox(context, width: double.infinity, height: AppConstants.height20(context) * 2, radius: AppConstants.sp30(context)),
                     ),
                   ],
                 ],
@@ -328,12 +228,7 @@ class HomeViewBodyShimmer extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 3,
-                      child: _shimmerBox(
-                        context,
-                        width: double.infinity,
-                        height: double.infinity,
-                        radius: AppConstants.sp15(context),
-                      ),
+                      child: _shimmerBox(context, width: double.infinity, height: double.infinity, radius: AppConstants.sp15(context)),
                     ),
                     SizedBox(width: AppConstants.width10(context)),
                     Expanded(
@@ -350,12 +245,7 @@ class HomeViewBodyShimmer extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppConstants.height10(context)),
-              _shimmerBox(
-                context,
-                width: double.infinity,
-                height: AppConstants.height20(context) * 3.2,
-                radius: AppConstants.sp10(context),
-              ),
+              _shimmerBox(context, width: double.infinity, height: AppConstants.height20(context) * 3.2, radius: AppConstants.sp10(context)),
               SizedBox(height: AppConstants.height10(context)),
               Row(
                 children: [
@@ -371,11 +261,7 @@ class HomeViewBodyShimmer extends StatelessWidget {
               SizedBox(height: AppConstants.height10(context)),
               const OrdersStatusItemShimmer(),
               SizedBox(height: AppConstants.height20(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .3,
-                height: AppConstants.height15(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .3, height: AppConstants.height15(context)),
               SizedBox(height: AppConstants.height10(context)),
               const ReviewsSummaryStatisticShimmer(),
               SizedBox(height: AppConstants.height15(context)),
@@ -400,10 +286,7 @@ class StatisticsHomeItemShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp10(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         children: [
           _shimmerBox(
@@ -413,17 +296,9 @@ class StatisticsHomeItemShimmer extends StatelessWidget {
             radius: AppConstants.sp10(context),
           ),
           SizedBox(height: AppConstants.height10(context)),
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .16,
-            height: AppConstants.height10(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .16, height: AppConstants.height10(context)),
           SizedBox(height: AppConstants.height5(context)),
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .10,
-            height: AppConstants.height10(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .10, height: AppConstants.height10(context)),
         ],
       ),
     );
@@ -437,18 +312,11 @@ class OrdersStatusItemShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .28,
-            height: AppConstants.height15(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .28, height: AppConstants.height15(context)),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -460,19 +328,13 @@ class OrdersStatusItemShimmer extends StatelessWidget {
                   children: List.generate(
                     6,
                     (index) => Padding(
-                      padding: EdgeInsets.only(
-                        bottom: AppConstants.height10(context),
-                      ),
+                      padding: EdgeInsets.only(bottom: AppConstants.height10(context)),
                       child: Row(
                         children: [
                           _shimmerBox(context, width: 10, height: 10, radius: 5),
                           SizedBox(width: AppConstants.width10(context)),
                           Expanded(
-                            child: _shimmerBox(
-                              context,
-                              width: double.infinity,
-                              height: AppConstants.height10(context),
-                            ),
+                            child: _shimmerBox(context, width: double.infinity, height: AppConstants.height10(context)),
                           ),
                         ],
                       ),
@@ -495,37 +357,21 @@ class ReviewsSummaryStatisticShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: _shimmerBox(
-                  context,
-                  width: double.infinity,
-                  height: AppConstants.height15(context),
-                ),
+                child: _shimmerBox(context, width: double.infinity, height: AppConstants.height15(context)),
               ),
               SizedBox(width: AppConstants.width10(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .20,
-                height: AppConstants.height30(context),
-                radius: AppConstants.sp5(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .20, height: AppConstants.height30(context), radius: AppConstants.sp5(context)),
             ],
           ),
           SizedBox(height: AppConstants.height20(context)),
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .35,
-            height: AppConstants.height20(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .35, height: AppConstants.height20(context)),
           SizedBox(height: AppConstants.height20(context)),
           ...List.generate(
             5,
@@ -533,19 +379,10 @@ class ReviewsSummaryStatisticShimmer extends StatelessWidget {
               padding: EdgeInsets.only(bottom: AppConstants.height20(context)),
               child: Row(
                 children: [
-                  _shimmerBox(
-                    context,
-                    width: MediaQuery.of(context).size.width * .15,
-                    height: AppConstants.height10(context),
-                  ),
+                  _shimmerBox(context, width: MediaQuery.of(context).size.width * .15, height: AppConstants.height10(context)),
                   SizedBox(width: AppConstants.width10(context)),
                   Expanded(
-                    child: _shimmerBox(
-                      context,
-                      width: double.infinity,
-                      height: AppConstants.height10(context),
-                      radius: AppConstants.sp30(context),
-                    ),
+                    child: _shimmerBox(context, width: double.infinity, height: AppConstants.height10(context), radius: AppConstants.sp30(context)),
                   ),
                 ],
               ),
@@ -564,37 +401,21 @@ class MostOrderedItemShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: _shimmerBox(
-                  context,
-                  width: double.infinity,
-                  height: AppConstants.height15(context),
-                ),
+                child: _shimmerBox(context, width: double.infinity, height: AppConstants.height15(context)),
               ),
               SizedBox(width: AppConstants.width20(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .18,
-                height: AppConstants.height30(context),
-                radius: AppConstants.sp5(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .18, height: AppConstants.height30(context), radius: AppConstants.sp5(context)),
             ],
           ),
           SizedBox(height: AppConstants.height10(context) / 2),
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .50,
-            height: AppConstants.height10(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .50, height: AppConstants.height10(context)),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -610,23 +431,11 @@ class MostOrderedItemShimmer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .3,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .3, height: AppConstants.height10(context)),
                     SizedBox(height: AppConstants.height10(context) / 2),
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .22,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .22, height: AppConstants.height10(context)),
                     SizedBox(height: AppConstants.height10(context) / 2),
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .26,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .26, height: AppConstants.height10(context)),
                   ],
                 ),
               ),
@@ -645,37 +454,21 @@ class TopCustomerItemShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: _shimmerBox(
-                  context,
-                  width: double.infinity,
-                  height: AppConstants.height15(context),
-                ),
+                child: _shimmerBox(context, width: double.infinity, height: AppConstants.height15(context)),
               ),
               SizedBox(width: AppConstants.width20(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .18,
-                height: AppConstants.height30(context),
-                radius: AppConstants.sp5(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .18, height: AppConstants.height30(context), radius: AppConstants.sp5(context)),
             ],
           ),
           SizedBox(height: AppConstants.height10(context) / 2),
-          _shimmerBox(
-            context,
-            width: MediaQuery.of(context).size.width * .48,
-            height: AppConstants.height10(context),
-          ),
+          _shimmerBox(context, width: MediaQuery.of(context).size.width * .48, height: AppConstants.height10(context)),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             children: [
@@ -690,34 +483,18 @@ class TopCustomerItemShimmer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .26,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .26, height: AppConstants.height10(context)),
                     SizedBox(height: AppConstants.height10(context) / 2),
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .30,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .30, height: AppConstants.height10(context)),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _shimmerBox(
-                    context,
-                    width: MediaQuery.of(context).size.width * .10,
-                    height: AppConstants.height10(context),
-                  ),
+                  _shimmerBox(context, width: MediaQuery.of(context).size.width * .10, height: AppConstants.height10(context)),
                   SizedBox(height: AppConstants.height10(context) / 2),
-                  _shimmerBox(
-                    context,
-                    width: MediaQuery.of(context).size.width * .14,
-                    height: AppConstants.height10(context),
-                  ),
+                  _shimmerBox(context, width: MediaQuery.of(context).size.width * .14, height: AppConstants.height10(context)),
                 ],
               ),
             ],
@@ -735,10 +512,7 @@ class HomeAnalyticsSectionShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -748,35 +522,18 @@ class HomeAnalyticsSectionShimmer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .32,
-                      height: AppConstants.height15(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .32, height: AppConstants.height15(context)),
                     SizedBox(height: AppConstants.height10(context) / 2),
-                    _shimmerBox(
-                      context,
-                      width: MediaQuery.of(context).size.width * .5,
-                      height: AppConstants.height10(context),
-                    ),
+                    _shimmerBox(context, width: MediaQuery.of(context).size.width * .5, height: AppConstants.height10(context)),
                   ],
                 ),
               ),
               SizedBox(width: AppConstants.width10(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .18,
-                height: AppConstants.height30(context),
-                radius: AppConstants.sp5(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .18, height: AppConstants.height30(context), radius: AppConstants.sp5(context)),
             ],
           ),
           SizedBox(height: AppConstants.height20(context)),
-          _shimmerBox(
-            context,
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * .18,
-          ),
+          _shimmerBox(context, width: double.infinity, height: MediaQuery.of(context).size.height * .18),
           SizedBox(height: AppConstants.height15(context)),
           Row(
             children: [
@@ -819,10 +576,7 @@ class InventoryAnalyticsSectionShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(AppConstants.sp20(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -839,12 +593,7 @@ class InventoryAnalyticsSectionShimmer extends StatelessWidget {
                 ),
               ),
               SizedBox(width: AppConstants.width10(context)),
-              _shimmerBox(
-                context,
-                width: MediaQuery.of(context).size.width * .18,
-                height: AppConstants.height30(context),
-                radius: AppConstants.sp5(context),
-              ),
+              _shimmerBox(context, width: MediaQuery.of(context).size.width * .18, height: AppConstants.height30(context), radius: AppConstants.sp5(context)),
             ],
           ),
           SizedBox(height: AppConstants.height20(context)),
@@ -853,7 +602,9 @@ class InventoryAnalyticsSectionShimmer extends StatelessWidget {
               children: [
                 _shimmerBox(context, width: AppConstants.width20(context) * 2, height: AppConstants.width20(context) * 2),
                 SizedBox(width: AppConstants.width10(context)),
-                Expanded(child: _shimmerBox(context, width: double.infinity, height: AppConstants.height15(context))),
+                Expanded(
+                  child: _shimmerBox(context, width: double.infinity, height: AppConstants.height15(context)),
+                ),
                 SizedBox(width: AppConstants.width10(context)),
                 _shimmerBox(context, width: 50, height: AppConstants.height15(context)),
               ],
@@ -878,65 +629,73 @@ class InventoryAnalyticsSectionShimmer extends StatelessWidget {
   }
 }
 
-class _UserManagementCard extends StatelessWidget {
-  const _UserManagementCard();
+String _hello(String? name) {
+  final first = (name ?? "").trim().split(" ").first;
+  return first.isEmpty ? "home_hello".tr() : "home_hello_name".tr(namedArgs: {"name": first});
+}
+
+/// Start page for staff whose permissions don't include the store figures.
+class _StaffStartPage extends StatelessWidget {
+  const _StaffStartPage({this.name});
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => NavigationUtils.navigateTo(
-        context: context,
-        destinationScreen: const AllUsersView(),
-      ),
-      borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(AppConstants.sp15(context)),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor.shade700,
-
-          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+    return SafeArea(
+      child: _HomeMessage(
+        icon: Icons.waving_hand_outlined,
+        title: _hello(name),
+        subtitle: "home_staff_hint".tr(),
+        action: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: DsColor.primary,
+            minimumSize: const Size(200, 48),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () => context.read<ChangeNavBarStatusCubit>().changeNavBarIndex(3),
+          icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
+          label: Text("home_open_more".tr(), style: DsText.bodyStrong.copyWith(color: Colors.white)),
         ),
-        child: Row(
+      ),
+    );
+  }
+}
+
+class _HomeMessage extends StatelessWidget {
+  const _HomeMessage({required this.icon, required this.title, this.subtitle, this.action});
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppConstants.width20(context) * 1.5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(AppConstants.sp10(context)),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.2),
-                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-              ),
-              child: Icon(
-                Icons.manage_accounts_outlined,
-                color: Colors.white,
-                size: AppConstants.sp30(context),
-              ),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: DsColor.primary.withValues(alpha: .08), shape: BoxShape.circle),
+              child: Icon(icon, size: 40, color: DsColor.primary),
             ),
-            SizedBox(width: AppConstants.width15(context)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "إدارة المستخدمين",
-                    style: Styles.inter16500black(
-                      context,
-                    ).copyWith(color: Colors.white),
-                  ),
-                  SizedBox(height: AppConstants.height5(context)),
-                  Text(
-                    "عرض وتحليل وحذف المستخدمين",
-                    style: Styles.inter12500Black(
-                      context,
-                    ).copyWith(color: Colors.white70),
-                  ),
-                ],
+            SizedBox(height: AppConstants.height15(context)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: DsText.heading,
+            ),
+            if (subtitle != null) ...[
+              SizedBox(height: AppConstants.height10(context)),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: DsText.body.copyWith(color: DsColor.textMuted),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white70,
-              size: AppConstants.sp15(context),
-            ),
+            ],
+            if (action != null) ...[SizedBox(height: AppConstants.height20(context)), action!],
           ],
         ),
       ),
@@ -944,19 +703,11 @@ class _UserManagementCard extends StatelessWidget {
   }
 }
 
-Widget _shimmerBox(
-  BuildContext context, {
-  required double width,
-  required double height,
-  double? radius,
-}) {
+Widget _shimmerBox(BuildContext context, {required double width, required double height, double? radius}) {
   return Container(
     width: width,
     height: height,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(radius ?? AppConstants.sp10(context)),
-    ),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius ?? AppConstants.sp10(context))),
   );
 }
 
@@ -964,9 +715,63 @@ Widget _shimmerCircle({required double size}) {
   return Container(
     width: size,
     height: size,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      shape: BoxShape.circle,
-    ),
+    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
   );
+}
+
+/// "New complaints" shortcut under "Needs action" — only for staff who handle
+/// customers; loads the open/overdue counts once and refreshes on return.
+class _ComplaintsNeedsAction extends StatefulWidget {
+  const _ComplaintsNeedsAction();
+
+  @override
+  State<_ComplaintsNeedsAction> createState() => _ComplaintsNeedsActionState();
+}
+
+class _ComplaintsNeedsActionState extends State<_ComplaintsNeedsAction> {
+  AdminComplaintStats? _stats;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final s = await AdminComplaintsRepo(getIt.get<ApiService>()).stats();
+      if (mounted) setState(() => _stats = s);
+    } catch (_) {
+      // The shortcut simply stays hidden if the counts can't be loaded.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileState = context.watch<GetProfileCubit>().state;
+    final profile = profileState is GetProfileSuccessState ? profileState.model.data : null;
+    final s = _stats;
+    if (profile == null || !profile.can('customers') || s == null) return const SizedBox.shrink();
+    // Sits inside the "needs action" group under low stock, so it brings its own hairline.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Divider(height: 1, thickness: 1, indent: DsSpace.lg, endIndent: DsSpace.lg, color: DsColor.divider),
+        DashboardActionRow(
+          icon: Icons.forum_outlined,
+          title: "home_new_complaints".tr(),
+          count: s.open,
+          tone: DsColor.primary,
+          toneBg: DsColor.primarySoft,
+          extra: s.overdue > 0
+              ? DsStatusBadge(status: null, label: "${"adx_late".tr()} ${formatCount(s.overdue)}", fg: DsColor.danger, bg: DsColor.dangerBg)
+              : null,
+          onTap: () async {
+            await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminComplaintsView()));
+            _load();
+          },
+        ),
+      ],
+    );
+  }
 }

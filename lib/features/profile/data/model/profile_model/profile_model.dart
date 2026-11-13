@@ -22,6 +22,13 @@ class Data {
   bool? isEmailVerified;
   List<String>? playerIds;
 
+  /// Staff restrictions: null = full administrator, a list = only these areas
+  /// (orders, delivery, products, marketing, customers, reports, settings, staff).
+  List<String>? permissions;
+
+  bool get isFullAdmin => permissions == null;
+  bool can(String permission) => permissions == null || permissions!.contains(permission);
+
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     createdAt = json['createdAt'];
@@ -32,6 +39,7 @@ class Data {
     gender = json['gender'];
     phoneNumber = json['phoneNumber'];
     isEmailVerified = json['isEmailVerified'];
-    playerIds = json['playerIds'].cast<String>();
+    playerIds = (json['playerIds'] as List?)?.cast<String>();
+    permissions = (json['permissions'] as List?)?.map((e) => e.toString()).toList();
   }
 }

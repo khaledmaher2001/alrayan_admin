@@ -1,6 +1,7 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
-import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/shimmer_helpers.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -57,6 +58,13 @@ class _ZonesViewState extends State<ZonesView> {
     return BlocProvider(
       create: (context)=>DeleteZoneCubit(getIt<ZonesRepoImpl>()),
       child: Scaffold(
+        // Same create action as every other list screen.
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: "zone_add",
+          onPressed: () => NavigationUtils.navigateTo(context: context, destinationScreen: AddZoneView()),
+          icon: const Icon(Icons.add_rounded),
+          label: Text("s_add_a_new_zone_2".tr()),
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -67,7 +75,7 @@ class _ZonesViewState extends State<ZonesView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CustomBackButton(),
-                    Text("مناطق التوصيل", textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+                    Text("s_delivery_zones".tr(), textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
                     BlocBuilder<GetZonesCubit, GetZonesStates>(
                       buildWhen: (previous, current) => current is GetZonesSuccessState,
                       builder: (context, state) {
@@ -82,7 +90,7 @@ class _ZonesViewState extends State<ZonesView> {
                             borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
                           ),
                           child: Text(
-                            "$count مناطق",
+                            "i_x_zones_91".tr(namedArgs: {"a": "${count}"}),
                             style: Styles.inter12500Black(context).copyWith(fontWeight: FontWeight.w600),
                           ),
                         );
@@ -99,7 +107,7 @@ class _ZonesViewState extends State<ZonesView> {
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     isDense: true,
-                    hintText: "ابحث عن منطقة",
+                    hintText: "s_search_zones".tr(),
                     hintStyle: Styles.inter14600gray(context),
                     prefixIcon: Icon(Icons.search, color: AppColors.gray),
                     filled: true,
@@ -130,7 +138,7 @@ class _ZonesViewState extends State<ZonesView> {
                         return Expanded(
                           child: Center(
                             child: Text(
-                              zones.isEmpty ? "لا توجد مناطق حتى الآن" : "لا توجد مناطق مطابقة",
+                              zones.isEmpty ? "s_no_zones_yet".tr() : "s_no_matching_zones".tr(),
                               style: Styles.inter14600gray(context),
                             ),
                           ),
@@ -143,10 +151,8 @@ class _ZonesViewState extends State<ZonesView> {
                           },
                           child: GridView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppConstants.width15(context),
-                              vertical: AppConstants.height10(context),
-                            ),
+                            // Bottom room so the FAB never covers the last row.
+                            padding: const EdgeInsets.fromLTRB(DsSpace.page, DsSpace.sm, DsSpace.page, 96),
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: AppConstants.width10(context),
@@ -162,20 +168,6 @@ class _ZonesViewState extends State<ZonesView> {
                       return const Expanded(child: _ZonesShimmer());
                     }
                   },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppConstants.width15(context),
-                  vertical: AppConstants.height10(context),
-                ),
-                child: DefaultButton(
-                  onPress: () {
-                    NavigationUtils.navigateTo(context: context, destinationScreen: AddZoneView());
-                  },
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  text: "إضافة منطقة جديدة",
-                  borderRadius: AppConstants.sp10(context),
                 ),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -88,7 +89,7 @@ class _RemittancesFilterSheetState extends State<_RemittancesFilterSheet> {
                   borderRadius: BorderRadius.circular(
                     AppConstants.sp10(context),
                   ),
-                  color: Colors.grey.shade300,
+                  color: DsColor.border,
                 ),
               ),
             ),
@@ -112,7 +113,7 @@ class _RemittancesFilterSheetState extends State<_RemittancesFilterSheet> {
                 ],
               ),
             ),
-            Divider(color: Colors.grey.shade100),
+            Divider(color: DsColor.fill),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
@@ -227,7 +228,7 @@ class _Choice extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.primaryColor : Colors.transparent,
           border: Border.all(
-            color: selected ? AppColors.primaryColor : Colors.grey.shade400,
+            color: selected ? AppColors.primaryColor : DsColor.textSubtle,
           ),
           borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
         ),
@@ -235,7 +236,7 @@ class _Choice extends StatelessWidget {
           label,
           style: Styles.inter14500black(
             context,
-          ).copyWith(color: selected ? Colors.white : Colors.grey.shade700),
+          ).copyWith(color: selected ? Colors.white : DsColor.text2),
         ),
       ),
     );

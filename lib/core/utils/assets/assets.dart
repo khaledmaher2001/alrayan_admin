@@ -1,10 +1,5 @@
 class AssetData {
   static const logo="assets/images/logo.png";
-  static const logoWhite="assets/images/logo_white.png";
-  static const logoSecondry="assets/images/logo_secondry.png";
-  static const logoBackPrimary="assets/images/logo_back_primary.png";
-  static const logoBackWhite="assets/images/logo_back_white.png";
-  static const logoBackSecondry="assets/images/logo_back_secondry.png";
   static const acwad = "assets/images/acwad.png";
   static const nav="assets/images/nav.png";
   static const closed="assets/images/closed.svg";

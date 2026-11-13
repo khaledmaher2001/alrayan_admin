@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -24,7 +25,7 @@ class SubCategoryItem extends StatelessWidget {
           vertical: AppConstants.height5(context),
         ),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: DsColor.border,
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
         ),
         child: Row(
@@ -52,7 +53,7 @@ class SubCategoryItem extends StatelessWidget {
                   ),
                 );
               },
-              icon: SvgPicture.asset(AssetData.edit, color: Colors.green),
+              icon: SvgPicture.asset(AssetData.edit, color: DsColor.success),
             ),
           ],
         ),

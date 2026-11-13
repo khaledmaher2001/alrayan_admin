@@ -1,7 +1,6 @@
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/orders/data/models/orders_model.dart';
 import 'package:alrayan_admin/features/orders/presentation/utils/order_status_ui.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/order_details_view.dart';
@@ -9,6 +8,7 @@ import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders
 import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OrdersItem extends StatelessWidget {
@@ -21,10 +21,13 @@ class OrdersItem extends StatelessWidget {
     final isNew = context.select<GetOrdersCubit, bool>(
       (cubit) => orderData.id != null && cubit.newOrderIds.contains(orderData.id),
     );
-    final statusColor = AppConstants.getStatusColor(orderData.status ?? '');
-    final statusTextColor = AppConstants.getTextColor(orderData.status ?? '');
 
-    return GestureDetector(
+    // Compact card: status + time, customer + order number, items/courier + total.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: DsSpace.page),
+      child: DsCard(
+      highlight: isNew ? AppColors.primaryColor : null,
+      padding: const EdgeInsets.all(DsSpace.md),
       onTap: () {
         final cubit = context.read<GetOrdersCubit>();
         final filterCubit = context.read<OrderStatusFilterCubit>();
@@ -40,157 +43,63 @@ class OrdersItem extends StatelessWidget {
           ),
         );
       },
-      child: Container(
-        margin: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-          color: isNew ? AppColors.primaryColor.shade50 : Colors.white,
-          border: Border.all(
-            color: isNew ? AppColors.primaryColor : const Color(0xffE3E7EC),
-            width: isNew ? 1.3 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              // Status accent bar — sits at the card's leading (physical
-              // right in RTL) edge.
-              Container(width: 4, color: statusTextColor),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsetsDirectional.symmetric(
-                    horizontal: AppConstants.width15(context),
-                    vertical: AppConstants.height15(context),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (isNew) ...[
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppConstants.width10(context),
-                                vertical: AppConstants.height5(context) / 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor,
-                                borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
-                              ),
-                              child: Text(
-                                "جديد",
-                                style: Styles.inter14500black(
-                                  context,
-                                ).copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11),
-                              ),
-                            ),
-                            SizedBox(width: AppConstants.width10(context)),
-                          ],
-                          Expanded(
-                            child: Text(
-                              DateFormat("yyyy-MM-dd  hh:mm a").format(DateTime.parse(orderData.createdAt ?? "").toLocal()),
-                              style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppConstants.width10(context),
-                              vertical: AppConstants.height5(context) / 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  AppConstants.getStatusText(orderData.status ?? ''),
-                                  style: Styles.inter14500black(context).copyWith(color: statusTextColor),
-                                ),
-                                SizedBox(width: AppConstants.width5(context)),
-                                Icon(OrderStatusUi.icon(orderData.status), size: 14, color: statusTextColor),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppConstants.height15(context)),
-                      Text(
-                        "رقم الطلب",
-                        style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-                      ),
-                      SizedBox(height: AppConstants.height5(context) / 2),
-                      Text(
-                        orderData.orderNumber ?? '',
-                        style: Styles.inter16500black(
-                          context,
-                        ).copyWith(color: Colors.black, letterSpacing: 0.6),
-                      ),
-                      SizedBox(height: AppConstants.height15(context)),
-                      Divider(height: 1, color: Colors.grey.shade200),
-                      SizedBox(height: AppConstants.height10(context)),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(AppConstants.sp5(context)),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryColor.shade50,
-                                  borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                                ),
-                                child: Icon(
-                                  Icons.receipt_long_rounded,
-                                  size: 16,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                              SizedBox(width: AppConstants.width10(context)),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "الإجمالي",
-                                    style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB), fontSize: 11),
-                                  ),
-                                  Text(
-                                    "${orderData.totalAmount} ج.م",
-                                    style: Styles.inter16500black(context).copyWith(color: AppColors.primaryColor),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "عرض التفاصيل",
-                                style: Styles.inter14500black(context).copyWith(color: AppColors.primaryColor, fontWeight: FontWeight.w600),
-                              ),
-                              Icon(Icons.chevron_right_rounded, color: AppColors.primaryColor, size: 20),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+              DsStatusBadge(
+                status: orderData.status,
+                label: AppConstants.getStatusText(orderData.status ?? ''),
+                icon: OrderStatusUi.icon(orderData.status),
               ),
+              if (isNew) ...[
+                const SizedBox(width: DsSpace.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: AppColors.primaryColor, borderRadius: BorderRadius.circular(DsRadius.pill)),
+                  child: Text("s_new".tr(), style: DsText.label.copyWith(color: Colors.white, fontSize: 11)),
+                ),
+              ],
+              const Spacer(),
+              Text(DsFormat.dateTime(context, orderData.createdAt), style: DsText.caption),
             ],
           ),
-        ),
+          const SizedBox(height: DsSpace.md),
+          Text(
+            orderData.shippingAddress?.user?.fullName ?? "ord_customer".tr(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: DsText.subheading,
+          ),
+          const SizedBox(height: 2),
+          Text(DsFormat.orderNo(orderData.orderNumber), style: DsText.caption),
+          const SizedBox(height: DsSpace.md),
+          Row(
+            children: [
+              const Icon(Icons.shopping_basket_outlined, size: 16, color: DsColor.textMuted),
+              const SizedBox(width: 4),
+              Text("ord_items".tr(namedArgs: {"n": "${orderData.orderItems?.length ?? 0}"}), style: DsText.caption),
+              if (orderData.deliveryUser?.fullName != null) ...[
+                const SizedBox(width: DsSpace.md),
+                const Icon(Icons.delivery_dining_outlined, size: 16, color: DsColor.textMuted),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(orderData.deliveryUser!.fullName!, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.caption),
+                ),
+              ],
+              const Spacer(),
+              Text(
+                DsFormat.money(num.tryParse('${orderData.totalAmount}')),
+                style: DsText.bodyStrong.copyWith(color: AppColors.primaryColor, fontSize: 16),
+              ),
+              const SizedBox(width: 2),
+              const Icon(Icons.chevron_right_rounded, color: DsColor.textSubtle, size: 20),
+            ],
+          ),
+        ],
       ),
+    ),
     );
   }
 }

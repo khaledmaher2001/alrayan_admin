@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'dart:async';
 
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
@@ -10,6 +12,7 @@ import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_inventory_analytics/get_inventory_analytics_cubit.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_inventory_analytics/get_inventory_analytics_state.dart';
 import 'package:alrayan_admin/features/home/presentation/views/widgets/home_analytics_sections.dart';
+import 'package:alrayan_admin/features/home/presentation/views/item_analytics_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -75,9 +78,8 @@ class _InventoryAnalyticsViewBodyState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: AppConstants.height20(context)),
-          const CustomAppBar(
-            title: "تحليل المخزون",
+          CustomAppBar(
+            title: "s_stock_analysis".tr(),
             textColor: Colors.black,
             withNotifications: false,
             hasBack: true,
@@ -88,7 +90,7 @@ class _InventoryAnalyticsViewBodyState
               horizontal: AppConstants.width20(context),
             ),
             child: Text(
-              "كل المنتجات مع المتاح والمباع ونسبة دوران المنتج",
+              "s_all_products_with_available_sold_and".tr(),
               style: Styles.inter14600gray(context),
             ),
           ),
@@ -98,7 +100,7 @@ class _InventoryAnalyticsViewBodyState
               horizontal: AppConstants.width20(context),
             ),
             child: SearchWidget(
-              hint: "ابحث عن منتج",
+              hint: "s_search_for_a_product_2".tr(),
               searchController: searchController,
               onSearch: (value) {
                 _searchDebounce?.cancel();
@@ -128,13 +130,13 @@ class _InventoryAnalyticsViewBodyState
 
                 if (cubit.items.isEmpty) {
                   return cubit.search.isEmpty
-                      ? const _EmptyState(
-                          title: "لا يوجد بيانات تحليل مخزون",
-                          subtitle: "لم يتم العثور على بيانات متاحة حاليا",
+                      ? _EmptyState(
+                          title: "s_no_stock_analysis_data".tr(),
+                          subtitle: "s_no_data_available_right_now".tr(),
                         )
-                      : const _EmptyState(
-                          title: "لا يوجد نتائج",
-                          subtitle: "لا يوجد منتجات مطابقة لبحثك",
+                      : _EmptyState(
+                          title: "s_no_results".tr(),
+                          subtitle: "s_no_products_match_your_search".tr(),
                         );
                 }
 
@@ -164,6 +166,18 @@ class _InventoryAnalyticsViewBodyState
                       return HomeAnalyticsCard(
                         child: InventoryAnalyticsListItem(
                           item: cubit.items[index],
+                          onTap: cubit.items[index].id == null
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ItemAnalyticsView(
+                                        productId: cubit.items[index].id!,
+                                        productName: cubit.items[index].name,
+                                      ),
+                                    ),
+                                  );
+                                },
                         ),
                       );
                     },
@@ -195,7 +209,7 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 42),
+            Icon(Icons.error_outline, color: DsColor.danger, size: 42),
             SizedBox(height: AppConstants.height10(context)),
             Text(message, style: Styles.inter14500black(context)),
             SizedBox(height: AppConstants.height20(context)),
@@ -204,7 +218,7 @@ class _ErrorState extends StatelessWidget {
                 backgroundColor: AppColors.primaryColor,
               ),
               onPressed: onRetry,
-              child: const Text("إعادة المحاولة"),
+              child: Text("s_retry".tr()),
             ),
           ],
         ),

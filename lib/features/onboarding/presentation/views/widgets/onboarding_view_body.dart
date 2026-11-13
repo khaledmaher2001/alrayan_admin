@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -10,7 +11,7 @@ import '../../../../../core/utils/services/local_services/cache_helper.dart';
 import 'onboarding_item.dart';
 
 class _OnBoardingStep {
-  const _OnBoardingStep({
+  _OnBoardingStep({
     required this.image,
     required this.title,
     required this.highlightedWord,
@@ -23,27 +24,28 @@ class _OnBoardingStep {
   final String description;
 }
 
-const _steps = [
+// A getter so the texts follow the current language.
+List<_OnBoardingStep> get _steps => [
   _OnBoardingStep(
     image: AssetData.onboarding1,
-    title: "إدارة متجرك بالكامل",
-    highlightedWord: "بالكامل",
+    title: "s_manage_your_whole_store".tr(),
+    highlightedWord: "s_whole_store".tr(),
     description:
-        "أدر المنتجات والأقسام والمخزون والإعلانات وإعدادات النظام، كل ذلك من مكان واحد.",
+        "s_manage_products_categories_stock_ads".tr(),
   ),
   _OnBoardingStep(
     image: AssetData.onboarding2,
-    title: "قرارات أذكى.. مبيعات أكبر",
-    highlightedWord: "أذكى",
+    title: "s_smarter_decisions_more_sales".tr(),
+    highlightedWord: "s_smarter".tr(),
     description:
-        "تابع المبيعات وحلّل نشاط العملاء والطلبات والأرباح من خلال تقارير دقيقة ولحظية.",
+        "s_track_sales_and_analyse_customers_or".tr(),
   ),
   _OnBoardingStep(
     image: AssetData.onboarding3,
-    title: "تسويق وتوصيل تحت سيطرتك",
-    highlightedWord: "سيطرتك",
+    title: "s_marketing_and_delivery_under_your_co".tr(),
+    highlightedWord: "s_your_control".tr(),
     description:
-        "أنشئ الكوبونات وعجلة الحظ وحدّد مناطق التوصيل وتحكّم في فريق الديليفري بسهولة.",
+        "s_create_coupons_and_the_lucky_wheel_s".tr(),
   ),
 ];
 
@@ -98,7 +100,7 @@ class _OnBoardingViewBodyState extends State<OnBoardingViewBody> {
                 child: TextButton(
                   onPressed: _finishOnBoarding,
                   child: Text(
-                    "تخطي",
+                    "s_skip".tr(),
                     style: Styles.inter16400white(context).copyWith(
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -135,7 +137,7 @@ class _OnBoardingViewBodyState extends State<OnBoardingViewBody> {
           child: currentIndex == 0
               ? DefaultButton(
                   onPress: () => _goToPage(currentIndex + 1),
-                  text: "استمرار",
+                  text: "s_continue".tr(),
                   borderRadius: AppConstants.sp10(context),
                 )
               : Row(
@@ -143,7 +145,7 @@ class _OnBoardingViewBodyState extends State<OnBoardingViewBody> {
                     Expanded(
                       child: DefaultButton(
                         onPress: () => _goToPage(currentIndex - 1),
-                        text: "السابق",
+                        text: "s_back".tr(),
                         hasBorder: true,
                         backgroundColor: Colors.white,
                         textColor: AppColors.primaryColor,
@@ -162,7 +164,7 @@ class _OnBoardingViewBodyState extends State<OnBoardingViewBody> {
                             _goToPage(currentIndex + 1);
                           }
                         },
-                        text: isLastScreen ? "ابدأ الإدارة" : "استمرار",
+                        text: isLastScreen ? "s_start_managing".tr() : "s_continue".tr(),
                         borderRadius: AppConstants.sp10(context),
                       ),
                     ),

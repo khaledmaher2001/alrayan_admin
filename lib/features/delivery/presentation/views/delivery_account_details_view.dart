@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -140,7 +141,7 @@ class _DetailsHeader extends StatelessWidget {
             ),
             SizedBox(height: AppConstants.height5(context) / 2),
             Text(
-              "كل تفاصيل الدليفري",
+              "s_all_delivery_details".tr(),
               style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
             ),
           ],
@@ -235,7 +236,7 @@ class _ProfileCard extends StatelessWidget {
                                     vertical: AppConstants.height5(context) / 2.5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: (isAvailable ? Colors.green : Colors.grey)
+                                    color: (isAvailable ? DsColor.success : DsColor.textMuted)
                                         .withValues(alpha: .12),
                                     borderRadius: BorderRadius.circular(
                                       AppConstants.sp30(context),
@@ -248,8 +249,8 @@ class _ProfileCard extends StatelessWidget {
                                         Icons.circle,
                                         size: 8,
                                         color: isAvailable
-                                            ? Colors.green.shade600
-                                            : Colors.grey.shade600,
+                                            ? DsColor.success
+                                            : DsColor.textMuted,
                                       ),
                                       SizedBox(width: AppConstants.width5(context) / 2),
                                       Text(
@@ -258,8 +259,8 @@ class _ProfileCard extends StatelessWidget {
                                             : "courier_unavailable".tr(),
                                         style: Styles.inter12500Black(context).copyWith(
                                           color: isAvailable
-                                              ? Colors.green.shade800
-                                              : Colors.grey.shade700,
+                                              ? DsColor.success
+                                              : DsColor.text2,
                                         ),
                                       ),
                                     ],
@@ -372,7 +373,7 @@ class _CourierTabBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1.5),
+          bottom: BorderSide(color: DsColor.border, width: 1.5),
         ),
       ),
       child: Row(
@@ -406,7 +407,7 @@ class _CourierTabBar extends StatelessWidget {
                         ).copyWith(color: AppColors.primaryColor)
                       : Styles.inter14500black(
                           context,
-                        ).copyWith(color: Colors.grey.shade600),
+                        ).copyWith(color: DsColor.textMuted),
                 ),
               ),
             ),
@@ -610,7 +611,7 @@ class _OverviewTab extends StatelessWidget {
                   icon: Icons.circle,
                   label: "availability_status".tr(),
                   value: isAvailable ? "courier_available".tr() : "courier_unavailable".tr(),
-                  valueColor: isAvailable ? Colors.green.shade700 : Colors.grey.shade600,
+                  valueColor: isAvailable ? DsColor.success : DsColor.textMuted,
                 ),
             ],
           ),
@@ -668,7 +669,7 @@ class _OrdersSection extends StatelessWidget {
               color: const Color(0xffF5F6FA),
               borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
             ),
-            child: Text("${list.length} طلبات", style: Styles.inter14500black(context)),
+            child: Text("i_x_orders_16".tr(namedArgs: {"a": "${list.length}"}), style: Styles.inter14500black(context)),
           ),
           child: Builder(
             builder: (context) {
@@ -678,13 +679,13 @@ class _OrdersSection extends StatelessWidget {
               if (state is GetDeliveryOrdersErrorState) {
                 return Text(
                   state.message,
-                  style: Styles.inter12500Black(context).copyWith(color: Colors.red),
+                  style: Styles.inter12500Black(context).copyWith(color: DsColor.danger),
                 );
               }
               if (list.isEmpty) {
                 return Text(
                   "no_orders_found".tr(),
-                  style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+                  style: Styles.inter12500Black(context).copyWith(color: DsColor.textMuted),
                 );
               }
               return Column(
@@ -780,7 +781,7 @@ class _OrderSummaryTile extends StatelessWidget {
             ),
             SizedBox(width: AppConstants.width10(context)),
             Text(
-              "${order.totalAmount ?? '-'} ج.م",
+              "${order.totalAmount ?? '-'} ${"s_egp".tr()}",
               style: Styles.inter14600black(
                 context,
               ).copyWith(color: AppColors.primaryColor),
@@ -819,7 +820,7 @@ class _WalletTab extends StatelessWidget {
                 padding: EdgeInsets.only(top: AppConstants.height10(context)),
                 child: Text(
                   state.message,
-                  style: Styles.inter12500Black(context).copyWith(color: Colors.red),
+                  style: Styles.inter12500Black(context).copyWith(color: DsColor.danger),
                 ),
               ),
             if (raw.isNotEmpty) ...[
@@ -844,47 +845,35 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-      child: Container(
-        width: double.infinity,
-        color: AppColors.secondaryColor,
-        padding: EdgeInsets.all(AppConstants.sp20(context)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "wallet_balance".tr(),
-                          style: Styles.inter16500black(context).copyWith(color: Colors.white70),
-                        ),
-                      ),
-                    ],
+    // White surface, the balance as the dominant figure (no coloured hero).
+    return DsCard(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("wallet_balance".tr(), style: DsText.label.copyWith(color: DsColor.textMuted)),
+                const SizedBox(height: DsSpace.xs),
+                if (isLoading)
+                  const DsSkeleton(width: 140, height: 28)
+                else
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(balance != null ? DsFormat.money(balance) : "-", maxLines: 1, style: DsText.display),
                   ),
-                  SizedBox(height: AppConstants.height10(context)),
-                  if (isLoading)
-                    const CustomLoadingItem(size: 24, color: Colors.white)
-                  else
-                    Text(
-                      balance != null ? "$balance ج.م" : "-",
-                      style: Styles.inter32500white(context),
-                    ),
-                  SizedBox(height: AppConstants.height10(context)),
-                  Container(width: 40, height: 4, color: AppColors.primaryColor),
-                ],
-              ),
+              ],
             ),
-            SizedBox(width: AppConstants.width20(context)),
-            Icon(Icons.account_balance_wallet_outlined, color: Colors.white, size: 44),
-
-          ],
-        ),
+          ),
+          const SizedBox(width: DsSpace.md),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(color: DsColor.primarySoft, borderRadius: BorderRadius.circular(DsRadius.md)),
+            child: const Icon(Icons.account_balance_wallet_outlined, color: DsColor.onPrimarySoft),
+          ),
+        ],
       ),
     );
   }
@@ -991,7 +980,7 @@ class _StatTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Styles.inter18500Black(context).copyWith(
-              color: _isZero ? Colors.grey.shade400 : const Color(0xff0F0F0E),
+              color: _isZero ? DsColor.textSubtle : const Color(0xff0F0F0E),
             ),
           ),
         ],
@@ -1093,7 +1082,7 @@ class _TransactionsTabState extends State<_TransactionsTab> {
                       state.message,
                       style: Styles.inter12500Black(
                         context,
-                      ).copyWith(color: Colors.red),
+                      ).copyWith(color: DsColor.danger),
                     ),
                     TextButton(
                       onPressed: () => cubit.getTransactions(
@@ -1122,7 +1111,7 @@ class _TransactionsTabState extends State<_TransactionsTab> {
                           "no_transactions_found".tr(),
                           style: Styles.inter12500Black(
                             context,
-                          ).copyWith(color: Colors.grey.shade600),
+                          ).copyWith(color: DsColor.textMuted),
                         ),
                       ),
                     )
@@ -1205,7 +1194,7 @@ class _DateFieldBox extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: DsColor.border),
         ),
         child: Row(
           children: [
@@ -1230,7 +1219,7 @@ class _DateFieldBox extends StatelessWidget {
 }
 
 class _TransactionCard extends StatefulWidget {
-  const _TransactionCard({required this.transaction});
+  _TransactionCard({required this.transaction});
 
   final DeliveryTransaction transaction;
 
@@ -1241,13 +1230,13 @@ class _TransactionCard extends StatefulWidget {
 /// Arabic titles for the transaction `type` values confirmed (or plausible)
 /// from the server. Anything not listed falls back to the raw type string
 /// rather than guessing.
-const Map<String, String> _typeTitles = {
-  'order_earning': 'أرباح طلب',
-  'remittance': 'تسليم مبلغ للمحل',
-  'manual_adjustment': 'تعديل يدوي للرصيد',
-  'bonus': 'مكافأة',
-  'penalty': 'خصم',
-  'refund': 'استرداد',
+Map<String, String> _typeTitles = {
+  'order_earning': "s_order_earnings".tr(),
+  'remittance': "s_cash_handed_to_the_store".tr(),
+  'manual_adjustment': "s_manual_balance_adjustment".tr(),
+  'bonus': "s_bonus".tr(),
+  'penalty': "s_deduction".tr(),
+  'refund': "s_refund".tr(),
 };
 
 class _TransactionCardState extends State<_TransactionCard> {
@@ -1280,7 +1269,7 @@ class _TransactionCardState extends State<_TransactionCard> {
   Widget build(BuildContext context) {
     final t = widget.transaction;
     final isCredit = t.amount >= 0;
-    final amountColor = isCredit ? Colors.green.shade700 : Colors.red.shade700;
+    final amountColor = isCredit ? DsColor.success : DsColor.danger;
 
     return Container(
       width: double.infinity,
@@ -1299,12 +1288,12 @@ class _TransactionCardState extends State<_TransactionCard> {
               Container(
                 padding: EdgeInsets.all(AppConstants.sp10(context)),
                 decoration: BoxDecoration(
-                  color: (isCredit ? AppColors.secondaryColor : Colors.red).withValues(alpha: .1),
+                  color: (isCredit ? AppColors.secondaryColor : DsColor.danger).withValues(alpha: .1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   isCredit ? Icons.account_balance_wallet_rounded : Icons.remove_circle_outline_rounded,
-                  color: isCredit ? AppColors.secondaryColor : Colors.red.shade700,
+                  color: isCredit ? AppColors.secondaryColor : DsColor.danger,
                   size: 18,
                 ),
               ),
@@ -1318,7 +1307,7 @@ class _TransactionCardState extends State<_TransactionCard> {
                       padding: EdgeInsets.only(top: AppConstants.height5(context) / 2),
                       child: Text(
                         _orderLabel,
-                        style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+                        style: Styles.inter12500Black(context).copyWith(color: DsColor.textMuted),
                       ),
                     ),
                   if (t.createdAt != null)
@@ -1347,7 +1336,7 @@ class _TransactionCardState extends State<_TransactionCard> {
               padding: EdgeInsets.symmetric(
                 vertical: AppConstants.height10(context),
               ),
-              child: Divider(color: Colors.grey.shade100, height: 1),
+              child: Divider(color: DsColor.fill, height: 1),
             ),
             if (_isOrderProfit && _hasProfitFields)
               Row(
@@ -1363,14 +1352,14 @@ class _TransactionCardState extends State<_TransactionCard> {
                     Expanded(
                       child: _MiniStat(
                         label: "delivery_value".tr(),
-                        value: "${t.shippingAmount} ج.م",
+                        value: "${t.shippingAmount} ${"s_egp".tr()}",
                       ),
                     ),
                   if (t.amountCollected != null)
                     Expanded(
                       child: _MiniStat(
                         label: "collected_amount".tr(),
-                        value: "${t.amountCollected} ج.م",
+                        value: "${t.amountCollected} ${"s_egp".tr()}",
                       ),
                     ),
                 ],
@@ -1384,7 +1373,7 @@ class _TransactionCardState extends State<_TransactionCard> {
                       "${"operation_number".tr()}: ${t.id}",
                       style: Styles.inter12500Black(
                         context,
-                      ).copyWith(color: Colors.grey.shade600),
+                      ).copyWith(color: DsColor.textMuted),
                     ),
                   const Spacer(),
                   if (t.balanceAfter != null)
@@ -1396,7 +1385,7 @@ class _TransactionCardState extends State<_TransactionCard> {
                           style: Styles.inter10400grey(context),
                         ),
                         Text(
-                          "${t.balanceAfter!.toStringAsFixed(2)} ج.م",
+                          "${t.balanceAfter!.toStringAsFixed(2)} ${"s_egp".tr()}",
                           style: Styles.inter14600black(context),
                         ),
                       ],
@@ -1442,7 +1431,7 @@ class _TransactionCardState extends State<_TransactionCard> {
                 padding: EdgeInsets.only(top: AppConstants.height5(context)),
                 child: Icon(
                   expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  color: Colors.grey.shade500,
+                  color: DsColor.textMuted,
                 ),
               ),
             ),
@@ -1470,7 +1459,7 @@ class _MiniStat extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         children: [
@@ -1487,7 +1476,7 @@ class _MiniStat extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Styles.inter12600Black(
                 context,
-              ).copyWith(color: Colors.green.shade700),
+              ).copyWith(color: DsColor.success),
             ),
           ),
         ],
@@ -1588,7 +1577,7 @@ class _PagerArrow extends StatelessWidget {
       onTap: enabled ? onTap : null,
       child: Icon(
         icon,
-        color: enabled ? Colors.grey.shade700 : Colors.grey.shade300,
+        color: enabled ? DsColor.text2 : DsColor.border,
       ),
     );
   }

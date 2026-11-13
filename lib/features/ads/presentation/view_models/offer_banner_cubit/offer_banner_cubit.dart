@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/shared_cubit/request_guard_mixin.dart';
 import 'package:alrayan_admin/features/ads/data/models/offer_banner_model.dart';
 import 'package:alrayan_admin/features/ads/data/repo/ads/ads_repo.dart';
 import 'package:bloc/bloc.dart';
@@ -6,7 +7,7 @@ import '../../../../../core/errors/failure.dart';
 
 part 'offer_banner_state.dart';
 
-class OfferBannerCubit extends Cubit<OfferBannerState> {
+class OfferBannerCubit extends Cubit<OfferBannerState> with RequestGuardMixin {
   final AdsRepo repo;
 
   OfferBannerCubit(this.repo) : super(OfferBannerInitial());
@@ -29,6 +30,7 @@ class OfferBannerCubit extends Cubit<OfferBannerState> {
       this.search = search.trim();
     }
 
+    final reqId = beginRequest();
     if (withLoading) {
       page = 1;
       hasMore = true;
@@ -41,7 +43,9 @@ class OfferBannerCubit extends Cubit<OfferBannerState> {
       page: page,
       limit: limit,
       search: this.search.isEmpty ? null : this.search,
+      cancelToken: requestCancelToken,
     );
+    if (!isCurrentRequest(reqId)) return;
     result.fold(
           (failure) => emit(OfferBannerError(failure.errMessage)),
           (banners) {
@@ -59,16 +63,25 @@ class OfferBannerCubit extends Cubit<OfferBannerState> {
   }
 
   Future<void> loadMore() async {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMore || isLoadingMore || isClosed) return;
     isLoadingMore = true;
     page++;
-    await fetchOfferBanners(withLoading: false);
-    isLoadingMore = false;
+    try {
+      await fetchOfferBanners(withLoading: false);
+    } finally {
+      if (!isClosed) isLoadingMore = false;
+    }
   }
 
   void setCurrentIndex(int index) {
     _currentIndex = index;
     emit(OfferBannerLoaded(banner, _currentIndex));
+  }
+
+  @override
+  Future<void> close() {
+    cancelInFlightRequest();
+    return super.close();
   }
 }
 

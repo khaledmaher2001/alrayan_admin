@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -42,7 +43,7 @@ class AwaitingCustomerOrderItem extends StatelessWidget {
               listener: (context, state) {
                 if (state is ReopenOrderSuccessState) {
                   cherryToast(
-                    text: "تمت إعادة فتح الطلب وإتاحته لعمال التوصيل",
+                    text: "s_the_order_was_reopened_and_made_avai".tr(),
                     context: context,
                   );
                   listCubit.removeOrderLocally(order.id!);
@@ -59,7 +60,7 @@ class AwaitingCustomerOrderItem extends StatelessWidget {
             BlocListener<CancelOrderCubit, CancelOrderStates>(
               listener: (context, state) {
                 if (state is CancelOrderSuccessState) {
-                  cherryToast(text: "تم إلغاء الطلب بنجاح", context: context);
+                  cherryToast(text: "s_order_cancelled".tr(), context: context);
                   // The order may have been paid electronically — surface the
                   // backend's own message (refund status) instead of assuming
                   // the amount was refunded automatically.
@@ -68,7 +69,7 @@ class AwaitingCustomerOrderItem extends StatelessWidget {
                       'cash_on_delivery';
                   if (isElectronicPayment &&
                       state.message.trim().isNotEmpty &&
-                      state.message.trim() != "تم إلغاء الطلب بنجاح") {
+                      state.message.trim() != "s_order_cancelled".tr()) {
                     cherryToast(text: state.message, context: context);
                   }
                   listCubit.removeOrderLocally(order.id!);
@@ -103,15 +104,15 @@ class _Card extends StatelessWidget {
 
   String _elapsedSince(DateTime from) {
     final d = DateTime.now().difference(from);
-    if (d.isNegative) return "الآن";
+    if (d.isNegative) return "s_now".tr();
     final days = d.inDays;
     final hours = d.inHours % 24;
     final minutes = d.inMinutes % 60;
-    if (days > 0) return "$days يوم${hours > 0 ? ' و $hours ساعة' : ''}";
+    if (days > 0) return "${"i_dur_days".tr(namedArgs: {"a": "$days"})}${hours > 0 ? "${"i_dur_and".tr()}${"i_dur_hours".tr(namedArgs: {"a": "$hours"})}" : ""}";
     if (hours > 0) {
-      return "$hours ساعة${minutes > 0 ? ' و $minutes دقيقة' : ''}";
+      return "${"i_dur_hours".tr(namedArgs: {"a": "$hours"})}${minutes > 0 ? "${"i_dur_and".tr()}${"i_dur_minutes".tr(namedArgs: {"a": "$minutes"})}" : ""}";
     }
-    return "$minutes دقيقة";
+    return "i_x_min_68".tr(namedArgs: {"a": "${minutes}"});
   }
 
   @override
@@ -135,13 +136,6 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
         color: Colors.white,
         border: Border.all(color: const Color(0xffE3E7EC)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
@@ -165,7 +159,7 @@ class _Card extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "رقم الطلب",
+                                "s_order_number".tr(),
                                 style: Styles.inter14500black(context).copyWith(
                                   color: const Color(0xff9CA4AB),
                                   fontSize: 11,
@@ -215,15 +209,15 @@ class _Card extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: AppConstants.height10(context)),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: DsColor.border),
                     SizedBox(height: AppConstants.height10(context)),
 
-                    _InfoLine(label: "اسم العميل", value: customerName ?? '-'),
+                    _InfoLine(label: "s_customer_name".tr(), value: customerName ?? '-'),
                     SizedBox(height: AppConstants.height5(context)),
-                    _InfoLine(label: "رقم الهاتف", value: phone ?? '-'),
+                    _InfoLine(label: "s_phone_number".tr(), value: phone ?? '-'),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "العنوان",
+                      label: "s_address".tr(),
                       value:
                           [address?.title, address?.description]
                               .where((e) => (e ?? '').isNotEmpty)
@@ -237,39 +231,39 @@ class _Card extends StatelessWidget {
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "إجمالي الطلب",
+                      label: "s_order_total".tr(),
                       value: "${order.totalAmount ?? '-'} ج.م",
                       valueColor: AppColors.primaryColor,
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "طريقة الدفع",
+                      label: "s_payment_method".tr(),
                       value: paymentMethodLabel(order.paymentMethod),
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "عامل التوصيل",
+                      label: "s_courier_2".tr(),
                       value:
                           order.previousCourierName ??
                           order.deliveryUser?.fullName ??
-                          "غير متاح",
+                          "s_unavailable".tr(),
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "سبب تعذر التسليم",
-                      value: order.releaseReason ?? "غير متاح",
+                      label: "s_reason_delivery_failed".tr(),
+                      value: order.releaseReason ?? "s_unavailable".tr(),
                     ),
                     SizedBox(height: AppConstants.height5(context)),
                     _InfoLine(
-                      label: "وقت تحرير الطلب",
+                      label: "s_released_at".tr(),
                       value: releasedAt != null
                           ? DateFormat("yyyy-MM-dd  hh:mm a").format(releasedAt)
-                          : "غير متاح",
+                          : "s_unavailable".tr(),
                     ),
                     if (releasedAt != null) ...[
                       SizedBox(height: AppConstants.height5(context)),
                       _InfoLine(
-                        label: "الوقت المنقضي منذ التحرير",
+                        label: "s_time_since_release".tr(),
                         value: _elapsedSince(releasedAt),
                       ),
                     ],
@@ -343,7 +337,7 @@ class _Actions extends StatelessWidget {
             if ((phone ?? '').isNotEmpty) ...[
               Expanded(
                 child: _ActionButton(
-                  label: "اتصال بالعميل",
+                  label: "s_call_the_customer".tr(),
                   icon: Icons.call_rounded,
                   color: AppColors.secondaryColor,
                   filled: false,
@@ -354,7 +348,7 @@ class _Actions extends StatelessWidget {
             ],
             Expanded(
               child: _ActionButton(
-                label: "عرض التفاصيل",
+                label: "s_view_details".tr(),
                 icon: Icons.receipt_long_rounded,
                 color: AppColors.primaryColor,
                 filled: false,
@@ -373,7 +367,7 @@ class _Actions extends StatelessWidget {
               child: isReopening
                   ? const CustomLoadingItem()
                   : _ActionButton(
-                      label: "إعادة فتح الطلب",
+                      label: "s_reopen_order".tr(),
                       icon: Icons.lock_open_rounded,
                       color: AppColors.primaryColor,
                       filled: true,
@@ -392,7 +386,7 @@ class _Actions extends StatelessWidget {
               child: isCancelling
                   ? const CustomLoadingItem()
                   : _ActionButton(
-                      label: "إلغاء الطلب",
+                      label: "s_cancel_order".tr(),
                       icon: Icons.cancel_outlined,
                       color: AppColors.redColor,
                       filled: false,

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/features/profile/data/repo/profile_repo/profile_repo_impl.dart';
 import 'package:alrayan_admin/features/profile/presentation/view_model/change_password/change_password_state.dart';
 import 'package:flutter/material.dart';
@@ -6,12 +8,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../../core/shared_widgets/custom_button.dart';
 import '../../../../../../core/shared_widgets/default_text_form_field.dart';
-import '../../../../../../core/utils/assets/assets.dart';
 import '../../../../../../core/utils/text_styles/styles.dart';
 import '../../../../../core/shared_widgets/success_popup.dart';
 import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
-import '../../../../../core/utils/navigation_utility.dart';
 import '../../../../../core/utils/services/remote_services/service_locator.dart';
 import '../../view_model/change_password/change_password_cubit.dart';
 
@@ -55,11 +55,7 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height10(context)),
-          Padding(
-            padding: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
-            child: _buildHeader(context),
-          ),
+          _buildHeader(context),
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsetsDirectional.symmetric(
@@ -92,39 +88,7 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text("تغيير كلمة المرور",textAlign: TextAlign.center, style: Styles.inter18500Black(context))),
-              ],
-            ),
-            SizedBox(height: AppConstants.height5(context) ),
-            Text(
-              "تأكد من استخدام كلمة مرور قوية",
-              style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-            ),
-          ],
-        ),
-        PositionedDirectional(
-          start: 0,
-          child: InkWell(
-            onTap: () => NavigationUtils.navigateBack(context: context),
-            borderRadius: BorderRadius.circular(100),
-            child: Container(
-              width: AppConstants.width20(context) * 2.2,
-              height: AppConstants.width20(context) * 2.2,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.gray.withValues(alpha: .15)),
-              child: const Icon(Icons.arrow_back_rounded, color: Colors.black),
-            ),
-          ),
-        ),
-      ],
-    );
+    return DsTopBar(title: "s_change_password".tr(), subtitle: "s_make_sure_you_use_a_strong_password".tr());
   }
 
   Widget _buildFormCard(BuildContext context) {
@@ -141,14 +105,14 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
         children: [
           _passwordField(
             context,
-            label: "كلمة المرور الحالية",
+            label: "s_current_password".tr(),
             controller: oldPassword,
             validation: (value) {
               if (value == null || value.isEmpty) {
-                return 'يرجى إدخال كلمة المرور الحالية';
+                return "s_please_enter_your_current_password".tr();
               }
               if (value.length < 8) {
-                return 'يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل';
+                return "s_the_password_must_be_at_least_8_char".tr();
               }
               return null;
             },
@@ -156,15 +120,15 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
           SizedBox(height: AppConstants.height20(context)),
           _passwordField(
             context,
-            label: "كلمة المرور الجديدة",
+            label: "s_new_password".tr(),
             controller: newPassword,
             onChange: (_) => setState(() {}),
             validation: (value) {
               if (value == null || value.isEmpty) {
-                return 'يرجى إدخال كلمة المرور';
+                return "s_please_enter_the_password".tr();
               }
               if (value.length < 8) {
-                return 'يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل';
+                return "s_the_password_must_be_at_least_8_char".tr();
               }
               return null;
             },
@@ -176,14 +140,14 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
           SizedBox(height: AppConstants.height20(context)),
           _passwordField(
             context,
-            label: "تأكيد كلمة المرور",
+            label: "s_confirm_password".tr(),
             controller: confirmNewPassword,
             validation: (value) {
               if (value == null || value.isEmpty) {
-                return 'يرجى إدخال كلمة المرور';
+                return "s_please_enter_the_password".tr();
               }
               if (value != newPassword.text) {
-                return 'كلمة المرور غير متطابقة';
+                return "s_the_passwords_don_t_match_2".tr();
               }
               return null;
             },
@@ -197,11 +161,11 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
             ),
             child: Column(
               children: [
-                _RequirementRow(label: "8 أحرف على الأقل", satisfied: _hasMinLength),
-                Divider(height: 1, color: Colors.grey.shade100),
-                _RequirementRow(label: "حرف كبير ورقم", satisfied: _hasUpperAndDigit),
-                Divider(height: 1, color: Colors.grey.shade100),
-                _RequirementRow(label: "رمز خاص واحد", satisfied: _hasSpecialChar),
+                _RequirementRow(label: "s_at_least_8_characters".tr(), satisfied: _hasMinLength),
+                Divider(height: 1, color: DsColor.fill),
+                _RequirementRow(label: "s_an_uppercase_letter_and_a_number".tr(), satisfied: _hasUpperAndDigit),
+                Divider(height: 1, color: DsColor.fill),
+                _RequirementRow(label: "s_one_special_character".tr(), satisfied: _hasSpecialChar),
               ],
             ),
           ),
@@ -250,13 +214,13 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
               builder: (BuildContext context) {
                 return SuccessPopup(
                   withWidget: true,
-                  message: 'تابع عمليات الشراء واكسب المزيد من المحاولات في عجلة الحظ',
-                  title: 'تم تغيير كلمة المرور بنجاح سجل مرة اخرى',
+                  message: "s_keep_shopping_to_earn_more_lucky_whe".tr(),
+                  title: "s_password_changed_please_sign_in_agai".tr(),
                   widget: DefaultButton(
                     onPress: () {
                       GoRouter.of(context).go("/loginView");
                     },
-                    text: "الذهاب لتسجيل دخول",
+                    text: "s_go_to_sign_in".tr(),
                     borderRadius: AppConstants.sp10(context),
                   ),
                 );
@@ -270,12 +234,12 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
                 return SuccessPopup(
                   withWidget: true,
                   message: state.error,
-                  title: 'هناك مشكلة',
+                  title: "s_there_s_a_problem".tr(),
                   widget: DefaultButton(
                     onPress: () {
                       GoRouter.of(context).pop();
                     },
-                    text: "حاول مرة اخري",
+                    text: "s_try_again_2".tr(),
                     borderRadius: AppConstants.sp10(context),
                     height: AppConstants.height15(context),
                   ),
@@ -306,20 +270,20 @@ class _ChangePasswordViewBodyState extends State<ChangePasswordViewBody> {
                       },
                       height: AppConstants.height15(context),
                       borderRadius: AppConstants.sp30(context),
-                      text: "تحديث كلمة المرور",
+                      text: "s_update_password".tr(),
                       icon: const Icon(Icons.verified_user_rounded, color: Colors.white, size: 20),
                     ),
               SizedBox(height: AppConstants.height10(context)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.info_outline_rounded, size: 16, color: Colors.grey.shade500),
+                  Icon(Icons.info_outline_rounded, size: 16, color: DsColor.textMuted),
                   SizedBox(width: AppConstants.width5(context)),
                   Flexible(
                     child: Text(
-                      "سيتم تسجيل خروجك من الأجهزة الأخرى بعد التغيير",
+                      "s_you_ll_be_signed_out_on_other_device".tr(),
                       textAlign: TextAlign.center,
-                      style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+                      style: Styles.inter12500Black(context).copyWith(color: DsColor.textMuted),
                     ),
                   ),
                 ],
@@ -354,16 +318,16 @@ class _SecurityBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text("تأمين حسابك", style: Styles.inter16500black(context))),
+                    Expanded(child: Text("s_secure_your_account".tr(), style: Styles.inter16500black(context))),
                   ],
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 Text(
-                  "استخدم كلمة مرور قوية",
+                  "s_use_a_strong_password".tr(),
                   style: Styles.inter12500Black(context).copyWith(color: const Color(0xff9CA4AB)),
                 ),
                 Text(
-                  "لا تستخدمها في أي حساب آخر",
+                  "s_don_t_use_it_for_any_other_account".tr(),
                   style: Styles.inter12500Black(context).copyWith(color: const Color(0xff9CA4AB)),
                 ),
               ],
@@ -383,15 +347,15 @@ class _StrengthMeter extends StatelessWidget {
   final int score;
 
   String get _label {
-    if (score <= 1) return "ضعيفة";
-    if (score == 2) return "متوسطة";
-    return "قوية";
+    if (score <= 1) return "s_weak".tr();
+    if (score == 2) return "s_medium".tr();
+    return "s_strong".tr();
   }
 
   Color get _color {
-    if (score <= 1) return Colors.red;
-    if (score == 2) return Colors.orange;
-    return Colors.green;
+    if (score <= 1) return DsColor.danger;
+    if (score == 2) return DsColor.warning;
+    return DsColor.success;
   }
 
   @override
@@ -399,7 +363,7 @@ class _StrengthMeter extends StatelessWidget {
     return Row(
       children: [
         Text(
-          "قوة كلمة المرور",
+          "s_password_strength".tr(),
           style: Styles.inter12500Black(context).copyWith(color: const Color(0xff9CA4AB)),
         ),
         SizedBox(width: AppConstants.width10(context)),
@@ -412,7 +376,7 @@ class _StrengthMeter extends StatelessWidget {
                   height: 4,
                   margin: EdgeInsetsDirectional.only(end: i == 3 ? 0 : AppConstants.width5(context)),
                   decoration: BoxDecoration(
-                    color: filled ? _color : Colors.grey.shade200,
+                    color: filled ? _color : DsColor.border,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -447,7 +411,7 @@ class _RequirementRow extends StatelessWidget {
           ),
           Icon(
             satisfied ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-            color: satisfied ? Colors.green.shade600 : Colors.grey.shade300,
+            color: satisfied ? DsColor.success : DsColor.border,
             size: 20,
           ),
         ],

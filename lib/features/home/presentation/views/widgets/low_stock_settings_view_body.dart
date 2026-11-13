@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -28,11 +30,11 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
 
   String? _nonNegativeIntegerValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "هذا الحقل مطلوب";
+      return "s_this_field_is_required_2".tr();
     }
     final number = int.tryParse(value.trim());
     if (number == null || number < 0) {
-      return "يجب إدخال رقم صحيح موجب";
+      return "s_enter_a_valid_positive_number".tr();
     }
     return null;
   }
@@ -49,9 +51,8 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: AppConstants.height20(context)),
-          const CustomAppBar(
-            title: "اعدادات المخزون المنخفض",
+          CustomAppBar(
+            title: "s_low_stock_settings".tr(),
             textColor: Colors.black,
             hasBack: true,
             withNotifications: false,
@@ -62,7 +63,7 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
               horizontal: AppConstants.width20(context),
             ),
             child: Text(
-              "تحديد الحد الأدنى للمخزون الذي يعتبر عنده المنتج منخفض المخزون وتنبيه الأدمن",
+              "s_set_the_minimum_stock_level_at_which".tr(),
               style: Styles.inter14600gray(context),
             ),
           ),
@@ -85,14 +86,14 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
                       child: Form(
                         key: _formKey,
                         child: CustomCouponField(
-                          title: "حد المخزون المنخفض",
-                          hint: "مثال: 10",
+                          title: "s_low_stock_threshold".tr(),
+                          hint: "s_e_g_10".tr(),
                           controller: thresholdController,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                          validationText: "هذا الحقل مطلوب",
+                          validationText: "s_this_field_is_required_2".tr(),
                           validator: _nonNegativeIntegerValidator,
                         ),
                       ),
@@ -148,16 +149,16 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
                   backgroundColor: isLoading
                       ? AppColors.primaryColor.shade500
                       : AppColors.primaryColor,
-                  text: isLoading ? "" : "تحديث البيانات",
+                  text: isLoading ? "" : "s_update".tr(),
                   borderRadius: AppConstants.sp10(context),
                 );
               },
               listener: (context, state) {
                 if (state is UpdateLowStockConfigSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("تم تحديث اعدادات المخزون المنخفض بنجاح"),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: Text("s_low_stock_settings_updated".tr()),
+                      backgroundColor: DsColor.success,
                     ),
                   );
                   context.read<GetLowStockConfigCubit>().getLowStockConfig();
@@ -165,7 +166,7 @@ class _LowStockSettingsViewBodyState extends State<LowStockSettingsViewBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.error),
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                     ),
                   );
                 }

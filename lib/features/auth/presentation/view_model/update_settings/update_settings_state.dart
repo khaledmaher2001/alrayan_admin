@@ -1,5 +1,4 @@
 
-import '../../../data/models/register_model.dart';
 import '../../../data/models/update_settings_model.dart';
 
 abstract class UpdateSettingsStates {}

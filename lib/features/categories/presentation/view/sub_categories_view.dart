@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -42,7 +43,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
         child: Column(
           children: [
             SizedBox(height: AppConstants.height10(context)),
-            Text("الأقسام الفرعية", textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+            Text("s_subcategories".tr(), textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
             SizedBox(height: AppConstants.height20(context)),
             Expanded(
               child: Padding(

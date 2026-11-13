@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'dart:async';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
@@ -8,6 +9,7 @@ import 'package:alrayan_admin/features/products/presentation/view_model/get_prod
 import 'package:alrayan_admin/features/products/presentation/views/widgets/filter_products_item.dart';
 import 'package:alrayan_admin/features/products/presentation/views/widgets/main_product_item.dart';
 import 'package:flutter/material.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -23,7 +25,6 @@ class ProductsViewBody extends StatefulWidget {
 class _ProductsViewBodyState extends State<ProductsViewBody> {
   TextEditingController search = TextEditingController();
   ScrollController scrollController = ScrollController();
-  bool isLoading = false;
   Timer? _searchDebounce;
 
   void _searchProducts(String value) {
@@ -41,34 +42,18 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
     });
   }
 
-  Future<void> pagination() async {
-    final cubit = context.read<GetProductsCubit>();
-    if (cubit.productsModel == null) return;
-    if (cubit.page < (cubit.productsModel!.data?.metadata?.totalPages ?? 0) &&
-        scrollController.position.maxScrollExtent == scrollController.position.pixels &&
-        !isLoading) {
-      isLoading = true;
-      setState(() {
-        cubit.page++;
-      });
-      await cubit
-          .getProducts(
-            withLoading: false,
-            categoryId: context.read<ChangeCategoryCubit>().mainCategoryId,
-            subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
-            name: search.text.trim(),
-          )
-          .then((value) {
-            setState(() {
-              isLoading = false;
-            });
-          });
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      // Pagination bookkeeping (page++, hasMore, in-flight guard) lives in
+      // the cubit now — this just asks it to load the next page.
+      context.read<GetProductsCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GetProductsCubit>().getProducts(
@@ -80,7 +65,7 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
 
   @override
   void dispose() {
-    scrollController.removeListener(pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     search.dispose();
     _searchDebounce?.cancel();
@@ -98,7 +83,7 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
             child: DefaultTextFormField(
               textInputType: TextInputType.text,
               controller: search,
-              hintText: "ابحث عن المنتج...",
+              hintText: "s_search_for_a_product".tr(),
               onChange: _onSearchChanged,
               onFilledSubmit: (value) {
                 // Enter/search-key press searches immediately, skipping
@@ -129,10 +114,10 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                          const Icon(Icons.error_outline, size: 48, color: DsColor.danger),
                           SizedBox(height: AppConstants.height10(context)),
                           Text(
-                            "حدث خطأ في تحميل المنتجات",
+                            "s_couldn_t_load_products".tr(),
                             style: Styles.inter16500black(context),
                             textAlign: TextAlign.center,
                           ),
@@ -143,7 +128,7 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
                               subCategoryId: context.read<ChangeCategoryCubit>().subCategoryId,
                             ),
                             icon: const Icon(Icons.refresh),
-                            label: const Text("إعادة المحاولة"),
+                            label: Text("s_retry".tr()),
                           ),
                         ],
                       ),
@@ -162,27 +147,23 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
                               children: [
                                 SvgPicture.asset(AssetData.emptyCart, height: 120),
                                 SizedBox(height: AppConstants.height10(context)),
-                                Text("لا توجد منتجات", style: Styles.inter16500black(context)),
+                                Text("s_no_products_2".tr(), style: Styles.inter16500black(context)),
                               ],
                             ),
                           ),
                         ),
                       );
                     }
-                    return GridView.builder(
+                    // One product per row; bottom padding keeps the last row clear of the add button.
+                    return ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
                       controller: scrollController,
-                      padding: EdgeInsets.symmetric(
-                        vertical: AppConstants.height10(context),
-                        horizontal: AppConstants.width15(context),
-                      ),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: AppConstants.width10(context),
-                        mainAxisSpacing: AppConstants.height10(context),
-                        childAspectRatio: .55,
-                      ),
-                      itemCount: products.length + (isLoading ? 2 : 0),
+                      padding: const EdgeInsets.fromLTRB(DsSpace.page, DsSpace.sm, DsSpace.page, 96),
+                      separatorBuilder: (_, _) => const SizedBox(height: DsSpace.sm),
+                      itemCount: products.length +
+                          (context.read<GetProductsCubit>().isLoadingMore
+                              ? 1
+                              : 0),
                       itemBuilder: (context, index) {
                         if (index >= products.length) {
                           return const _LoadingTile();
@@ -215,11 +196,11 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(height: 150, width: double.infinity, color: Colors.grey[300]),
+                              Container(height: 150, width: double.infinity, color: DsColor.border),
                               SizedBox(height: AppConstants.height10(context)),
-                              Container(height: 20, width: 100, color: Colors.grey[300]),
+                              Container(height: 20, width: 100, color: DsColor.border),
                               SizedBox(height: AppConstants.height10(context)),
-                              Container(height: 15, width: 60, color: Colors.grey[300]),
+                              Container(height: 15, width: 60, color: DsColor.border),
                             ],
                           ),
                         );
@@ -230,17 +211,6 @@ class _ProductsViewBodyState extends State<ProductsViewBody> {
               ),
             ),
           ),
-          if (isLoading) ...[
-            SizedBox(height: AppConstants.height10(context)),
-            Center(
-              child: SizedBox(
-                height: AppConstants.height30(context),
-                width: AppConstants.height30(context),
-                child: const CircularProgressIndicator(),
-              ),
-            ),
-            SizedBox(height: AppConstants.height10(context)),
-          ],
         ],
       ),
     );

@@ -1,6 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter/material.dart';
-import '../utils/colors/colors.dart';
-import '../utils/constants.dart';
 
 class DefaultButton extends StatelessWidget {
   final void Function()? onPress;
@@ -38,37 +37,41 @@ class DefaultButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Design system geometry for every button in the app: 48dp, radius 12, no shadow.
+    // Colours/border/icon passed by a screen are kept; radius/height/elevation are unified.
+    final bg = backgroundColor ?? DsColor.primary;
+    final fg = textColor ?? Colors.white;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primaryColor,
-          surfaceTintColor:surfaceTintColor,
-          shadowColor: shadowColor,
-          elevation: elevation?? 3,
-          padding: EdgeInsets.symmetric(vertical: height ?? AppConstants.height20(context)),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                borderRadius ??0,
-              ),
-              side: BorderSide(color: hasBorder ? borderColor??AppColors.primaryColor: Colors.transparent)
-          )),
+        backgroundColor: bg,
+        foregroundColor: fg,
+        disabledBackgroundColor: DsColor.fill,
+        disabledForegroundColor: DsColor.textSubtle,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        minimumSize: const Size(64, DsSize.button),
+        padding: const EdgeInsets.symmetric(horizontal: DsSpace.lg, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DsRadius.md),
+          side: BorderSide(color: hasBorder ? (borderColor ?? DsColor.primary) : Colors.transparent),
+        ),
+      ),
       onPressed: onPress,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-              child: icon!,
-            ),
-          ],
-          Text(text,
+          if (icon != null) ...[icon!, const SizedBox(width: DsSpace.sm)],
+          Flexible(
+            child: Text(
+              text,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: textColor ?? Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: fontSize ?? MediaQuery.of(context).size.height*.02,
-                  fontFamily: fontFamily??"Inter")),
-
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: onPress == null ? DsColor.textSubtle : fg, fontWeight: FontWeight.w700, fontSize: 15, height: 1.3, fontFamily: 'Inter'),
+            ),
+          ),
         ],
       ),
     );

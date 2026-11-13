@@ -1,6 +1,5 @@
 
 
-import '../../../data/model/notifications_model.dart';
 
 sealed class ReadMarkNotificationsState {}
 

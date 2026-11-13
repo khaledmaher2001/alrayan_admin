@@ -1,13 +1,10 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/assets/assets.dart';
-import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/services/local_services/cache_keys.dart';
-import '../../../../../core/utils/text_styles/styles.dart';
 
 class SplashViewBody extends StatefulWidget {
   const SplashViewBody({super.key});
@@ -85,7 +82,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Image.asset(
-                        AssetData.logoBackWhite,
+                        AssetData.logo,
                         width:
                         MediaQuery.of(context).size.width * .4,
                       ),
@@ -106,12 +103,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
                         children: [
                           Text(
                             "Made with love by",
-                            style: Styles.DIN18500(context)
-                                .copyWith(
-                              color: Colors.black,
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: DsText.label.copyWith(color: DsColor.textMuted),
                           ),
                           SizedBox(
                             width: AppConstants.width5(context),
@@ -143,12 +135,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
                             },
                             child: Text(
                               "أكواد ACWAD",
-                              style: Styles.DIN18500(context)
-                                  .copyWith(
-                                color: Colors.black,
-                                fontFamily: "Inter",
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: DsText.label.copyWith(color: DsColor.text2),
                             ),
                           ),
                         ],

@@ -1,8 +1,6 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/navigation_utility.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/awaiting_customer_orders_view_body.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_awaiting_customer_orders/get_awaiting_customer_orders_cubit.dart';
@@ -25,14 +23,8 @@ class AwaitingCustomerOrdersView extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              SizedBox(height: AppConstants.height10(context)),
-              Padding(
-                padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: AppConstants.width15(context),
-                ),
-                child: _buildHeader(context),
-              ),
-              SizedBox(height: AppConstants.height15(context)),
+              _buildHeader(context),
+              const SizedBox(height: DsSpace.sm),
               const Expanded(child: AwaitingCustomerOrdersViewBody()),
             ],
           ),
@@ -42,49 +34,6 @@ class AwaitingCustomerOrdersView extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    "طلبات بانتظار العميل",
-                    textAlign: TextAlign.center,
-                    style: Styles.inter18500Black(context),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.height5(context) / 2),
-            Text(
-              "طلبات حرّرها عامل التوصيل لتعذّر الوصول للعميل",
-              style: Styles.inter14500black(
-                context,
-              ).copyWith(color: const Color(0xff9CA4AB)),
-            ),
-          ],
-        ),
-        PositionedDirectional(
-          start: 0,
-          child: InkWell(
-            onTap: () => NavigationUtils.navigateBack(context: context),
-            borderRadius: BorderRadius.circular(100),
-            child: Container(
-              width: AppConstants.width20(context) * 2.2,
-              height: AppConstants.width20(context) * 2.2,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.gray.withValues(alpha: .15),
-              ),
-              child: const Icon(Icons.arrow_back_rounded, color: Colors.black),
-            ),
-          ),
-        ),
-      ],
-    );
+    return DsTopBar(title: "s_orders_waiting_for_the_customer".tr(), subtitle: "s_orders_released_by_the_courier_becau".tr());
   }
 }

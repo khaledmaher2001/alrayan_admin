@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
@@ -53,6 +54,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
   late final TextEditingController _description;
   late final TextEditingController _minOrderAmount;
   late final TextEditingController _expiresAt;
+  late final TextEditingController _validityDays;
   late final TextEditingController _probability;
 
   /// type field: no_reward | free_shipping | discount_coupon | discount_product
@@ -139,6 +141,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
       } catch (_) {}
     }
     _expiresAt = TextEditingController(text: expiresAtText);
+    _validityDays = TextEditingController(text: item?.validityDays?.toString() ?? '');
 
     final probValue = item?.probability;
     final probDouble = probValue is num ? probValue.toDouble() * 100 : 0.0;
@@ -185,6 +188,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
     _description.dispose();
     _minOrderAmount.dispose();
     _expiresAt.dispose();
+    _validityDays.dispose();
     _probability.dispose();
     super.dispose();
   }
@@ -251,14 +255,14 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_rewardType == null) {
-      cherryToast(context: context, text: 'يجب اختيار نوع الجائزة', isSuccess: false);
+      cherryToast(context: context, text: "s_please_choose_the_prize_type".tr(), isSuccess: false);
       return;
     }
 
     if (_needsProductId && _selectedProductId == null) {
       cherryToast(
         context: context,
-        text: _discountType == 'خصم على قسم' ? 'يجب اختيار قسم' : 'يجب اختيار منتج',
+        text: _discountType == 'خصم على قسم' ? "s_please_choose_a_category".tr() : "s_please_choose_a_product".tr(),
         isSuccess: false,
       );
       return;
@@ -270,7 +274,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
     if (widget.usedProbability + probFraction > 1.001) {
       cherryToast(
         context: context,
-        text: 'مجموع الاحتمالية يتجاوز 100%، المتبقي: ${_remainingPercent.toStringAsFixed(1)}%',
+        text: "i_chances_exceed_100_remaining_x_56".tr(namedArgs: {"a": "${_remainingPercent.toStringAsFixed(1)}"}),
         isSuccess: false,
       );
       return;
@@ -291,6 +295,8 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
         'minOrderAmount': double.tryParse(_minOrderAmount.text.trim()) ?? 0,
       if (_expiresAt.text.trim().isNotEmpty)
         'expiresAt': '${_expiresAt.text.trim()}T00:00:00.000Z',
+      // Days a won coupon stays valid from the win; empty clears it (fixed date / 7 days).
+      'validityDays': int.tryParse(_validityDays.text.trim()),
       if (_selectedProductId != null) 'productId': _selectedProductId,
     };
 
@@ -323,7 +329,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                   children: [
                     CustomBackButton(),
                     Text(
-                      _isEditMode ? 'تعديل الجائزة' : 'إضافة جائزة',
+                      _isEditMode ? "s_edit_prize".tr() : "s_add_prize".tr(),
                       style: Styles.inter18500Black(context),
                     ),
                     SizedBox(width: AppConstants.width20(context) * 2),
@@ -369,10 +375,10 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                       child: ListView(
                         children: [
                           // ── نوع الجائزة ──────────────────────────────
-                          _FieldLabel(text: 'نوع الجائزة'),
+                          _FieldLabel(text: "s_prize_type".tr()),
                           SizedBox(height: AppConstants.height5(context)),
                           CustomDropDownButton(
-                            hintText: 'اختر نوع الجائزة',
+                            hintText: "s_choose_the_prize_type".tr(),
                             value: _rewardType,
                             items: _rewardTypeLabels.keys.toList(),
                             onChanged: (v) => setState(() {
@@ -382,39 +388,39 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                               _selectedItemName = null;
                             }),
                             validator: (v) =>
-                                (v == null || v.isEmpty) ? 'يجب اختيار نوع الجائزة' : null,
+                                (v == null || v.isEmpty) ? "s_please_choose_the_prize_type".tr() : null,
                           ),
                           SizedBox(height: AppConstants.height15(context)),
 
                           // ── النص المعروض ──────────────────────────────
-                          _FieldLabel(text: 'النص المعروض على العجلة'),
+                          _FieldLabel(text: "s_text_shown_on_the_wheel".tr()),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             textInputType: TextInputType.text,
                             controller: _displayText,
-                            hintText: 'مثال: خصم 20%',
-                            validationMsg: 'يجب إدخال النص المعروض',
+                            hintText: "s_e_g_20_off".tr(),
+                            validationMsg: "s_please_enter_the_text_to_show".tr(),
                           ),
                           SizedBox(height: AppConstants.height15(context)),
 
                           // ── كود الكوبون + نوع الخصم + قيمته (لأي نوع خصم) ──
                           if (_needsDiscountFields) ...[
-                            _FieldLabel(text: 'كود الكوبون'),
+                            _FieldLabel(text: "s_coupon_code".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType: TextInputType.text,
                               controller: _couponCode,
-                              hintText: 'مثال: LUCKY20',
-                              validationMsg: 'يجب إدخال كود الكوبون',
+                              hintText: "s_e_g_lucky20".tr(),
+                              validationMsg: "s_please_enter_the_coupon_code".tr(),
                             ),
                             SizedBox(height: AppConstants.height15(context)),
                           ],
 
                           if (_needsDiscountFields) ...[
-                            _FieldLabel(text: 'نوع الخصم'),
+                            _FieldLabel(text: "s_discount_type".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             CustomDropDownButton(
-                              hintText: 'اختر نوع الخصم',
+                              hintText: "s_choose_the_discount_type".tr(),
                               value: _discountType,
                               items: _discountTypeOptions,
                               onChanged: (v) => setState(() {
@@ -423,11 +429,11 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                                 _selectedItemName = null;
                               }),
                               validator: (v) =>
-                                  (v == null || v.isEmpty) ? 'يجب اختيار نوع الخصم' : null,
+                                  (v == null || v.isEmpty) ? "s_please_choose_the_discount_type".tr() : null,
                             ),
                             SizedBox(height: AppConstants.height15(context)),
 
-                            _FieldLabel(text: 'قيمة الخصم'),
+                            _FieldLabel(text: "s_discount_value".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType:
@@ -436,7 +442,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                               hintText: '0',
                               validation: (v) {
                                 if (v == null || v.trim().isEmpty) {
-                                  return 'يجب إدخال قيمة الخصم';
+                                  return "s_please_enter_the_discount_value_2".tr();
                                 }
                                 return null;
                               },
@@ -448,15 +454,15 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                           if (_needsProductId) ...[
                             _FieldLabel(
                               text: _discountType == 'خصم على قسم'
-                                  ? 'اختر قسم'
-                                  : 'اختر منتج',
+                                  ? "s_choose_a_category".tr()
+                                  : "s_choose_a_product_2".tr(),
                             ),
                             SizedBox(height: AppConstants.height5(context)),
                             _SinglePickerField(
                               selectedName: _selectedItemName,
                               hint: _discountType == 'خصم على قسم'
-                                  ? 'اضغط لاختيار قسم'
-                                  : 'اضغط لاختيار منتج',
+                                  ? "s_tap_to_choose_a_category".tr()
+                                  : "s_tap_to_choose_a_product".tr(),
                               onTap: () => _discountType == 'خصم على قسم'
                                   ? _openCategoryPicker(context)
                                   : _openProductPicker(context),
@@ -469,12 +475,12 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                           ],
 
                           // ── الوصف ──────────────────────────────────────
-                          _FieldLabel(text: 'الوصف'),
+                          _FieldLabel(text: "s_description".tr()),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             textInputType: TextInputType.text,
                             controller: _description,
-                            hintText: 'وصف الجائزة',
+                            hintText: "s_prize_description".tr(),
                             maxLines: 2,
                             validation: (_) => null,
                           ),
@@ -488,7 +494,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _FieldLabel(text: 'أقل قيمة للطلب'),
+                                    _FieldLabel(text: "s_minimum_order_value_2".tr()),
                                     SizedBox(height: AppConstants.height5(context)),
                                     DefaultTextFormField(
                                       textInputType: TextInputType.number,
@@ -504,7 +510,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _FieldLabel(text: 'تاريخ الانتهاء'),
+                                    _FieldLabel(text: "s_end_date".tr()),
                                     SizedBox(height: AppConstants.height5(context)),
                                     DefaultTextFormField(
                                       textInputType: TextInputType.none,
@@ -524,17 +530,33 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                           ),
                           SizedBox(height: AppConstants.height15(context)),
 
+                          // ── مدة الكوبون من وقت المكسب ─────────────────
+                          _FieldLabel(text: "s_coupon_validity_days".tr(), hint: "s_coupon_validity_days_hint".tr()),
+                          SizedBox(height: AppConstants.height5(context)),
+                          DefaultTextFormField(
+                            textInputType: TextInputType.number,
+                            controller: _validityDays,
+                            hintText: '5',
+                            validation: (v) {
+                              final t = (v ?? '').trim();
+                              if (t.isEmpty) return null;
+                              final n = int.tryParse(t);
+                              return (n == null || n < 1 || n > 365) ? "s_coupon_validity_days_error".tr() : null;
+                            },
+                          ),
+                          SizedBox(height: AppConstants.height15(context)),
+
                           // ── نسبة الظهور ────────────────────────────────
                           _FieldLabel(
-                            text: 'نسبة الظهور',
-                            hint: 'المتبقي: ${_remainingPercent.toStringAsFixed(1)}%',
+                            text: "s_chance".tr(),
+                            hint: "i_remaining_x_57".tr(namedArgs: {"a": "${_remainingPercent.toStringAsFixed(1)}"}),
                           ),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             textInputType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             controller: _probability,
-                            hintText: 'من 0 إلى ${_remainingPercent.toStringAsFixed(1)}',
+                            hintText: "i_from_0_to_x_58".tr(namedArgs: {"a": "${_remainingPercent.toStringAsFixed(1)}"}),
                             suffixIcon: Padding(
                               padding: EdgeInsets.symmetric(
                                   vertical: AppConstants.sp5(context) * 2),
@@ -549,14 +571,14 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                             ],
                             validation: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return 'يجب إدخال نسبة الظهور';
+                                return "s_please_enter_the_chance".tr();
                               }
                               final val = double.tryParse(v.trim());
                               if (val == null || val <= 0) {
-                                return 'يجب أن تكون النسبة أكبر من 0';
+                                return "s_the_chance_must_be_greater_than_0".tr();
                               }
                               if (val > _remainingPercent + 0.01) {
-                                return 'النسبة تتجاوز المتبقي (${_remainingPercent.toStringAsFixed(1)}%)';
+                                return "i_the_chance_exceeds_what_s_left_x_59".tr(namedArgs: {"a": "${_remainingPercent.toStringAsFixed(1)}"});
                               }
                               return null;
                             },
@@ -567,7 +589,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('تفعيل الجائزة',
+                              Text("s_enable_prize".tr(),
                                   style: Styles.inter16500black(context)),
                               Switch(
                                 value: _isActive,
@@ -591,7 +613,7 @@ class _CreateEditLuckyItemViewState extends State<CreateEditLuckyItemView> {
                                       ? const Center(child: CircularProgressIndicator())
                                       : DefaultButton(
                                           onPress: () => _submit(context),
-                                          text: _isEditMode ? 'تعديل' : 'إضافة',
+                                          text: _isEditMode ? "s_edit".tr() : "s_add".tr(),
                                           borderRadius: AppConstants.sp10(context),
                                         );
                                 },
@@ -663,7 +685,7 @@ class _ProbabilityIndicator extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('الاحتمالية المستخدمة', style: Styles.inter14500black(context)),
+              Text("s_chance_used".tr(), style: Styles.inter14500black(context)),
               Text(
                 '${usedPercent.toStringAsFixed(1)}% / 100%',
                 style: Styles.inter14500black(context)
@@ -683,7 +705,7 @@ class _ProbabilityIndicator extends StatelessWidget {
           ),
           SizedBox(height: AppConstants.height5(context)),
           Text(
-            'المتبقي: ${remainingPercent.toStringAsFixed(1)}%',
+            "i_remaining_x_60".tr(namedArgs: {"a": "${remainingPercent.toStringAsFixed(1)}"}),
             style: Styles.inter14500black(context).copyWith(color: Colors.grey),
           ),
         ],

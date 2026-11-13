@@ -1,8 +1,7 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import '../utils/text_styles/styles.dart';
 
 class DefaultTextFormField extends StatefulWidget {
   final int? maxLength;
@@ -54,7 +53,7 @@ class DefaultTextFormField extends StatefulWidget {
     this.borderSideColor,
     this.contentPaddingVertical = 10.0,
     this.borderRadius = 10,
-    this.enabledBorderRadiusColor = Colors.grey,
+    this.enabledBorderRadiusColor = DsColor.textMuted,
     this.maxLength,
     this.maxLines,
     this.labelText,
@@ -133,46 +132,30 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
           return null;
         }
       },
+      // Design-system field: white, 1px line, brand outline on focus, 12 radius, ~52dp tall.
+      // A screen's explicit colours are kept; the old beige/grey defaults are replaced.
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
+        isDense: true,
         contentPadding: EdgeInsets.symmetric(
-          vertical: widget.contentPaddingVertical,
-          horizontal: widget.contentPaddingHorizontal,
+          vertical: widget.contentPaddingVertical > 15 ? widget.contentPaddingVertical : 15,
+          horizontal: widget.contentPaddingHorizontal < DsSpace.lg ? DsSpace.lg : widget.contentPaddingHorizontal,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(widget.borderRadius)),
-          borderSide: (!widget.hasBorder)
-              ? BorderSide.none
-              : BorderSide(color: widget.borderSideColor ?? AppColors.primaryColor, width: widget.borderSideWidth),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(widget.borderRadius)),
-          borderSide: (!widget.hasBorder)
-              ? BorderSide.none
-              : BorderSide(color: widget.borderSideColor ?? AppColors.primaryColor, width: widget.borderSideWidth),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(widget.borderRadius)),
-          borderSide: (!widget.hasBorder)
-              ? BorderSide.none
-              : BorderSide(
-                  color: widget.borderSideEnabledColor ?? const Color(0xffD9CBAD),
-                  width: widget.borderSideWidth,
-                ),
-        ),
+        border: _border(widget.borderSideEnabledColor ?? DsColor.border),
+        enabledBorder: _border(widget.borderSideEnabledColor ?? DsColor.border),
+        disabledBorder: _border(DsColor.divider),
+        focusedBorder: _border(widget.borderSideColor ?? DsColor.primary, 1.5),
+        errorBorder: _border(DsColor.danger),
+        focusedErrorBorder: _border(DsColor.danger, 1.5),
+        errorStyle: DsText.caption.copyWith(color: DsColor.danger),
         filled: true,
-        fillColor: widget.fillColor ?? Colors.white,
+        fillColor: widget.isEnabled ? (_legacyFill(widget.fillColor) ? (widget.hasBorder ? DsColor.surface : DsColor.fill) : widget.fillColor ?? DsColor.surface) : DsColor.fill,
         prefixIcon: widget.prefixIcon,
         labelText: widget.labelText,
         hintText: widget.hintText,
-        hintStyle: widget.hintStyle ?? Styles.hintText(context),
+        hintStyle: widget.hintStyle ?? DsText.body.copyWith(color: DsColor.textSubtle),
         errorMaxLines: 2,
-        labelStyle: TextStyle(
-          color: myFocusNode.hasFocus
-              ? widget.labelColorActive ?? AppColors.primaryColor
-              : widget.labelColorActive ?? Colors.grey,
-          fontSize: MediaQuery.of(context).size.height * .02,
-        ),
+        labelStyle: DsText.body.copyWith(color: myFocusNode.hasFocus ? (widget.labelColorActive ?? DsColor.primary) : (widget.labelColorActive ?? DsColor.textMuted)),
         suffixIcon:
             widget.suffixIcon ??
             (widget.isPassword
@@ -182,12 +165,20 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
                         hidePassword = !hidePassword;
                       });
                     },
-                    child: Icon(hidePassword ? Icons.visibility_off_sharp : Icons.visibility_sharp),
+                    child: Icon(hidePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: DsColor.textMuted),
                   )
                 : null),
       ),
     );
   }
+
+  /// Old screens pass light greys/beiges as "filled" backgrounds; fields are white now.
+  static bool _legacyFill(Color? c) => c == null || c.a == 0 || const [0xffF7F7F8, 0xffF5F5F5, 0xffF6F8FE, 0xffFAFAFA, 0xffF3F4F6, 0xffF7F9FA].contains(c.toARGB32());
+
+  OutlineInputBorder _border(Color color, [double width = 1]) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(DsRadius.md),
+        borderSide: widget.hasBorder ? BorderSide(color: color, width: width) : BorderSide.none,
+      );
 
   @override
   void dispose() {

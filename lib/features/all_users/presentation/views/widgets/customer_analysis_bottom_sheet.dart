@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -52,7 +54,7 @@ class _AnalysisSheetBody extends StatelessWidget {
               width: MediaQuery.of(context).size.width * 0.15,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                color: Colors.grey.shade300,
+                color: DsColor.border,
               ),
             ),
           ),
@@ -75,7 +77,7 @@ class _AnalysisSheetBody extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("تحليل العميل", style: Styles.inter16500black(context)),
+                      Text("s_customer_analysis".tr(), style: Styles.inter16500black(context)),
                       Text(
                         userName,
                         style: Styles.inter10400grey(context),
@@ -94,7 +96,7 @@ class _AnalysisSheetBody extends StatelessWidget {
               ],
             ),
           ),
-          Divider(color: Colors.grey.shade100),
+          Divider(color: DsColor.fill),
           Expanded(
             child: BlocBuilder<GetCustomerLifetimeValueCubit, GetCustomerLifetimeValueState>(
               builder: (context, state) {
@@ -108,7 +110,7 @@ class _AnalysisSheetBody extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.error_outline,
-                            color: Colors.red.shade300, size: 40),
+                            color: DsColor.danger, size: 40),
                         SizedBox(height: AppConstants.height10(context)),
                         Text(state.message,
                             style: Styles.inter12500Black(context)),
@@ -159,21 +161,21 @@ class _AnalysisContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "إجمالي الإنفاق",
+                        "s_total_spent".tr(),
                         style: Styles.inter10400grey(
                           context,
                         ).copyWith(color: Colors.white70),
                       ),
                       SizedBox(height: AppConstants.height5(context) / 2),
                       Text(
-                        "${_fmtMoney(data.totalSpent)} ج.م",
+                        "${_fmtMoney(data.totalSpent)} ${"s_egp".tr()}",
                         style: Styles.inter18500Black(
                           context,
                         ).copyWith(color: Colors.white),
                       ),
                       SizedBox(height: AppConstants.height5(context) / 2),
                       Text(
-                        "من خلال ${_ordersPhrase(data.totalOrders)}",
+                        "i_through_x_5".tr(namedArgs: {"a": "${_ordersPhrase(data.totalOrders)}"}),
                         style: Styles.inter10400grey(
                           context,
                         ).copyWith(color: Colors.white70),
@@ -192,7 +194,7 @@ class _AnalysisContent extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.payments_outlined,
-                    color: Colors.green,
+                    color: DsColor.success,
                     size: AppConstants.sp20(context),
                   ),
                 ),
@@ -205,7 +207,7 @@ class _AnalysisContent extends StatelessWidget {
             children: [
               Expanded(
                 child: _BigStatCard(
-                  label: "إجمالي الطلبات",
+                  label: "s_total_orders".tr(),
                   value: _fmt(data.totalOrders),
                   icon: Icons.shopping_bag_outlined,
                   color: AppColors.primaryColor,
@@ -214,10 +216,10 @@ class _AnalysisContent extends StatelessWidget {
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _BigStatCard(
-                  label: "متوسط الطلب",
-                  value: "${_fmtMoney(data.averageOrderValue)} ج.م",
+                  label: "s_average_order".tr(),
+                  value: "${_fmtMoney(data.averageOrderValue)} ${"s_egp".tr()}",
                   icon: Icons.trending_up_rounded,
-                  color: Colors.indigo,
+                  color: DsColor.info,
                 ),
               ),
             ],
@@ -227,33 +229,33 @@ class _AnalysisContent extends StatelessWidget {
             children: [
               Expanded(
                 child: _BigStatCard(
-                  label: "الكوبونات المستخدمة",
+                  label: "s_coupons_used".tr(),
                   value: _fmt(data.totalUsedCoupons),
                   icon: Icons.discount_outlined,
-                  color: Colors.orange,
+                  color: DsColor.warning,
                 ),
               ),
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _BigStatCard(
-                  label: "الطلبات الملغاة",
+                  label: "s_cancelled_orders".tr(),
                   value: _fmt(data.totalCanceldOrders),
                   icon: Icons.cancel_outlined,
-                  color: Colors.red,
+                  color: DsColor.danger,
                 ),
               ),
             ],
           ),
           if (hasOrders) ...[
             SizedBox(height: AppConstants.height20(context)),
-            Text("سجل الطلبات", style: Styles.inter14500black(context)),
+            Text("s_order_history".tr(), style: Styles.inter14500black(context)),
             SizedBox(height: AppConstants.height10(context)),
             Container(
               padding: EdgeInsets.all(AppConstants.sp15(context)),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: DsColor.page,
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: DsColor.border),
               ),
               child: _OrdersTimeline(
                 firstOrderDate: _formatDate(data.firstOrderDate),
@@ -267,11 +269,11 @@ class _AnalysisContent extends StatelessWidget {
               child: Column(
                 children: [
                   Icon(Icons.shopping_bag_outlined,
-                      color: Colors.grey.shade300, size: 48),
+                      color: DsColor.border, size: 48),
                   SizedBox(height: AppConstants.height10(context)),
-                  Text("لا توجد طلبات لهذا العميل",
+                  Text("s_no_orders_for_this_customer".tr(),
                       style: Styles.inter12500Black(context)
-                          .copyWith(color: Colors.grey)),
+                          .copyWith(color: DsColor.textMuted)),
                 ],
               ),
             ),
@@ -281,22 +283,22 @@ class _AnalysisContent extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(AppConstants.sp15(context)),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade50,
+              color: DsColor.infoBg,
               borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline,
-                    color: Colors.indigo, size: AppConstants.sp20(context)),
+                    color: DsColor.info, size: AppConstants.sp20(context)),
                 SizedBox(width: AppConstants.width10(context)),
                 Expanded(
                   child: Text(
                     hasOrders
-                        ? "قام هذا العميل بإجراء ${_ordersPhrase(data.totalOrders)} بإجمالي ${_fmtMoney(data.totalSpent)} ج.م."
-                        : "لم يقم هذا العميل بأي طلبات حتى الآن.",
+                        ? "i_this_customer_placed_x_totalling_e_7".tr(namedArgs: {"a": "${_ordersPhrase(data.totalOrders)}", "b": "${_fmtMoney(data.totalSpent)}"})
+                        : "s_this_customer_hasn_t_placed_any_orde".tr(),
                     style: Styles.inter12500Black(context)
-                        .copyWith(color: Colors.indigo.shade700),
+                        .copyWith(color: DsColor.info),
                   ),
                 ),
               ],
@@ -310,9 +312,9 @@ class _AnalysisContent extends StatelessWidget {
 
   String _ordersPhrase(num? v) {
     final count = v?.toInt() ?? 0;
-    if (count == 1) return "طلب واحد";
-    if (count == 2) return "طلبين";
-    return "$count طلبات";
+    if (count == 1) return "s_one_order".tr();
+    if (count == 2) return "s_two_orders".tr();
+    return "i_x_orders_8".tr(namedArgs: {"a": "${count}"});
   }
 
   String _fmt(num? v) => v == null ? '0' : v.toInt().toString();
@@ -403,12 +405,12 @@ class _OrdersTimeline extends StatelessWidget {
     return Column(
       children: [
         _TimelineRow(
-          label: "أول طلب",
+          label: "s_first_order".tr(),
           value: firstOrderDate,
           isLast: false,
         ),
         _TimelineRow(
-          label: "آخر طلب",
+          label: "s_last_order".tr(),
           value: lastOrderDate,
           isLast: true,
         ),
@@ -451,7 +453,7 @@ class _TimelineRow extends StatelessWidget {
                     margin: EdgeInsets.symmetric(
                       vertical: AppConstants.height5(context) / 2,
                     ),
-                    color: Colors.grey.shade300,
+                    color: DsColor.border,
                   ),
                 ),
             ],

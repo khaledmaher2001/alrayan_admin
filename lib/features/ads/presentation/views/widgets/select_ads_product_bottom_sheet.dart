@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_states.dart';
@@ -96,7 +98,7 @@ class _SelectAdsProductBottomSheetState
                   ),
                   SizedBox(height: AppConstants.height10(context)),
                   Text(
-                    "أختر المنتج",
+                    "s_choose_a_product".tr(),
                     style: Styles.inter16400white(
                       context,
                     ).copyWith(color: Colors.black),
@@ -105,7 +107,7 @@ class _SelectAdsProductBottomSheetState
                   DefaultTextFormField(
                     textInputType: TextInputType.text,
                     controller: searchController,
-                    hintText: "ابحث عن المنتج...",
+                    hintText: "s_search_for_a_product".tr(),
                     onFilledSubmit: (value) {
                       context.read<GetProductsCubit>().getProducts(
                         name: value.trim(),
@@ -126,8 +128,8 @@ class _SelectAdsProductBottomSheetState
                         if (products.isEmpty) {
                           return EmptyWidget(
                             icon: AssetData.search,
-                            title: "لا يوجد منتجات",
-                            description: "سيتم اشعارك في حال توفر منتجات",
+                            title: "s_no_products".tr(),
+                            description: "s_you_ll_be_notified_when_products_are".tr(),
                           );
                         }
                         return Column(
@@ -163,14 +165,7 @@ class _SelectAdsProductBottomSheetState
                                         padding: EdgeInsets.all(AppConstants.sp10(context)),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Color(0x33000000),
-                                              blurRadius: 6,
-                                              spreadRadius: 0,
-                                              offset: Offset(0, 0),
-                                            ),
-                                          ],
+                                          border: Border.all(color: DsColor.border),
                                           borderRadius:
                                           BorderRadius.circular(AppConstants.sp10(context)),
                                         ),
@@ -203,7 +198,7 @@ class _SelectAdsProductBottomSheetState
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
                                                     Text(
-                                                      "${product.price} جنية",
+                                                      "${product.price} ${"s_egp".tr()}",
                                                       style: Styles.inter16500black(context)
                                                           .copyWith(color: AppColors.primaryColor),
                                                     ),
@@ -250,13 +245,13 @@ class _SelectAdsProductBottomSheetState
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                 child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[200]!,
+                                  baseColor: DsColor.border!,
+                                  highlightColor: DsColor.border!,
                                   child: Container(
                                     height: MediaQuery.of(context).size.height * .11,
                                     width: MediaQuery.of(context).size.width,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey,
+                                      color: DsColor.textMuted,
                                       borderRadius:
                                       BorderRadius.circular(AppConstants.sp5(context)),
                                     ),

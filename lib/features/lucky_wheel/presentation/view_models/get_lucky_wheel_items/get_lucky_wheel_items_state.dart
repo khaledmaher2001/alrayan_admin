@@ -24,3 +24,8 @@ class GetLuckyWheelToggleErrorState extends GetLuckyWheelItemsState {
   final String error;
   GetLuckyWheelToggleErrorState(this.error);
 }
+
+class GetLuckyWheelLuckyTimeChangedState extends GetLuckyWheelItemsState {
+  final bool earningOpen;
+  GetLuckyWheelLuckyTimeChangedState(this.earningOpen);
+}

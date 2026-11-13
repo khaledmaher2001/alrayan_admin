@@ -1,11 +1,7 @@
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:flutter/material.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../utils/colors/colors.dart';
 
 class DefaultCachedNetworkImage extends StatelessWidget {
   final String? imageUrl;
@@ -23,30 +19,27 @@ class DefaultCachedNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Neutral placeholders: a light shimmer while loading, a quiet image icon
+    // (or the first letter) when there is no picture. [color] tints that tile.
+    Widget tile({Widget? child}) => Container(
+          width: imageWidth,
+          height: imageHeight,
+          alignment: Alignment.center,
+          color: color ?? DsColor.fill,
+          child: child,
+        );
+    final side = [imageWidth ?? 48, imageHeight ?? 48].reduce((a, b) => a < b ? a : b);
     return CachedNetworkImage(
       width: imageWidth,
       height: imageHeight,
-      imageUrl: imageUrl??"",
-      placeholder: (context, url) => Shimmer.fromColors(
-        baseColor: Colors.grey[900]!,
-        highlightColor: Colors.grey[200]!,
-        child: Container(
-          height: imageHeight,
-          width: imageWidth,
-          decoration: BoxDecoration(
-            color: Colors.black12,
-            borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          ),
-        ),
+      imageUrl: imageUrl ?? "",
+      placeholder: (context, url) => Shimmer.fromColors(baseColor: DsColor.border, highlightColor: DsColor.fill, child: tile()),
+      errorWidget: (context, url, error) => tile(
+        child: (char ?? "").isNotEmpty
+            ? Text(char!.toUpperCase(), style: DsText.bodyStrong.copyWith(color: DsColor.textMuted, fontSize: (side * .4).clamp(12, 28)))
+            : Icon(Icons.image_outlined, color: DsColor.textSubtle, size: (side * .4).clamp(16, 40)),
       ),
-      errorWidget: (context, url, error) =>  Container(decoration:BoxDecoration(
-        color: color??AppColors.primaryColor.shade50,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-      ),child: Center(child: Padding(
-        padding: EdgeInsets.all(AppConstants.sp20(context)),
-        child: Image.asset(AssetData.logoWhite,fit: BoxFit.fill,),
-      ))),
-      fit: fit??BoxFit.cover,
+      fit: fit ?? BoxFit.cover,
     );
   }
 }

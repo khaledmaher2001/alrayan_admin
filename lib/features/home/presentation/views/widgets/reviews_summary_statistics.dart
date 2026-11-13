@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/presentation/views/widgets/review_summery_item.dart';
@@ -34,14 +36,7 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 3,
-            offset: const Offset(0, 0), // changes position of shadow
-          ),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +45,7 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
             children: [
               Expanded(
                 child: Text(
-                  "تقييمات العملاء ( ${widget.instance.totalReviews.toString()} ) تقييم",
+                  "i_customer_reviews_x_54".tr(namedArgs: {"a": "${widget.instance.totalReviews.toString()}"}),
                   style: Styles.inter16500black(context),
                 ),
               ),
@@ -73,7 +68,7 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
                     ),
                   ),
                   child: Text(
-                    "عرض التفاصيل",
+                    "s_view_details".tr(),
                     style: Styles.inter10400grey(
                       context,
                     ).copyWith(color: AppColors.primaryColor),
@@ -96,14 +91,14 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
                     allowHalfRating: true,
                     itemCount: 5,
                     ignoreGestures: true,
-                    glowColor: const Color(0xffF5BE00),
+                    glowColor: const Color(0xFFF5A623),
                     itemPadding: EdgeInsetsDirectional.only(
                       end: AppConstants.width10(context),
                     ),
-                    unratedColor: Colors.grey[300],
+                    unratedColor: DsColor.border,
                     itemBuilder: (context, _) => SvgPicture.asset(
                       AssetData.star5,
-                      color: Color(0xffF5BE00),
+                      color: Color(0xFFF5A623),
                     ),
                     itemSize: MediaQuery.of(context).size.width * 0.06,
                     onRatingUpdate: (rating) {},
@@ -116,7 +111,7 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
                       ),
                       SizedBox(width: AppConstants.width5(context)),
                       Text(
-                        "من 5 نجوم",
+                        "s_out_of_5_stars".tr(),
                         style: Styles.inter16500black(
                           context,
                         ).copyWith(color: AppColors.gray),
@@ -128,57 +123,57 @@ class _ReviewsSummaryStatisticState extends State<ReviewsSummaryStatistic> {
               ),
               SizedBox(height: AppConstants.height20(context)),
               ReviewSummeryItem(
-                title: "ممتاز",
+                title: "s_excellent".tr(),
                 percentage: calcPercentage(
                   widget.instance.ratingDistribution!.i5,
                   widget.instance.totalReviews!,
                 ),
-                main: const Color(0xFF4CAF50),
-                back: const Color(0xFFE8F5E9),
+                main: const Color(0xFFF5A623),
+                back: DsColor.fill,
               ),
               SizedBox(height: AppConstants.height20(context)),
 
               ReviewSummeryItem(
-                title: "جيد جدا",
+                title: "s_very_good".tr(),
                 percentage: calcPercentage(
                   widget.instance.ratingDistribution!.i4,
                   widget.instance.totalReviews!,
                 ),
-                main: const Color(0xFF26A69A),
-                back: const Color(0xFFE0F2F1),
+                main: const Color(0xFFF5A623),
+                back: DsColor.fill,
               ),
               SizedBox(height: AppConstants.height20(context)),
 
               ReviewSummeryItem(
-                title: "متوسط",
+                title: "s_average".tr(),
                 percentage: calcPercentage(
                   widget.instance.ratingDistribution!.i3,
                   widget.instance.totalReviews!,
                 ),
-                main: const Color(0xFFFFC107),
-                back: const Color(0xFFFFF8E1),
+                main: const Color(0xFFF5A623),
+                back: DsColor.fill,
               ),
               SizedBox(height: AppConstants.height20(context)),
 
               ReviewSummeryItem(
-                title: "جيد",
+                title: "s_good".tr(),
                 percentage: calcPercentage(
                   widget.instance.ratingDistribution!.i2,
                   widget.instance.totalReviews!,
                 ),
-                main: const Color(0xFFFF9800),
-                back: const Color(0xFFFFF3E0),
+                main: const Color(0xFFF5A623),
+                back: DsColor.fill,
               ),
               SizedBox(height: AppConstants.height20(context)),
 
               ReviewSummeryItem(
-                title: "مقبول",
+                title: "s_fair".tr(),
                 percentage: calcPercentage(
                   widget.instance.ratingDistribution!.i1,
                   widget.instance.totalReviews!,
                 ),
-                main: const Color(0xFFF44336),
-                back: const Color(0xFFFFEBEE),
+                main: const Color(0xFFF5A623),
+                back: DsColor.fill,
               ),
             ],
           ),

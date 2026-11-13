@@ -13,12 +13,16 @@ class NotificationsRepoImpl implements NotificationsRepo {
   NotificationsRepoImpl(this.apiService);
 
   @override
-  Future<Either<Failure, NotificationsModel>> getNotifications({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, NotificationsModel>> getNotifications({
+    required Map<String, dynamic> data,
+    CancelToken? cancelToken,
+  }) async {
     try {
       var response = await apiService.get(
         endPoint: EndPoints.userNotification,
         sendToken: true,
         query: data,
+        cancelToken: cancelToken,
       );
       final model = NotificationsModel.fromJson(response.data);
       return Right(model);
@@ -33,36 +37,10 @@ class NotificationsRepoImpl implements NotificationsRepo {
   @override
   Future<Either<Failure, String>> markAllAsRead() async {
     try {
-      // No bulk "mark all read" endpoint exists, so every unread page is
-      // walked first to collect ids, then each one is marked read.
-      final unreadIds = <int>[];
-      var page = 1;
-      while (true) {
-        final response = await apiService.get(
-          endPoint: EndPoints.userNotification,
-          sendToken: true,
-          query: {"page": page, "limit": 100},
-        );
-        final model = NotificationsModel.fromJson(response.data);
-        final items = model.data?.items ?? [];
-        unreadIds.addAll(
-          items
-              .where((item) =>
-                  (item.recipients?.isNotEmpty ?? false) &&
-                  item.recipients!.first.isRead == false)
-              .map((item) => item.id!),
-        );
-        if (items.isEmpty || model.data?.links?.hasNext != true) break;
-        page++;
-      }
-
-      await Future.wait(
-        unreadIds.map(
-          (id) => apiService.patchData(
-            endPoint: EndPoints.readNotification(id),
-            sendToken: true,
-          ),
-        ),
+      // One request: the server marks every unread notification at once.
+      await apiService.patchData(
+        endPoint: EndPoints.markAllNotificationsRead,
+        sendToken: true,
       );
       return const Right("");
     } catch (e) {

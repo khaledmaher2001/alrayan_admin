@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -63,7 +65,7 @@ class _UserDetailsSheetBody extends StatelessWidget {
               width: MediaQuery.of(context).size.width * 0.15,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                color: Colors.grey.shade300,
+                color: DsColor.border,
               ),
             ),
           ),
@@ -72,7 +74,7 @@ class _UserDetailsSheetBody extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
             child: Row(
               children: [
-                Text("تفاصيل المستخدم", style: Styles.inter16500black(context)),
+                Text("s_user_details".tr(), style: Styles.inter16500black(context)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
@@ -83,7 +85,7 @@ class _UserDetailsSheetBody extends StatelessWidget {
               ],
             ),
           ),
-          Divider(color: Colors.grey.shade100),
+          Divider(color: DsColor.fill),
           Expanded(
             child: BlocBuilder<GetUserDetailsCubit, GetUserDetailsState>(
               builder: (context, state) {
@@ -95,7 +97,7 @@ class _UserDetailsSheetBody extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red.shade300, size: 40),
+                        Icon(Icons.error_outline, color: DsColor.danger, size: 40),
                         SizedBox(height: AppConstants.height10(context)),
                         Text(state.message, style: Styles.inter12500Black(context)),
                       ],
@@ -174,16 +176,16 @@ class _UserDetailsContent extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: DsColor.successBg,
                         borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
                       ),
                       child: Text(
-                        user.isEmailVerified == true ? "بريد مؤكد" : "غير مؤكد",
+                        user.isEmailVerified == true ? "s_verified_email".tr() : "s_not_verified".tr(),
                         style: TextStyle(
                           fontSize: AppConstants.sp10(context),
                           color: user.isEmailVerified == true
-                              ? Colors.green.shade700
-                              : Colors.orange.shade700,
+                              ? DsColor.success
+                              : DsColor.warning,
                         ),
                       ),
                     ),
@@ -194,36 +196,36 @@ class _UserDetailsContent extends StatelessWidget {
           ),
           SizedBox(height: AppConstants.height20(context)),
           // Info grid
-          _SectionTitle(title: "البيانات الأساسية"),
+          _SectionTitle(title: "s_basic_details".tr()),
           SizedBox(height: AppConstants.height10(context)),
           _InfoGrid(items: [
             _InfoItem(
-              label: "الجنس",
+              label: "s_gender".tr(),
               value: _genderAr(user.gender),
               icon: Icons.person_outline_rounded,
             ),
             _InfoItem(
-              label: "الهاتف",
+              label: "s_phone".tr(),
               value: user.phoneNumber ?? '—',
               icon: Icons.call_outlined,
             ),
             _InfoItem(
-              label: "البريد مؤكد",
-              value: user.isEmailVerified == true ? "نعم" : "لا",
+              label: "s_email_verified".tr(),
+              value: user.isEmailVerified == true ? "s_yes".tr() : "s_no".tr(),
               icon: Icons.email_outlined,
             ),
             _InfoItem(
-              label: "الصلاحية",
+              label: "s_role".tr(),
               value: user.role ?? '—',
               icon: Icons.gpp_good_outlined,
             ),
             _InfoItem(
-              label: "تاريخ الإنشاء",
+              label: "s_created_on".tr(),
               value: _formatDate(user.createdAt),
               icon: Icons.calendar_today_outlined,
             ),
             _InfoItem(
-              label: "آخر دخول",
+              label: "s_last_login".tr(),
               value: _formatDate(user.lastLoginAt),
               icon: Icons.login_rounded,
             ),
@@ -231,7 +233,7 @@ class _UserDetailsContent extends StatelessWidget {
           // Addresses
           if (user.addresses != null && user.addresses!.isNotEmpty) ...[
             SizedBox(height: AppConstants.height20(context)),
-            _SectionTitle(title: "العناوين المحفوظة"),
+            _SectionTitle(title: "s_saved_addresses".tr()),
             SizedBox(height: AppConstants.height10(context)),
             ...user.addresses!.map((addr) => _AddressCard(address: addr)),
           ],
@@ -241,8 +243,8 @@ class _UserDetailsContent extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: onDeleteRequested,
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                foregroundColor: DsColor.danger,
+                side: const BorderSide(color: DsColor.danger),
                 padding: EdgeInsets.symmetric(
                   vertical: AppConstants.height10(context),
                 ),
@@ -254,10 +256,10 @@ class _UserDetailsContent extends StatelessWidget {
               ),
               icon: const Icon(Icons.delete_outline_rounded),
               label: Text(
-                "حذف العميل",
+                "s_delete_customer".tr(),
                 style: Styles.inter14600black(
                   context,
-                ).copyWith(color: Colors.red),
+                ).copyWith(color: DsColor.danger),
               ),
             ),
           ),
@@ -269,8 +271,8 @@ class _UserDetailsContent extends StatelessWidget {
 
   String _genderAr(String? g) {
     if (g == null) return '—';
-    if (g == 'male') return 'ذكر';
-    if (g == 'female') return 'أنثى';
+    if (g == 'male') return "s_male".tr();
+    if (g == 'female') return "s_female".tr();
     return g;
   }
 
@@ -327,9 +329,9 @@ class _InfoGrid extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.all(AppConstants.sp10(context)),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: DsColor.page,
                   borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                  border: Border.all(color: Colors.grey.shade100),
+                  border: Border.all(color: DsColor.fill),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,9 +388,9 @@ class _AddressCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: AppConstants.height10(context)),
       padding: EdgeInsets.all(AppConstants.sp10(context)),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: DsColor.page,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +405,7 @@ class _AddressCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    "افتراضي",
+                    "s_default".tr(),
                     style: TextStyle(
                       fontSize: AppConstants.sp10(context),
                       color: AppColors.primaryColor,
@@ -443,7 +445,7 @@ class _AddressCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: DsColor.border),
                 ),
                 child: Icon(
                   Icons.map_outlined,

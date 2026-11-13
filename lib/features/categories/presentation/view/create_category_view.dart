@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
@@ -57,11 +59,11 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "تأكيد الحذف",
+            "s_confirm_deletion".tr(),
             style: Styles.inter24600black(context),
           ),
           content: Text(
-            "هل أنت متأكد أنك تريد حذف التصنيف؟",
+            "s_are_you_sure_you_want_to_delete_this_3".tr(),
             style: Styles.font18500Grey900(context),
           ),
           shape: RoundedRectangleBorder(
@@ -75,7 +77,7 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                 Navigator.of(dialogContext).pop(false);
               },
               child: Text(
-                "إلغاء",
+                "s_cancel".tr(),
                 style: Styles.inter18500Black(context),
               ),
             ),
@@ -87,7 +89,7 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                 Navigator.of(dialogContext).pop(true);
               },
               child: Text(
-                "حذف",
+                "s_delete".tr(),
                 style: Styles.inter16400white(context),
               ),
             ),
@@ -141,8 +143,8 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                       CustomBackButton(),
                       Text(
                         widget.categoryData == null
-                            ? "تصنيف جديد"
-                            : "تعديل التصنيف",
+                            ? "s_new_category".tr()
+                            : "s_edit_category".tr(),
                         style: Styles.inter18500Black(context),
                       ),
                       SizedBox(width: AppConstants.width20(context) * 2),
@@ -234,22 +236,22 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                                 ],
                               ),
                             ),
-                            TextFieldHeader(text: "اسم التصنيف"),
+                            TextFieldHeader(text: "s_category_name".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType: TextInputType.text,
                               controller: nameAr,
-                              hintText: "ادخل اسم التصنيف",
-                              validationMsg: "يجب ادخال اسم التصنيف",
+                              hintText: "s_enter_the_category_name".tr(),
+                              validationMsg: "s_category_name_is_required".tr(),
                             ),
                             SizedBox(height: AppConstants.height20(context)),
-                            TextFieldHeader(text: "اسم التصنيف (EN)"),
+                            TextFieldHeader(text: "s_category_name_en".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType: TextInputType.text,
                               controller: nameEn,
-                              hintText: "ادخل اسم التصنيف (EN)",
-                              validationMsg: "يجب ادخال اسم التصنيف (EN)",
+                              hintText: "s_enter_the_category_name_en".tr(),
+                              validationMsg: "s_category_name_en_is_required".tr(),
                             ),
                             SizedBox(
                               height: AppConstants.height20(context) * 2,
@@ -288,14 +290,14 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                                     } else {
                                       cherryToast(
                                         text:
-                                        "اختر ايقونة التصنيف اولا",
+                                        "s_choose_a_category_icon_first".tr(),
                                         context: context,
                                         isSuccess: false,
                                       );
                                     }
                                   }
                                 },
-                                text: "حفظ",
+                                text: "s_save".tr(),
                                 borderRadius: AppConstants.sp10(context),
                               ),
                             if (widget.categoryData != null)
@@ -370,8 +372,8 @@ class _CreateCategoryViewState extends State<CreateCategoryView> {
                                               );
                                             }
                                           },
-                                          text: "تعديل",
-                                          backgroundColor: Colors.green,
+                                          text: "s_edit".tr(),
+                                          backgroundColor: DsColor.success,
                                           borderRadius:
                                           AppConstants.sp10(context),
                                         );

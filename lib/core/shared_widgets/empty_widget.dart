@@ -1,38 +1,33 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import '../utils/constants.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 
+/// Empty state (design system): small illustration, title, one explanatory line.
 class EmptyWidget extends StatelessWidget {
-  const EmptyWidget({super.key, required this.icon,  this.title,  this.description, this.iconColor});
+  const EmptyWidget({super.key, required this.icon, this.title, this.description, this.iconColor});
   final String icon;
   final String? title;
   final Color? iconColor;
   final String? description;
+
   @override
   Widget build(BuildContext context) {
-    return   Center(
-      child:SingleChildScrollView(
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(DsSpace.xxxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(icon,color: iconColor,width: MediaQuery.of(context).size.width*.62,),
-            SizedBox(height: AppConstants.height30(context)),
-            Text(title!,style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: MediaQuery.of(context).size.height*.026,
-                fontFamily: "Inter",
-                color: const Color(0xff141414)
-            )),
-            SizedBox(height: AppConstants.height5(context)),
-            Text(description!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: MediaQuery.of(context).size.height*.018,
-                    fontFamily: "Inter",
-                    color: const Color(0xff5F7983)
-                )),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 140, maxHeight: 140),
+              child: SvgPicture.asset(icon, colorFilter: iconColor != null ? ColorFilter.mode(iconColor!, BlendMode.srcIn) : null),
+            ),
+            const SizedBox(height: DsSpace.xl),
+            if (title != null) Text(title!, textAlign: TextAlign.center, style: DsText.subheading),
+            if (description != null) ...[
+              const SizedBox(height: DsSpace.xs),
+              Text(description!, textAlign: TextAlign.center, style: DsText.body.copyWith(color: DsColor.textMuted)),
+            ],
           ],
         ),
       ),

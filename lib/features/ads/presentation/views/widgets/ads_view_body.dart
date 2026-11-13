@@ -1,20 +1,16 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'dart:async';
 
-import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/navigation_utility.dart';
-import 'package:alrayan_admin/features/ads/presentation/views/add_ads_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:alrayan_admin/features/ads/presentation/view_models/offer_banner_cubit/offer_banner_cubit.dart';
 import 'package:alrayan_admin/features/ads/presentation/views/widgets/ads_item.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/shared_widgets/custom_app_bar.dart';
 import '../../../../../core/shared_widgets/shimmer_helpers.dart';
 import '../../../../../core/shared_widgets/toast.dart';
-import '../../../../../core/utils/colors/colors.dart';
-import '../../../../../core/utils/text_styles/styles.dart';
 import '../../view_models/delete_banner/delete_banner_cubit.dart';
 
 class AdsViewBody extends StatefulWidget {
@@ -75,53 +71,15 @@ class _AdsViewBodyState extends State<AdsViewBody> {
       BuildContext context, {
         required int bannerId,
       }) async {
-    final bool? shouldDelete = await showDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            "تأكيد الحذف",
-            style: Styles.inter24600black(context),
-          ),
-          content: Text(
-            "هل أنت متأكد أنك تريد حذف الإعلان؟",
-            style: Styles.font18500Grey900(context),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              AppConstants.sp10(dialogContext),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-              child: Text(
-                "إلغاء",
-                style: Styles.inter18500Black(context),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.redColor,
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: Text(
-                "حذف",
-                style: Styles.inter16400white(context),
-              ),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await dsConfirm(
+      context,
+      title: "s_confirm_deletion".tr(),
+      message: "s_are_you_sure_you_want_to_delete_this".tr(),
+      confirmLabel: "s_delete".tr(),
+      destructive: true,
     );
 
-    if (shouldDelete == true) {
+    if (shouldDelete && context.mounted) {
       context.read<DeleteBannersCubit>().deleteBanner(id: bannerId);
     }
   }
@@ -131,42 +89,21 @@ class _AdsViewBodyState extends State<AdsViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height20(context)),
-          CustomAppBar(
-            title: "الاعلانات والعروض",
-            textColor: Colors.black,
-            hasBack: true,
-            withNotifications: false,
-          ),
-          SizedBox(height: AppConstants.height15(context)),
+          DsTopBar(title: "s_ads_offers".tr()),
+          const SizedBox(height: DsSpace.sm),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
-            child: TextField(
-              controller: searchController,
-              textAlignVertical: TextAlignVertical.center,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: "ابحث في الإعلانات",
-                hintStyle: Styles.inter14600gray(context),
-                prefixIcon: Icon(Icons.search, color: AppColors.gray),
-                filled: true,
-                fillColor: AppColors.gray.withOpacity(.08),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: DsSpace.page),
+            child: DsSearchField(hint: "s_search_ads".tr(), controller: searchController),
           ),
-          SizedBox(height: AppConstants.height15(context)),
+          const SizedBox(height: DsSpace.sm),
           Expanded(
             child: BlocListener<DeleteBannersCubit, DeleteBannersState>(
               listener: (context, state) {
                 if (state is DeleteBannersLoaded) {
-                  toast(text: state.message, color: Colors.green);
+                  toast(text: state.message, color: DsColor.success);
                   context.read<OfferBannerCubit>().fetchOfferBanners();
                 } else if (state is DeleteBannersError) {
-                  toast(text: state.message, color: AppColors.redColor);
+                  toast(text: state.message, color: DsColor.danger);
                 }
               },
               child: BlocBuilder<OfferBannerCubit, OfferBannerState>(
@@ -175,13 +112,9 @@ class _AdsViewBodyState extends State<AdsViewBody> {
 
                   if (state is OfferBannerLoaded) {
                     if (state.banners.isEmpty) {
-                      return Center(
-                        child: Text(
-                          cubit.search.isEmpty
-                              ? "لا توجد إعلانات حتى الآن"
-                              : "لا توجد إعلانات مطابقة",
-                          style: Styles.inter14600gray(context),
-                        ),
+                      return DsMessage(
+                        icon: cubit.search.isEmpty ? Icons.campaign_outlined : Icons.search_off_rounded,
+                        title: cubit.search.isEmpty ? "s_no_ads_yet".tr() : "s_no_matching_ads".tr(),
                       );
                     }
                     return RefreshIndicator(
@@ -190,10 +123,8 @@ class _AdsViewBodyState extends State<AdsViewBody> {
                       },
                       child: ListView.separated(
                         controller: scrollController,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppConstants.width20(context),
-                          vertical: AppConstants.height10(context),
-                        ),
+                        // Bottom room so the FAB never covers the last card.
+                        padding: const EdgeInsets.fromLTRB(DsSpace.page, DsSpace.xs, DsSpace.page, 96),
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemBuilder: (BuildContext context, int index) {
                           if (index == state.banners.length) {
@@ -223,9 +154,7 @@ class _AdsViewBodyState extends State<AdsViewBody> {
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
-                          return SizedBox(
-                            height: AppConstants.height15(context),
-                          );
+                          return const SizedBox(height: DsSpace.md);
                         },
                         itemCount:
                             state.banners.length + (cubit.hasMore ? 1 : 0),
@@ -238,24 +167,6 @@ class _AdsViewBodyState extends State<AdsViewBody> {
               ),
             ),
           ),
-          SizedBox(height: AppConstants.height15(context)),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppConstants.width20(context),
-            ),
-            child: DefaultButton(
-              onPress: () {
-                NavigationUtils.navigateTo(
-                  context: context,
-                  destinationScreen: AddAdsView(),
-                );
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              text: "اضافة اعلان او عرض",
-              borderRadius: AppConstants.sp10(context),
-            ),
-          ),
-          SizedBox(height: AppConstants.height20(context)),
         ],
       ),
     );
@@ -272,7 +183,7 @@ class _AdsShimmer extends StatelessWidget {
     return appShimmer(
       child: ListView.separated(
         padding: EdgeInsets.symmetric(
-          horizontal: AppConstants.width20(context),
+          horizontal: DsSpace.page,
           vertical: AppConstants.height10(context),
         ),
         physics: const AlwaysScrollableScrollPhysics(),
@@ -284,9 +195,7 @@ class _AdsShimmer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-              boxShadow: [
-                BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-              ],
+              border: Border.all(color: DsColor.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,7 +232,7 @@ class _AdsShimmer extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: AppConstants.height15(context)),
-                Divider(color: Colors.grey.shade300, height: 1),
+                Divider(color: DsColor.border, height: 1),
                 SizedBox(height: AppConstants.height5(context)),
                 Row(
                   children: [
@@ -337,7 +246,7 @@ class _AdsShimmer extends StatelessWidget {
                     ),
                     SizedBox(
                       height: AppConstants.height20(context) * 1.2,
-                      child: VerticalDivider(color: Colors.grey.shade300, width: 1),
+                      child: VerticalDivider(color: DsColor.border, width: 1),
                     ),
                     Expanded(
                       child: Padding(

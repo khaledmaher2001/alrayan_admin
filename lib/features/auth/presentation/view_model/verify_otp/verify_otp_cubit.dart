@@ -9,12 +9,13 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
 
   AuthRepo authRepo;
 
-  Future<void> verifyOtp({required String otp, required String email}) async {
+  // forgetPassword keeps the code valid for the reset step (auth/update-password checks it again).
+  Future<void> verifyOtp({required String otp, required String email, bool forgetPassword = false}) async {
     emit(VerifyOtpLoadingState());
 
     try {
       final result = await authRepo.verifyOtp(
-        data: {"email": email, "otpCode": otp},
+        data: {"email": email, "otpCode": otp, "forgetPassword": forgetPassword},
       );
       result.fold(
         (failure) {

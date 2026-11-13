@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -26,11 +28,11 @@ class ZoneItem extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "تأكيد الحذف",
+            "s_confirm_deletion".tr(),
             style: Styles.inter24600black(context),
           ),
           content: Text(
-            "هل أنت متأكد أنك تريد حذف المنطقة؟",
+            "s_are_you_sure_you_want_to_delete_this_8".tr(),
             style: Styles.font18500Grey900(context),
           ),
           shape: RoundedRectangleBorder(
@@ -44,7 +46,7 @@ class ZoneItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(false);
               },
               child: Text(
-                "إلغاء",
+                "s_cancel".tr(),
                 style: Styles.inter18500Black(context),
               ),
             ),
@@ -56,7 +58,7 @@ class ZoneItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(true);
               },
               child: Text(
-                "حذف",
+                "s_delete".tr(),
                 style: Styles.inter16400white(context),
               ),
             ),
@@ -107,9 +109,7 @@ class ZoneItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-          ],
+          border: Border.all(color: DsColor.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -210,47 +210,17 @@ class ZoneItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
                   ),
-                  SizedBox(height: AppConstants.height5(context)),
+                  const SizedBox(height: 2),
+                  // Label then value on their own lines: the card is half-width.
                   Row(
                     children: [
-                      if (zoneData.shippingCost != null) ...[
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppConstants.width10(context) - 2,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(.1),
-                            borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-                          ),
-                          child: Text(
-                            "${zoneData.shippingCost} ج.م",
-                            style: Styles.inter12500Black(context).copyWith(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: AppConstants.width5(context)),
-                      ],
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(AssetData.shipping, width: AppConstants.width15(context)),
-                            SizedBox(width: AppConstants.width5(context) / 2),
-                            Flexible(
-                              child: Text(
-                                "سعر التوصيل",
-                                overflow: TextOverflow.ellipsis,
-                                style: Styles.inter10400grey(context),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      const Icon(Icons.delivery_dining_outlined, size: 16, color: DsColor.textMuted),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text("s_delivery_fee_2".tr(), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.caption)),
                     ],
                   ),
+                  if (zoneData.shippingCost != null)
+                    Text(DsFormat.money(num.tryParse("${zoneData.shippingCost}")), style: DsText.bodyStrong.copyWith(color: DsColor.primary)),
                 ],
               ),
             ),

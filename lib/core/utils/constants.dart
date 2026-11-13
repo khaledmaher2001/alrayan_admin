@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'dart:io';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:flutter/material.dart';
@@ -16,19 +18,19 @@ class AppConstants {
   static String getStatusText(String? status) {
     switch (status) {
       case "pending":
-        return "قيد الانتظار";
+        return "s_pending".tr();
       case "shipped":
-        return "تم الشحن";
+        return "s_shipped".tr();
         case "confirmed":
-        return "تم تاكيده";
+        return "s_confirmed".tr();
       case "delivered":
-        return "تم التوصيل";
+        return "s_delivered".tr();
       case "cancelled":
-        return "تم الإلغاء";
+        return "s_cancelled".tr();
       case "refunded":
-        return "تم الاسترداد";
+        return "s_refunded".tr();
       default:
-        return "منتهي الصلاحية";
+        return "s_expired".tr();
     }
   }
 
@@ -56,42 +58,43 @@ class AppConstants {
   static Color getStatusColor(String? status) {
     switch (status) {
       case "pending": // لسه في الانتظار
-        return Colors.yellow.withValues(alpha: 0.2);
+        return const Color(0xffFEF3C7);
       case "confirmed": // تم التأكيد
-        return Colors.blue.withValues(alpha: 0.2);
+        return DsColor.info.withValues(alpha: 0.2);
       case "processing": // الطلب بيتجهز
-        return Colors.orange.withValues(alpha: 0.2);
+        return DsColor.warning.withValues(alpha: 0.2);
       case "shipped": // تم الشحن
-        return Colors.purple.withValues(alpha: 0.2);
+        return DsColor.info.withValues(alpha: 0.2);
       case "delivered": // تم التوصيل
-        return Colors.green.withValues(alpha: 0.2);
+        return DsColor.success.withValues(alpha: 0.2);
       case "cancelled": // تم الإلغاء
-        return Colors.red.withValues(alpha: 0.2);
+        return DsColor.danger.withValues(alpha: 0.2);
       case "refunded": // تم الاسترجاع
-        return Colors.grey.withValues(alpha: 0.2);
+        return DsColor.textMuted.withValues(alpha: 0.2);
       default:
-        return Colors.grey.withValues(alpha: 0.2);
+        return DsColor.textMuted.withValues(alpha: 0.2);
     }
   }
 
   static Color getTextColor(String? status) {
     switch (status) {
       case "pending":
-        return Colors.yellow.shade800;
+        // Darker amber: yellow text on a yellow tint was hard to read.
+        return const Color(0xff92400E);
       case "confirmed":
-        return Colors.blue.shade800;
+        return DsColor.info;
       case "processing":
-        return Colors.orange.shade800;
+        return DsColor.warning;
       case "shipped":
-        return Colors.purple.shade800;
+        return DsColor.info;
       case "delivered":
-        return Colors.green.shade800;
+        return DsColor.success;
       case "cancelled":
-        return Colors.red.shade800;
+        return DsColor.danger;
       case "refunded":
-        return Colors.grey.shade800;
+        return DsColor.text2;
       default:
-        return Colors.grey.shade800;
+        return DsColor.text2;
     }
   }
 
@@ -119,90 +122,39 @@ class AppConstants {
     }
   }
 
-  static double sp5(context) {
-    var height = MediaQuery.of(context).size.height * .006;
-    return height;
-  }
+  static double sp5(context) => 4; // fixed grid (was a fraction of the screen height)
 
-  static double sp10(context) {
-    var height = MediaQuery.of(context).size.height * .012;
-    return height;
-  }
+  static double sp10(context) => 12; // fixed grid (was a fraction of the screen height)
 
-  static double sp15(context) {
-    var height = MediaQuery.of(context).size.height * .016;
-    return height;
-  }
+  static double sp15(context) => 16; // fixed grid (was a fraction of the screen height)
 
-  static double sp20(context) {
-    var height = MediaQuery.of(context).size.height * .022;
-    return height;
-  }
+  static double sp20(context) => 20; // fixed grid (was a fraction of the screen height)
 
-  static double sp30(context) {
-    var height = MediaQuery.of(context).size.height * .032;
-    return height;
-  }
+  static double sp30(context) => 32; // fixed grid (was a fraction of the screen height)
 
-  static double height5(context) {
-    var height = MediaQuery.of(context).size.height * .006;
-    return height;
-  }
+  static double height5(context) => 4; // fixed grid (was a fraction of the screen height)
 
-  static double height10(context) {
-    var height = MediaQuery.of(context).size.height * .012;
-    return height;
-  }
+  static double height10(context) => 8; // fixed grid (was a fraction of the screen height)
 
-  static double height15(context) {
-    var height = MediaQuery.of(context).size.height * .018;
-    return height;
-  }
+  static double height15(context) => 16; // fixed grid (was a fraction of the screen height)
 
-  static double height20(context) {
-    var height = MediaQuery.of(context).size.height * .024;
-    return height;
-  }
+  static double height20(context) => 20; // fixed grid (was a fraction of the screen height)
 
-  static double height30(context) {
-    var height = MediaQuery.of(context).size.height * .030;
-    return height;
-  }
+  static double height30(context) => 24; // fixed grid (was a fraction of the screen height)
 
-  static double height55(context) {
-    var height = MediaQuery.of(context).size.height * .075;
-    return height;
-  }
+  static double height55(context) => 56; // fixed grid (was a fraction of the screen height)
 
-  static double width5(context) {
-    var height = MediaQuery.of(context).size.height * .0075;
-    return height;
-  }
+  static double width5(context) => 8; // fixed grid (was a fraction of the screen height)
 
-  static double width10(context) {
-    var height = MediaQuery.of(context).size.height * .015;
-    return height;
-  }
+  static double width10(context) => 12; // fixed grid (was a fraction of the screen height)
 
-  static double width15(context) {
-    var height = MediaQuery.of(context).size.height * .02;
-    return height;
-  }
+  static double width15(context) => 16; // fixed grid (was a fraction of the screen height)
 
-  static double width20(context) {
-    var height = MediaQuery.of(context).size.height * .024;
-    return height;
-  }
+  static double width20(context) => 20; // fixed grid (was a fraction of the screen height)
 
-  static double width30(context) {
-    var height = MediaQuery.of(context).size.height * .036;
-    return height;
-  }
+  static double width30(context) => 32; // fixed grid (was a fraction of the screen height)
 
-  static double width50(context) {
-    var height = MediaQuery.of(context).size.height * .056;
-    return height;
-  }
+  static double width50(context) => 48; // fixed grid (was a fraction of the screen height)
 
   static double height200(context) {
     var height = MediaQuery.of(context).size.height * .4;

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +10,6 @@ import '../../../../../core/shared_widgets/custom_button.dart';
 import '../../../../../core/shared_widgets/custom_snackbar.dart';
 import '../../../../../core/shared_widgets/default_text_form_field.dart';
 import '../../../../../core/shared_widgets/main_structure_widget.dart';
-import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/services/remote_services/service_locator.dart';
 import '../../../../../core/utils/text_styles/styles.dart';
@@ -31,7 +32,7 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: MainStructureWidget(
-        title: "تغيير كلمة المرور",
+        title: "s_change_password".tr(),
         widget: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -53,13 +54,13 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AuthLogoWidget(
-                                title: "هل نسيت كلمة المرور",
+                                title: "s_forgot_your_password".tr(),
                                 description:
-                                "أدخل بريدك الالكترونى لإعادة تعيين كلمة المرور الخاصة بك",
+                                "s_enter_your_email_to_reset_your_passw".tr(),
                               ),
                               SizedBox(height: AppConstants.height20(context)),
                               Text(
-                                "البريد الاكتروني",
+                                "s_email".tr(),
                                 style: Styles.inter14600black(context),
                               ),
                               SizedBox(height: AppConstants.height5(context)),
@@ -67,10 +68,10 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
                                 validation: (value) {
                                   if (value.isNotEmpty) {
                                     if (!EmailValidator.validate(value)) {
-                                      return "يجب ادخال بريد الكتروني صحيح";
+                                      return "s_enter_a_valid_email".tr();
                                     }
                                   } else if (value == null || value.isEmpty) {
-                                    return "يجب ادخال هذا الحقل";
+                                    return "s_this_field_is_required".tr();
                                   }
                                 },
                                 hintText: "email@gmail.com",
@@ -102,7 +103,7 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
                 create: (BuildContext context) => ForgetPasswordCubit(getIt<AuthRepoImpl>()),
                 child: BlocConsumer<ForgetPasswordCubit, ForgetPasswordState>(listener: (context, state) {
                   if (state is ForgetPasswordSuccessState) {
-                    customSnackBar(message: state.message, color: Colors.green, context: context);
+                    customSnackBar(message: state.message, color: DsColor.success, context: context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -110,7 +111,7 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
                       ),
                     );
                   } else if (state is ForgetPasswordErrorState) {
-                    customSnackBar(message: state.error, color: Colors.red, context: context);
+                    customSnackBar(message: state.error, color: DsColor.danger, context: context);
                   }
                 }, builder: (context, state) {
                   return state is ForgetPasswordLoadingState
@@ -121,7 +122,7 @@ class _ForgetPasswordViewBodyState extends State<ForgetPasswordViewBody> {
                         context.read<ForgetPasswordCubit>().forgetPassword(email: emailController.text);
                       }
                     },
-                    text: "اعادة تعيين كلمة المرور",
+                    text: "s_reset_password".tr(),
                     height: AppConstants.height15(context),
                     borderRadius: AppConstants.sp10(context),
                   );

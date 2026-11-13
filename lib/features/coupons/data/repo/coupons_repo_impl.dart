@@ -26,9 +26,17 @@ class CouponsRepoImpl implements CouponsRepo {
     }
   }
   @override
-  Future<Either<Failure, CouponsModel>> getCoupons({required int page}) async {
+  Future<Either<Failure, CouponsModel>> getCoupons({
+    required int page,
+    CancelToken? cancelToken,
+  }) async {
     try {
-      var response = await apiService!.get(endPoint: EndPoints.coupons, sendToken: true, query: {"page": page});
+      var response = await apiService!.get(
+        endPoint: EndPoints.coupons,
+        sendToken: true,
+        query: {"page": page},
+        cancelToken: cancelToken,
+      );
       var result = CouponsModel.fromJson(response.data);
       return right(result);
     } catch (e) {

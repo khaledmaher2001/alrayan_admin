@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/search_widget.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:flutter/material.dart';
@@ -23,43 +25,23 @@ class AllUsersViewBody extends StatefulWidget {
 class _AllUsersViewBodyState extends State<AllUsersViewBody> {
   ScrollController scrollController = ScrollController();
   var searchController = TextEditingController();
-  bool isLoading = false;
 
-  Future<void> pagination() async {
-    final cubit = context.read<GetAllUsersCubit>();
-    if (cubit.page < cubit.allUsersModel!.data!.metadata!.totalPages! &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoading) {
-      isLoading = true;
-      setState(() {
-        cubit.page++;
-      });
-      await cubit
-          .getAllUsers(
-            withLoading: false,
-            data: {
-              "page":cubit.page,
-              "limit": 12,
-            },
-          )
-          .then((value) {
-            setState(() {
-              isLoading = false;
-            });
-          });
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetAllUsersCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
     super.initState();
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(() {});
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.dispose();
   }
@@ -77,15 +59,11 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
               horizontal: AppConstants.width20(context),
             ),
             child: SearchWidget(
-              hint: "ابحث عن عميل محدد",
+              hint: "s_search_for_a_customer".tr(),
               searchController: searchController,
               onSearch: (value) {
                 context.read<GetAllUsersCubit>().getAllUsers(
-                  data: {
-                    "keyword": searchController.text.trim(),
-                    "page": 1,
-                    "limit": 12,
-                  },
+                  keyword: searchController.text.trim(),
                 );
               },
             ),
@@ -124,11 +102,7 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
                                   searchController.clear();
                                   await context
                                       .read<GetAllUsersCubit>()
-                                      .getAllUsers(
-                                        data: {
-                                          "page": 1,
-                                          "limit": 12,},
-                                      );
+                                      .getAllUsers(keyword: '');
                                 },
                                 child: ListView.separated(
                                   controller: scrollController,
@@ -181,7 +155,9 @@ class _AllUsersViewBodyState extends State<AllUsersViewBody> {
                               ),
                             ),
 
-                            if (isLoading)
+                            if (context
+                                .read<GetAllUsersCubit>()
+                                .isLoadingMore)
                               Padding(
                                 padding: EdgeInsets.all(
                                   AppConstants.sp10(context),
@@ -219,10 +195,10 @@ class _UsersHeader extends StatelessWidget {
         children: [
           Column(
             children: [
-              Text('العملاء', style: Styles.inter18500Black(context)),
+              Text("s_customers".tr(), style: Styles.inter18500Black(context)),
               SizedBox(height: AppConstants.height5(context) / 2),
               Text(
-                'جميع عملاء ماركت الريان',
+                "s_all_elrayan_customers".tr(),
                 style: Styles.inter10400grey(context),
               ),
             ],
@@ -266,20 +242,14 @@ class _UsersSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            spreadRadius: 1,
-            blurRadius: 4,
-          ),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("ملخص العملاء", style: Styles.inter14600black(context)),
+          Text("s_customers_summary".tr(), style: Styles.inter14600black(context)),
           SizedBox(height: AppConstants.height5(context) / 2),
-          Text("نظرة سريعة", style: Styles.inter10400grey(context)),
+          Text("s_quick_overview".tr(), style: Styles.inter10400grey(context)),
           SizedBox(height: AppConstants.height10(context)),
           Container(
             width: double.infinity,
@@ -306,7 +276,7 @@ class _UsersSummaryCard extends StatelessWidget {
                 ),
                 SizedBox(width: AppConstants.width10(context)),
                 Text(
-                  "إجمالي العملاء",
+                  "s_total_customers".tr(),
                   style: Styles.inter14500black(
                     context,
                   ).copyWith(color: Colors.white),

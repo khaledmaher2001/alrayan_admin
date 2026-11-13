@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_dropdown_formfield.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
@@ -167,7 +169,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                   child: Align(
                     alignment: AlignmentDirectional.center,
                     child: Text(
-                      "تفاصيل المنتج",
+                      "s_product_details".tr(),
                       style: Styles.inter16500black(context),
                     ),
                   ),
@@ -181,45 +183,45 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                 key: formKey,
                 child: ListView(
                   children: [
-                    TextFieldHeader(text: "اسم المنتج"),
+                    TextFieldHeader(text: "s_product_name".tr()),
                     SizedBox(height: AppConstants.height5(context)),
                     DefaultTextFormField(
                       textInputType: TextInputType.text,
                       controller: name,
-                      hintText: "ادخل اسم المنتج",
-                      validationMsg: "يجب ادخال اسم المنتج",
+                      hintText: "s_enter_the_product_name".tr(),
+                      validationMsg: "s_product_name_is_required".tr(),
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
-                    TextFieldHeader(text: "اسم المنتج (En)"),
+                    TextFieldHeader(text: "s_product_name_en".tr()),
                     SizedBox(height: AppConstants.height5(context)),
                     DefaultTextFormField(
                       textInputType: TextInputType.text,
                       controller: nameEn,
-                      hintText: "ادخل اسم المنتج (En)",
-                      validationMsg: "يجب ادخال اسم المنتج (En)",
+                      hintText: "s_enter_the_product_name_en".tr(),
+                      validationMsg: "s_product_name_en_is_required".tr(),
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
-                    TextFieldHeader(text: "وصف المنتج"),
+                    TextFieldHeader(text: "s_product_description".tr()),
                     SizedBox(height: AppConstants.height5(context)),
                     DefaultTextFormField(
                       textInputType: TextInputType.text,
                       controller: description,
                       maxLines: 3,
-                      hintText: "ادخل وصف المنتج",
-                      validationMsg: "يجب ادخال وصغ المنتج",
+                      hintText: "s_enter_the_product_description".tr(),
+                      validationMsg: "s_product_description_is_required".tr(),
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
-                    TextFieldHeader(text: "وصف المنتج (EN)"),
+                    TextFieldHeader(text: "s_product_description_en".tr()),
                     SizedBox(height: AppConstants.height5(context)),
                     DefaultTextFormField(
                       textInputType: TextInputType.text,
                       controller: descriptionEn,
                       maxLines: 3,
-                      hintText: "ادخل وصف المنتج (EN)",
-                      validationMsg: "يجب ادخال وصغ المنتج (EN)",
+                      hintText: "s_enter_the_product_description_en".tr(),
+                      validationMsg: "s_product_description_en_is_required".tr(),
                     ),
                     SizedBox(height: AppConstants.height15(context)),
 
@@ -230,13 +232,13 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "سعر البيع للجمهور"),
+                              TextFieldHeader(text: "s_retail_price".tr()),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 textInputType: TextInputType.number,
                                 controller: price,
-                                hintText: "ادخل سعر الجمهور",
-                                validationMsg: "يجب ادخال سعر للجمهور",
+                                hintText: "s_enter_the_retail_price".tr(),
+                                validationMsg: "s_retail_price_is_required".tr(),
                               ),
                             ],
                           ),
@@ -246,13 +248,13 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "سعر الشراء"),
+                              TextFieldHeader(text: "s_purchase_price".tr()),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 textInputType: TextInputType.number,
                                 controller: supplierPrice,
-                                hintText: "ادخل سعر الشراء",
-                                validationMsg: "يجب ادخال سعر الشراء",
+                                hintText: "s_enter_the_purchase_price".tr(),
+                                validationMsg: "s_purchase_price_is_required".tr(),
                               ),
                             ],
                           ),
@@ -269,12 +271,12 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextFieldHeader(
-                                text: "نوع الخصم",
+                                text: "s_discount_type".tr(),
                                 isRequired: false,
                               ),
                               SizedBox(height: AppConstants.height5(context)),
                               CustomDropDownButton(
-                                hintText: "اختر نوع الخصم",
+                                hintText: "s_choose_the_discount_type".tr(),
                                 value: discountTypeUi,
                                 onChanged: (value) {
                                   setState(() {
@@ -296,7 +298,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextFieldHeader(
-                                text: "قيمة الخصم",
+                                text: "s_discount_value".tr(),
                                 isRequired: false,
                               ),
                               SizedBox(height: AppConstants.height5(context)),
@@ -314,9 +316,9 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                                     Text(
                                       discountTypeUi == "نسبة مئوية"
                                           ? "%"
-                                          : "ج.م",
+                                          : "s_egp".tr(),
                                       style: Styles.inter14500black(context)
-                                          .copyWith(color: Colors.grey),
+                                          .copyWith(color: DsColor.textMuted),
                                     ),
                                   ],
                                 ),
@@ -328,16 +330,16 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                                   );
 
                                   if (parsed == null) {
-                                    return "ادخل قيمة خصم صحيحة";
+                                    return "s_enter_a_valid_discount_value".tr();
                                   }
 
                                   if (parsed < 0) {
-                                    return "قيمة الخصم لا يمكن أن تكون سالبة";
+                                    return "s_the_discount_can_t_be_negative".tr();
                                   }
 
                                   if (discountTypeUi == "نسبة مئوية" &&
                                       parsed > 100) {
-                                    return "النسبة المئوية يجب ألا تزيد عن 100";
+                                    return "s_the_percentage_can_t_be_more_than_10".tr();
                                   }
 
                                   return null;
@@ -360,13 +362,13 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextFieldHeader(text: "عدد المنتج"),
+                              TextFieldHeader(text: "s_quantity_in_stock".tr()),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 textInputType: TextInputType.number,
                                 controller: stock,
-                                hintText: "ادخل عدد المنتج",
-                                validationMsg: "يجب ادخال عدد المنتج",
+                                hintText: "s_enter_the_quantity".tr(),
+                                validationMsg: "s_quantity_is_required".tr(),
                               ),
                             ],
                           ),
@@ -377,14 +379,14 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextFieldHeader(
-                                text: "وحدة المنتج",
+                                text: "s_product_unit".tr(),
                                 isRequired: false,
                               ),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 textInputType: TextInputType.text,
                                 controller: unit,
-                                hintText: "ادخل الوحدة",
+                                hintText: "s_enter_the_unit".tr(),
                                 validation: (value) {
                                   return null;
                                 },
@@ -404,7 +406,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
 
                         return Row(
                           children: [
-                            TextFieldHeader(text: "صور المنتج"),
+                            TextFieldHeader(text: "s_product_images".tr()),
                             SizedBox(width: AppConstants.width5(context)),
                             GestureDetector(
                               onTap: () {
@@ -423,9 +425,9 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                             ),
                             SizedBox(width: AppConstants.width5(context)),
                             Text(
-                              "(اقصى عدد 5 صور)",
+                              "s_up_to_5_images".tr(),
                               style: Styles.inter12500Black(context).copyWith(
-                                color: Colors.grey,
+                                color: DsColor.textMuted,
                               ),
                             ),
                           ],
@@ -453,7 +455,7 @@ class _ProductsDetailsViewBodyState extends State<ProductsDetailsViewBody> {
                           activeColor: AppColors.primaryColor,
                         ),
                         Text(
-                          "من المنتجات الموصى بها",
+                          "s_recommended_products".tr(),
                           style: Styles.inter16500black(context),
                         ),
                       ],

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
@@ -28,12 +30,12 @@ class PieChartItem extends StatelessWidget {
     };
 
     final colorList = <Color>[
-      Colors.orange.withOpacity(0.8),
-      Colors.purple.withOpacity(0.8),
-      Colors.blue.withOpacity(0.8),
-      Colors.green.withOpacity(0.8),
-      Colors.red.withOpacity(0.8),
-      Colors.grey.withOpacity(0.8),
+      DsColor.warning.withOpacity(0.8),
+      DsColor.info.withOpacity(0.8),
+      DsColor.info.withOpacity(0.8),
+      DsColor.success.withOpacity(0.8),
+      DsColor.danger.withOpacity(0.8),
+      DsColor.textMuted.withOpacity(0.8),
     ];
 
     return Padding(
@@ -81,7 +83,7 @@ class PieChartItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "النسبة",
+                  "s_share".tr(),
                   style: Styles.inter14500black(context),
                 ),
                 Text(

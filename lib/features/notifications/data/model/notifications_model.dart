@@ -120,9 +120,14 @@ class NavigationData {
   Params? params;
   String? screen;
 
-  NavigationData({this.params, this.screen});
+  /// The untouched `{screen, params}` map, handed to NotificationNavigationHandler
+  /// (it reads keys like orderId / productId that [Params] does not model).
+  Map<String, dynamic>? raw;
+
+  NavigationData({this.params, this.screen, this.raw});
 
   NavigationData.fromJson(Map<String, dynamic> json) {
+    raw = Map<String, dynamic>.from(json);
     params =
     json['params'] != null ? new Params.fromJson(json['params']) : null;
     screen = json['screen'];

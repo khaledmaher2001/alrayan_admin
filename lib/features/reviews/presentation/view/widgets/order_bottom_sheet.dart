@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -48,24 +49,24 @@ class OrderBottomSheet extends StatelessWidget {
                     String status = detailsState.orderDetailsModel.status!;
                     return ListView(
                       children: [
-                        Text("رقم الطلب".tr(), style: Styles.font16600Grey900(context)),
+                        Text("s_order_number".tr(), style: Styles.font16600Grey900(context)),
                         SizedBox(height: AppConstants.height5(context)),
                         Text(detailsState.orderDetailsModel.orderNumber ?? "", style: Styles.font16500Grey600(context)),
                         SizedBox(height: AppConstants.height10(context)),
-                        Text("التوصيل الي".tr(), style: Styles.font16600Grey900(context)),
+                        Text("s_deliver_to".tr(), style: Styles.font16600Grey900(context)),
                         SizedBox(height: AppConstants.height5(context)),
                         Text(
                           detailsState.orderDetailsModel.shippingAddress!.description ?? "",
                           style: Styles.font16500Grey600(context),
                         ),
                         SizedBox(height: AppConstants.height10(context)),
-                        Text("طريقة الدفع".tr(), style: Styles.font16600Grey900(context)),
+                        Text("s_payment_method".tr(), style: Styles.font16600Grey900(context)),
                         SizedBox(height: AppConstants.height5(context)),
-                        Text("كاش عند التوصيل".tr(), style: Styles.font16500Grey600(context)),
+                        Text("s_cash_on_delivery_2".tr(), style: Styles.font16500Grey600(context)),
                         SizedBox(height: AppConstants.height10(context)),
                         Divider(color: AppColors.greyColor[100]),
                         SizedBox(height: AppConstants.height10(context)),
-                        Text("تفاصيل الطلب".tr(), style: Styles.font18600Grey900(context)),
+                        Text("s_order_details".tr(), style: Styles.font18600Grey900(context)),
                         SizedBox(height: AppConstants.height20(context)),
                         ListView.separated(
                             shrinkWrap: true,
@@ -97,7 +98,7 @@ class OrderBottomSheet extends StatelessWidget {
                         SizedBox(
                           height: AppConstants.height10(context),
                         ),
-                        RowItem(value: "${detailsState.orderDetailsModel.discountAmount} جنية", title: "الخصم",discount: true,),
+                        RowItem(value: "${detailsState.orderDetailsModel.discountAmount} ${"s_egp".tr()}", title: "s_discount".tr(),discount: true,),
                         SizedBox(height: AppConstants.height10(context)),
                         DottedLine(dashColor: Color(0xffE5E7EB)),
                         SizedBox(height: AppConstants.height10(context)),
@@ -115,17 +116,14 @@ class OrderBottomSheet extends StatelessWidget {
                             padding: EdgeInsets.symmetric(vertical: AppConstants.height10(context)),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-                              color: Colors.green.withOpacity(.2),
+                              color: DsColor.success.withOpacity(.2),
                             ),
                             child: Column(
                               children: [
-                                Text("وقت وصول الاوردر للعميل", style: Styles.font16500Grey900(context)),
+                                Text("s_order_arrival_time".tr(), style: Styles.font16500Grey900(context)),
                                 SizedBox(height: AppConstants.height5(context)),
                                 Text(
-                                  DateFormat(
-                                    "dd MMM, hh:mm a",
-                                    CacheKeysManger.getUserLanguageFromCache()
-                                  ).format(DateTime.parse(detailsState.orderDetailsModel.deliveredAt ?? "")),
+                                  dsLatin(DateFormat("dd MMM, hh:mm a", CacheKeysManger.getUserLanguageFromCache()).format(DateTime.parse(detailsState.orderDetailsModel.deliveredAt ?? ""))),
                                   style: Styles.font16500Grey900(context),
                                 ),
                               ],
@@ -146,10 +144,7 @@ class OrderBottomSheet extends StatelessWidget {
                                 ),
                                 SizedBox(height: AppConstants.height5(context)),
                                 Text(
-                                  DateFormat(
-                                    "dd MMM, hh:mm a",
-                                      CacheKeysManger.getUserLanguageFromCache()
-                                  ).format(DateTime.parse(detailsState.orderDetailsModel.updatedAt ?? "")),
+                                  dsLatin(DateFormat("dd MMM, hh:mm a", CacheKeysManger.getUserLanguageFromCache()).format(DateTime.parse(detailsState.orderDetailsModel.updatedAt ?? ""))),
                                   style: Styles.font16500Grey900(context),
                                 ),
                               ],

@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -19,14 +20,12 @@ class GroupedSettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 6),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[
-            if (i != 0) Divider(height: 1, color: Colors.grey.shade100),
+            if (i != 0) Divider(height: 1, color: DsColor.fill),
             children[i],
           ],
         ],
@@ -61,7 +60,7 @@ class GroupedSettingsItem extends StatelessWidget {
           children: [
             Icon(
               Icons.chevron_left,
-              color: Colors.grey.shade400,
+              color: DsColor.textSubtle,
               size: AppConstants.sp20(context),
             ),
             SizedBox(width: AppConstants.width10(context)),
@@ -73,7 +72,7 @@ class GroupedSettingsItem extends StatelessWidget {
                   SizedBox(height: AppConstants.height5(context) / 2),
                   Text(
                     subtitle,
-                    style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+                    style: Styles.inter12500Black(context).copyWith(color: DsColor.textMuted),
                   ),
                 ],
               ),
@@ -84,7 +83,7 @@ class GroupedSettingsItem extends StatelessWidget {
               height: AppConstants.width20(context) * 2,
               padding: EdgeInsets.all(AppConstants.sp10(context)),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: DsColor.fill,
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
               ),
               child: SvgPicture.asset(
@@ -125,9 +124,7 @@ class MarketingActionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-          boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 6),
-          ],
+          border: Border.all(color: DsColor.border),
         ),
         child: Column(
           children: [

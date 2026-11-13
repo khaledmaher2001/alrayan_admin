@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/features/all_users/data/models/all_users_model.dart';
 import 'package:alrayan_admin/features/all_users/data/repo/all_users_repo_impl.dart';
@@ -30,14 +32,7 @@ class AllUsersItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 3,
-              offset: const Offset(0, 0), // changes position of shadow
-            ),
-          ],
+          border: Border.all(color: DsColor.border),
         ),
         child: Column(
           children: [
@@ -118,7 +113,7 @@ class AllUsersItem extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _ActionButton(
-                      label: "عرض",
+                      label: "s_view".tr(),
                       icon: Icons.visibility_outlined,
                       color: AppColors.secondaryColor,
                       onTap: () => _showUserDetails(context),
@@ -126,14 +121,14 @@ class AllUsersItem extends StatelessWidget {
                   ),
                   SizedBox(width: AppConstants.width5(context)),
                   VerticalDivider(
-                    color: Colors.grey.shade300,
+                    color: DsColor.border,
                     thickness: 1,
                     width: 1,
                   ),
                   SizedBox(width: AppConstants.width5(context)),
                   Expanded(
                     child: _ActionButton(
-                      label: "تحليل",
+                      label: "s_analysis".tr(),
                       icon: Icons.bar_chart_rounded,
                       color: AppColors.secondaryColor,
                       onTap: () => _showAnalysis(context),
@@ -141,16 +136,16 @@ class AllUsersItem extends StatelessWidget {
                   ),
                   SizedBox(width: AppConstants.width5(context)),
                   VerticalDivider(
-                    color: Colors.grey.shade300,
+                    color: DsColor.border,
                     thickness: 1,
                     width: 1,
                   ),
                   SizedBox(width: AppConstants.width5(context)),
                   Expanded(
                     child: _ActionButton(
-                      label: "حذف",
+                      label: "s_delete".tr(),
                       icon: CupertinoIcons.delete,
-                      color: Colors.red,
+                      color: DsColor.danger,
                       onTap: () => _confirmDelete(context),
                     ),
                   ),
@@ -210,8 +205,8 @@ class AllUsersItem extends StatelessWidget {
               listCubit.removeUser(userData.id!);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text("تم حذف ${userData.fullName} بنجاح"),
-                  backgroundColor: Colors.green,
+                  content: Text("i_x_deleted_3".tr(namedArgs: {"a": "${userData.fullName}"})),
+                  backgroundColor: DsColor.success,
                 ),
               );
             } else if (state is DeleteUserError) {
@@ -219,7 +214,7 @@ class AllUsersItem extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: DsColor.danger,
                 ),
               );
             }
@@ -239,7 +234,7 @@ class AllUsersItem extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: DsColor.dangerBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child:SvgPicture.asset(AssetData.delete,width: MediaQuery.of(context).size.width*.08,),
@@ -251,7 +246,7 @@ class AllUsersItem extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "حذف المستخدم",
+                        "s_delete_user".tr(),
                         textAlign: TextAlign.center,
                         style: Styles.inter16500black(context)
                       ),
@@ -259,24 +254,24 @@ class AllUsersItem extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "هل أنت متأكد من حذف هذا المستخدم؟",
+                  "s_are_you_sure_you_want_to_delete_this_2".tr(),
                   style: Styles.inter14500black(context).copyWith(
-                    color: Colors.grey.shade700,
+                    color: DsColor.text2,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: DsColor.page,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: DsColor.border),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.person_outline,
-                        color: Colors.grey.shade500,
+                        color: DsColor.textMuted,
                         size: 18,
                       ),
                       const SizedBox(width: 8),
@@ -293,9 +288,9 @@ class AllUsersItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "لا يمكن التراجع عن هذا الإجراء",
+                  "s_this_action_can_t_be_undone".tr(),
                   style:Styles.inter14500black(context).copyWith(
-                    color: Colors.red.shade400,
+                    color: DsColor.danger,
                   ),
                 ),
                 SizedBox(height: AppConstants.height20(context)),
@@ -304,7 +299,7 @@ class AllUsersItem extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: DsColor.danger,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -325,7 +320,7 @@ class AllUsersItem extends StatelessWidget {
                                 ),
                               )
                             : Text(
-                                "حذف",
+                                "s_delete".tr(),
                                 style: Styles.inter16500black(
                                   context,
                                 ).copyWith(color: Colors.white),
@@ -337,10 +332,10 @@ class AllUsersItem extends StatelessWidget {
                           ? null
                           : () => Navigator.of(dialogContext).pop(),
                       child: Text(
-                        "إلغاء",
+                        "s_cancel".tr(),
                         style: Styles.inter16500black(
                           context,
-                        ).copyWith(color: Colors.grey.shade600),
+                        ).copyWith(color: DsColor.textMuted),
                       ),
                     ),
                   ],

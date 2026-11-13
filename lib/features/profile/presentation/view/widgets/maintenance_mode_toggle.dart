@@ -1,11 +1,14 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 import 'package:alrayan_admin/features/auth/presentation/view_model/get_settings/get_settings_cubit.dart';
 import 'package:alrayan_admin/features/auth/presentation/view_model/toggle_maintenance/toggle_maintenance_cubit.dart';
+import 'package:alrayan_admin/features/home/presentation/views/widgets/market_status_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Maintenance mode as a settings row; enabling it blocks the customer app,
+/// so it is confirmed first.
 class MaintenanceModeToggle extends StatelessWidget {
   const MaintenanceModeToggle({super.key});
 
@@ -16,88 +19,29 @@ class MaintenanceModeToggle extends StatelessWidget {
         if (state is ToggleMaintenanceSuccessState) {
           context.read<GetSettingsCubit>().getSettings();
         } else if (state is ToggleMaintenanceErrorState) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.error)));
+          toast(text: state.error, color: DsColor.danger);
         }
       },
       builder: (context, toggleState) {
         return BlocBuilder<GetSettingsCubit, GetSettingsState>(
           builder: (context, settingsState) {
-            final isMaintenance =
-                context.read<GetSettingsCubit>().settingsModel?.maintenance ??
-                false;
-            final isLoading = toggleState is ToggleMaintenanceLoadingState;
+            final on = context.read<GetSettingsCubit>().settingsModel?.maintenance ?? false;
+            Future<void> toggle() async {
+              if (!on &&
+                  !await dsConfirm(context, title: "ds_enable_maintenance_q".tr(), message: "ds_enable_maintenance_msg".tr(), confirmLabel: "ds_enable".tr(), destructive: true)) {
+                return;
+              }
+              if (context.mounted) context.read<ToggleMaintenanceCubit>().toggleMaintenance();
+            }
 
-            return Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppConstants.sp20(context),
-                vertical: AppConstants.sp10(context),
-              ),
-              decoration: BoxDecoration(
-                color: isMaintenance
-                    ? Colors.orange.shade50
-                    : Colors.green.shade50,
-                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                border: Border.all(
-                  color: isMaintenance ? Colors.orange : Colors.green,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(AppConstants.sp10(context)),
-                    decoration: BoxDecoration(
-                      color: isMaintenance
-                          ? Colors.white
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(
-                        AppConstants.sp10(context),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.build_circle_outlined,
-                      color: isMaintenance ? Colors.orange : Colors.green,
-                      size: MediaQuery.of(context).size.width * .08,
-                    ),
-                  ),
-                  SizedBox(width: AppConstants.width10(context)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "وضع الصيانة",
-                          style: Styles.inter14500black(context),
-                        ),
-                        Text(
-                          isMaintenance ? "مفعل" : "غير مفعل",
-                          style: Styles.inter12500Black(context).copyWith(
-                            color: isMaintenance ? Colors.orange : Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isLoading)
-                    SizedBox(
-                      width: AppConstants.sp20(context),
-                      height: AppConstants.sp20(context),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primaryColor,
-                      ),
-                    )
-                  else
-                    Switch(
-                      value: isMaintenance,
-                      activeThumbColor: Colors.orange,
-                      onChanged: (_) => context
-                          .read<ToggleMaintenanceCubit>()
-                          .toggleMaintenance(),
-                    ),
-                ],
-              ),
+            return DsSettingToggle(
+              icon: Icons.construction_rounded,
+              title: "s_maintenance_mode".tr(),
+              state: on ? "s_enabled".tr() : "s_disabled".tr(),
+              stateColor: on ? DsColor.warning : DsColor.textMuted,
+              value: on,
+              loading: toggleState is ToggleMaintenanceLoadingState,
+              onChanged: toggle,
             );
           },
         );

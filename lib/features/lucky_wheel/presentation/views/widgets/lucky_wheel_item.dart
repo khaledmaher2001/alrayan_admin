@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/lucky_wheel/data/models/lucky_wheel_model.dart';
 import 'package:alrayan_admin/features/lucky_wheel/presentation/view_models/delete_lucky_item/delete_lucky_item_cubit.dart';
@@ -24,7 +26,7 @@ const _rewardTypeAr = <String, String>{
 
 const _discountTypeAr = <String, String>{
   'percentage': 'نسبة مئوية',
-  'fixed_amount': 'نسبة ثابتة',
+  'fixed_amount': 'مبلغ ثابت',
   'product_specific': 'خصم على منتج',
   'category_specific': 'خصم على قسم',
 };
@@ -75,9 +77,7 @@ class LuckyWheelItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                  boxShadow: [
-                    BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-                  ],
+                  border: Border.all(color: DsColor.border),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +154,7 @@ class LuckyWheelItem extends StatelessWidget {
                                   const Icon(Icons.error_outline, size: 14, color: Colors.red),
                                   SizedBox(width: AppConstants.width5(context)),
                                   Text(
-                                    'انتهت صلاحية هذا العنصر',
+                                    "s_this_item_has_expired".tr(),
                                     style: Styles.inter14600gray(context).copyWith(
                                       color: Colors.red,
                                       fontSize: 12,
@@ -167,7 +167,7 @@ class LuckyWheelItem extends StatelessWidget {
                           ],
                           SizedBox(height: AppConstants.height5(context)),
                           Text(
-                            'نسبة الظهور $probabilityPercent%',
+                            "i_chance_x_61".tr(namedArgs: {"a": "${probabilityPercent}"}),
                             style: Styles.inter12500Black(context).copyWith(
                               color: AppColors.primaryColor,
                               fontWeight: FontWeight.w700,
@@ -224,7 +224,7 @@ class LuckyWheelItem extends StatelessWidget {
                                   children: [
                                     SvgPicture.asset(AssetData.edit, width: AppConstants.width15(context)),
                                     SizedBox(width: AppConstants.width10(context)),
-                                    Text("تعديل", style: Styles.inter14500black(context)),
+                                    Text("s_edit".tr(), style: Styles.inter14500black(context)),
                                   ],
                                 ),
                               ),
@@ -239,7 +239,7 @@ class LuckyWheelItem extends StatelessWidget {
                                     ),
                                     SizedBox(width: AppConstants.width10(context)),
                                     Text(
-                                      canDelete ? "حذف" : "حذف (الحد الأدنى $_kMinItems جوائز)",
+                                      canDelete ? "s_delete".tr() : "i_delete_minimum_x_prizes_62".tr(namedArgs: {"a": "${_kMinItems}"}),
                                       style: Styles.inter14500black(context).copyWith(
                                         color: canDelete ? AppColors.redColor : Colors.grey,
                                       ),
@@ -267,11 +267,11 @@ class LuckyWheelItem extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "تأكيد الحذف",
+            "s_confirm_deletion".tr(),
             style: Styles.inter24600black(context),
           ),
           content: Text(
-            "هل أنت متأكد أنك تريد حذف الجائزة؟",
+            "s_are_you_sure_you_want_to_delete_this_6".tr(),
             style: Styles.font18500Grey900(context),
           ),
           shape: RoundedRectangleBorder(
@@ -285,7 +285,7 @@ class LuckyWheelItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(false);
               },
               child: Text(
-                "إلغاء",
+                "s_cancel".tr(),
                 style: Styles.inter18500Black(context),
               ),
             ),
@@ -297,7 +297,7 @@ class LuckyWheelItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(true);
               },
               child: Text(
-                "حذف",
+                "s_delete".tr(),
                 style: Styles.inter16400white(context),
               ),
             ),

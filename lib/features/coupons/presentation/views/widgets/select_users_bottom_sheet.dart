@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/features/all_users/presentation/view_models/get_all_users/get_all_users_cubit.dart';
 import 'package:alrayan_admin/features/all_users/presentation/view_models/get_all_users/get_all_users_states.dart';
 import 'package:flutter/material.dart';
@@ -39,37 +41,18 @@ class SelectUsersBottomSheet extends StatefulWidget {
 class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
   TextEditingController searchController = TextEditingController();
   ScrollController scrollController = ScrollController();
-  bool isLoading = false;
   bool show = false;
 
-  pagination() async {
-    if (context.read<GetAllUsersCubit>().allUsersList.length <
-        context
-            .read<GetAllUsersCubit>()
-            .allUsersModel!
-            .data!
-            .metadata!
-            .totalItems! &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels) {
-      setState(() {
-        isLoading = true;
-        ++context.read<GetAllUsersCubit>().page;
-      });
-      await context.read<GetAllUsersCubit>().getAllUsers(withLoading: false, data: {
-          "page": context.read<GetAllUsersCubit>().page,
-          "limit": 12,
-      });
-      setState(() {
-        isLoading = false;
-      });
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetAllUsersCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
-    context.read<GetAllUsersCubit>().page = 1;
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
     super.initState();
   }
 
@@ -100,7 +83,7 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                   ),
                   SizedBox(height: AppConstants.height10(context)),
                   Text(
-                    "أختر المستخدمين",
+                    "s_choose_users_2".tr(),
                     style: Styles.inter16400white(
                       context,
                     ).copyWith(color: Colors.black),
@@ -109,13 +92,10 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                   DefaultTextFormField(
                     textInputType: TextInputType.text,
                     controller: searchController,
-                    hintText: "ابحث عن مستخدم...",
+                    hintText: "s_search_for_a_user".tr(),
                     onFilledSubmit: (value) {
-                      print(value.trim());
                       context.read<GetAllUsersCubit>().getAllUsers(
-                        data: {
-                          "keyword": value.trim(),
-                        },
+                        keyword: value.trim(),
                       );
                     },
                   ),
@@ -201,16 +181,7 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Color(
-                                                    0x33000000,
-                                                  ),
-                                                  blurRadius: 6,
-                                                  spreadRadius: 0,
-                                                  offset: Offset(0, 0),
-                                                ),
-                                              ],
+                                              border: Border.all(color: DsColor.border),
                                               borderRadius:
                                               BorderRadius.circular(
                                                 AppConstants.sp10(
@@ -222,8 +193,7 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                                               children: [
                                                 CircleAvatar(
                                                   radius: MediaQuery.of(context).size.width * 0.065, // نصف عرض الصورة القديمة
-                                                  backgroundColor: Colors.primaries[
-                                                  index % Colors.primaries.length], // لون عشوائي لكل يوزر
+                                                  backgroundColor: DsColor.primarySoft, // initials avatar: one neutral brand tint, not a random colour
                                                   child: Text(
                                                     (context.read<GetAllUsersCubit>().allUsersList[index].fullName ?? '')
                                                         .split(' ')
@@ -232,7 +202,7 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                                                         .join()
                                                         .toUpperCase(), // أول حرفين من الاسم
                                                     style: TextStyle(
-                                                      color: Colors.white,
+                                                      color: DsColor.onPrimarySoft,
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 16,
                                                     ),
@@ -264,7 +234,11 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                                                             GetAllUsersCubit
                                                         >()
                                                             .allUsersList[index]
-                                                            .email??
+                                                            .phoneNumber ??
+                                                            context
+                                                            .read<GetAllUsersCubit>()
+                                                            .allUsersList[index]
+                                                            .email ??
                                                             '',
                                                         style:
                                                         Styles.inter14600gray(
@@ -319,12 +293,14 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                               )
                                   : EmptyWidget(
                                 icon: AssetData.search,
-                                title: "لا يوجد حلقات",
+                                title: "s_no_items".tr(),
                                 description:
-                                "سيتم اشعارك في حين اضافتك في حلقة او اكثر",
+                                "s_you_ll_be_notified_when_items_are_ad".tr(),
                               ),
                             ),
-                            if (isLoading)
+                            if (context
+                                .read<GetAllUsersCubit>()
+                                .isLoadingMore)
                               Padding(
                                 padding: EdgeInsets.symmetric(
                                   vertical: AppConstants.height10(context),
@@ -347,15 +323,15 @@ class _SelectUsersBottomSheetState extends State<SelectUsersBottomSheet> {
                                   AppConstants.sp10(context),
                                 ),
                                 child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[200]!,
+                                  baseColor: DsColor.border!,
+                                  highlightColor: DsColor.border!,
                                   child: Container(
                                     height:
                                     MediaQuery.of(context).size.height *
                                         .11,
                                     width: MediaQuery.of(context).size.width,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey,
+                                      color: DsColor.textMuted,
                                       borderRadius: BorderRadius.circular(
                                         AppConstants.sp5(context),
                                       ),

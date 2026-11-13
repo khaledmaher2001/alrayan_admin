@@ -1,4 +1,3 @@
-import 'package:alrayan_admin/features/product_details/presentation/view_model/create_product/create_product_states.dart';
 import 'package:alrayan_admin/features/product_details/presentation/view_model/edit_product/edit_product_states.dart';
 import 'package:alrayan_admin/features/products/data/repo/products_repo.dart';
 import 'package:bloc/bloc.dart';

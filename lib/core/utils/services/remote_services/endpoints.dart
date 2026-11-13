@@ -1,8 +1,10 @@
 class EndPoints {
-  static const baseUrl = "https://api.elrayan.acwad.tech/api/v1/";
+  // Production by default; local device testing passes --dart-define=API_HOST=http://127.0.0.1:4546
+  static const apiHost = String.fromEnvironment('API_HOST', defaultValue: 'https://api.elrayan.acwad.tech');
+  static const baseUrl = '$apiHost/api/v1/';
 
   // Realtime (Socket.IO) — same host as the REST API, without the /api/v1 prefix.
-  static const socketBaseUrl = "https://api-miras.acwad.tech";
+  static const socketBaseUrl = apiHost;
   static const adminOrdersNamespace = "/admin-orders";
   static const orderCreatedEvent = "order:created";
 
@@ -20,7 +22,7 @@ class EndPoints {
   static const resetPassword = 'auth/update-password';
   static const forgetPassword = 'auth/forget-password';
   static const profile = "auth/get-me";
-  static const changePassword = "auth/update-password";
+  static const changePassword = "auth/change-password";
 
   static const categories = 'category';
   static const subCategories = 'sub-categories';
@@ -29,10 +31,19 @@ class EndPoints {
 
   static const userNotification = "notifications/me";
   static String readNotification(id) => "notifications/$id/read";
+  static const markAllNotificationsRead = "notifications/mark-all-read";
+
+  // Staff-written pushes to customers (now or scheduled, once/daily/weekly).
+  static const scheduledNotifications = "scheduled-notifications";
+  static const scheduledNotificationImage = "scheduled-notifications/image";
+  static String scheduledNotification(int id) => "scheduled-notifications/$id";
+  static String cancelScheduledNotification(int id) => "scheduled-notifications/$id/cancel";
 
   static const orders = "orders";
   static const homeStatistics = "orders/dashboard";
   static const inventoryAnalytics = "orders/inventory-analytics";
+    static String itemAnalytics(int productId) =>
+            "orders/item-analytics/$productId";
   static const lowStockProducts = "orders/low-stock-products";
   static const lowStockConfig = "orders/low-stock-config";
   static const salesReport = "orders/sales-report";
@@ -46,6 +57,11 @@ class EndPoints {
   static const coupons = "coupons";
   static const luckyWheel = "rewards";
   static const toggleSpinWheel = "rewards/toggle-spin-wheel";
+  // Lucky time + order rules, and customers' saved spins.
+  static const spinWheelConfig = "rewards/config";
+  static const spinAttempts = "rewards/attempts";
+  static const spinCustomersCount = "rewards/attempts/customers-count";
+  static String spinAttemptsOf(int userId) => "rewards/attempts/$userId";
   static const getOfferBanner = 'banners';
 
   static const reviews = 'reviews';

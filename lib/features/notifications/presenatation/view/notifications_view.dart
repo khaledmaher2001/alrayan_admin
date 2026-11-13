@@ -1,5 +1,10 @@
-import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:alrayan_admin/core/utils/helpers/staff_permissions.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
+import 'package:alrayan_admin/core/utils/notification_navigation_handler.dart';
+import 'package:alrayan_admin/features/scheduled_notifications/presentation/views/scheduled_notifications_view.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/features/notifications/presenatation/view/widgets/notification_item.dart';
 import 'package:alrayan_admin/features/notifications/presenatation/view/widgets/notification_loading_item.dart';
 import 'package:flutter/material.dart';
@@ -29,37 +34,27 @@ class NotificationsView extends StatefulWidget {
 
 class _NotificationsViewState extends State<NotificationsView> {
   ScrollController scrollController = ScrollController();
-  bool isLoading = false;
   int selectedIndex = 0;
 
-  pagination() async {
-    if (context.read<GetNotificationsCubit>().page <
-        context
-            .read<GetNotificationsCubit>()
-            .notificationsModel!
-            .data!
-            .metadata!
-            .totalPages! &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels) {
-      setState(() {
-        isLoading = true;
-        context.read<GetNotificationsCubit>().page++;
-      });
-      await context
-          .read<GetNotificationsCubit>()
-          .getNotifications(withLoading: false);
-      setState(() {
-        isLoading = false;
-      });
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetNotificationsCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     context.read<GetNotificationsCubit>().getNotifications();
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,17 +81,13 @@ class _NotificationsViewState extends State<NotificationsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: AppConstants.height10(context)),
-                Padding(
-                  padding: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
-                  child: _buildHeader(context),
-                ),
-                SizedBox(height: AppConstants.height15(context)),
-                Divider(color: Colors.grey.shade200, height: 1),
+                _buildHeader(context),
+                const SizedBox(height: DsSpace.sm),
+                Divider(color: DsColor.border, height: 1),
                 BlocConsumer<MarkAllNotificationsReadCubit, MarkAllNotificationsReadState>(
                   listener: (context, state) {
                     if (state is MarkAllNotificationsReadSuccess) {
-                      toast(text: "تم تحديد كل الاشعارات كمقروءة", color: Colors.green);
+                      toast(text: "s_all_notifications_marked_as_read".tr(), color: DsColor.success);
                       context.read<GetNotificationsCubit>().getNotifications();
                     } else if (state is MarkAllNotificationsReadError) {
                       toast(text: state.error, color: AppColors.redColor);
@@ -120,7 +111,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "$unreadCount إشعارات غير مقروءة",
+                                "i_x_unread_notifications_65".tr(namedArgs: {"a": "${unreadCount}"}),
                                 style: Styles.inter16500black(context),
                               ),
                               GestureDetector(
@@ -139,7 +130,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
-                                            "قراءة الكل",
+                                            "s_mark_all_read".tr(),
                                             style: Styles.inter14500black(context)
                                                 .copyWith(color: AppColors.primaryColor, fontWeight: FontWeight.w600),
                                           ),
@@ -190,24 +181,25 @@ class _NotificationsViewState extends State<NotificationsView> {
                                   itemBuilder: (context, index) =>
                                       GestureDetector(
                                         onTap: () async {
-                                          if (!context
+                                          final item = context
                                               .read<GetNotificationsCubit>()
-                                              .notificationsList[index]
-                                              .recipients!
-                                              .first
-                                              .isRead!) {
+                                              .notificationsList[index];
+                                          if ((item.recipients?.isNotEmpty ?? false) &&
+                                              item.recipients!.first.isRead == false) {
                                             selectedIndex = index;
+                                            // Awaited so the read lands before a
+                                            // tab switch can pop this screen.
                                             await context
                                                 .read<
                                                 ReadMarkNotificationsCubit>()
                                                 .readMarkNotification(
-                                                notificationId: context
-                                                    .read<
-                                                    GetNotificationsCubit>()
-                                                    .notificationsList[
-                                                index]
-                                                    .id!);
+                                                notificationId: item.id!);
                                           }
+                                          if (!context.mounted) return;
+                                          // Same targets (and permission checks)
+                                          // as tapping the push itself.
+                                          NotificationNavigationHandler.handleRaw(
+                                              item.navigationData?.raw);
                                         },
                                         child: NotificationItem(
                                           data: context
@@ -225,13 +217,15 @@ class _NotificationsViewState extends State<NotificationsView> {
                                 )
                                     : EmptyWidget(
                                     icon: AssetData.bell,
-                                    title: "لا توجد اشعارات الان",
+                                    title: "s_no_notifications_yet".tr(),
                                     description:
-                                    "ستتوفر الاشعارات في حين ارسالها من قبل الادمن"
+                                    "s_notifications_appear_here_when_admin".tr()
                                         );
                               }),
                             ),
-                            if (isLoading)
+                            if (context
+                                .read<GetNotificationsCubit>()
+                                .isLoadingMore)
                               Padding(
                                 padding:
                                 EdgeInsets.all(AppConstants.sp10(context)),
@@ -265,37 +259,20 @@ class _NotificationsViewState extends State<NotificationsView> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text("الإشعارات",textAlign: TextAlign.center, style: Styles.inter18500Black(context))),
-              ],
-            ),
-            SizedBox(height: AppConstants.height5(context),),
-            Text(
-              "متابعة الاشعارات الواردة",
-              style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-            ),
-          ],
-        ),
-        PositionedDirectional(
-          start: 0,
-          child: InkWell(
-            onTap: () => NavigationUtils.navigateBack(context: context),
-            borderRadius: BorderRadius.circular(100),
-            child: Container(
-              width: AppConstants.width20(context) * 2.2,
-              height: AppConstants.width20(context) * 2.2,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.gray.withValues(alpha: .15)),
-              child: const Icon(Icons.arrow_back_rounded, color: Colors.black),
+    return DsTopBar(
+      title: "s_notifications".tr(),
+      subtitle: "s_follow_incoming_notifications".tr(),
+      actions: [
+        // Staff-written pushes to customers (send now / schedule).
+        if (staffCan(context, 'notifications.view'))
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: DsSpace.xs),
+            child: DsIconButton(
+              icon: Icons.campaign_outlined,
+              label: "sn_title".tr(),
+              onPressed: () => NavigationUtils.navigateTo(context: context, destinationScreen: const ScheduledNotificationsView()),
             ),
           ),
-        ),
       ],
     );
   }

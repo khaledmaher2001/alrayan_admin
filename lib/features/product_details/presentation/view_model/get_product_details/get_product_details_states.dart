@@ -5,8 +5,12 @@ abstract class GetProductsDetailsStates{}
 class GetProductsDetailsInitState extends GetProductsDetailsStates{}
 class GetProductsDetailsLoadingState extends GetProductsDetailsStates{}
 class GetProductsDetailsSuccessState extends GetProductsDetailsStates{
-  final Data productDetails;
+  final Items productDetails;
 
   GetProductsDetailsSuccessState({required this.productDetails});
 }
-class GetProductsDetailsErrorState extends GetProductsDetailsStates{}
+class GetProductsDetailsErrorState extends GetProductsDetailsStates{
+  final String? error;
+
+  GetProductsDetailsErrorState([this.error]);
+}

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -59,7 +61,7 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: DsColor.dangerBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -72,19 +74,19 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
           ),
           SizedBox(height: AppConstants.height10(context)),
           Text(
-            "إلغاء الطلب",
+            "s_cancel_order".tr(),
             textAlign: TextAlign.center,
             style: Styles.inter16500black(context),
           ),
           SizedBox(height: AppConstants.height10(context)),
           Text(
-            "سيؤدي هذا الإجراء إلى إنهاء الطلب نهائيًا ولا يمكن التراجع عنه.",
+            "s_this_ends_the_order_for_good_and_can".tr(),
             style: Styles.inter14500black(
               context,
-            ).copyWith(color: Colors.red.shade400),
+            ).copyWith(color: DsColor.danger),
           ),
           SizedBox(height: AppConstants.height15(context)),
-          Text("سبب الإلغاء", style: Styles.inter14500black(context)),
+          Text("s_cancellation_reason".tr(), style: Styles.inter14500black(context)),
           SizedBox(height: AppConstants.height5(context)),
           TextField(
             controller: reasonController,
@@ -95,19 +97,19 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
               if (showError) setState(() => showError = false);
             },
             decoration: InputDecoration(
-              hintText: "اكتب سبب إلغاء الطلب",
+              hintText: "s_write_the_cancellation_reason".tr(),
               hintStyle: Styles.hintText(context),
               filled: true,
               fillColor: const Color(0xffF5F6FA),
               contentPadding: EdgeInsets.all(AppConstants.sp10(context)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(color: DsColor.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                 borderSide: BorderSide(
-                  color: showError ? AppColors.redColor : Colors.grey.shade300,
+                  color: showError ? AppColors.redColor : DsColor.border,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -119,7 +121,7 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
           if (showError) ...[
             SizedBox(height: AppConstants.height5(context)),
             Text(
-              "سبب الإلغاء مطلوب",
+              "s_cancellation_reason_is_required".tr(),
               style: Styles.inter12500Black(
                 context,
               ).copyWith(color: AppColors.redColor),
@@ -139,7 +141,7 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
                   ),
                   onPressed: _submit,
                   child: Text(
-                    "إلغاء الطلب",
+                    "s_cancel_order".tr(),
                     style: Styles.inter16500black(
                       context,
                     ).copyWith(color: Colors.white),
@@ -149,10 +151,10 @@ class _CancelOrderDialogState extends State<_CancelOrderDialog> {
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
-                  "رجوع",
+                  "s_back_2".tr(),
                   style: Styles.inter16500black(
                     context,
-                  ).copyWith(color: Colors.grey.shade600),
+                  ).copyWith(color: DsColor.textMuted),
                 ),
               ),
             ],

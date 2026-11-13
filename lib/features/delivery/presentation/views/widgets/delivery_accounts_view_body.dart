@@ -1,7 +1,7 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/search_widget.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/delivery/presentation/view_models/get_delivery_accounts/get_delivery_accounts_cubit.dart';
@@ -23,7 +23,6 @@ class DeliveryAccountsViewBody extends StatefulWidget {
 class _DeliveryAccountsViewBodyState extends State<DeliveryAccountsViewBody> {
   final ScrollController scrollController = ScrollController();
   final searchController = TextEditingController();
-  bool isLoadingMore = false;
 
   static const _sortOptions = [
     'createdAt',
@@ -32,32 +31,22 @@ class _DeliveryAccountsViewBodyState extends State<DeliveryAccountsViewBody> {
     'vehicleName',
   ];
 
-  Future<void> _pagination() async {
-    final cubit = context.read<GetDeliveryAccountsCubit>();
-    final totalPages = cubit.accountsModel?.data?.metadata?.totalPages;
-    if (totalPages == null) return;
-
-    if (cubit.page < totalPages &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoadingMore) {
-      isLoadingMore = true;
-      cubit.page++;
-      await cubit
-          .getDeliveryAccounts(withLoading: false)
-          .then((_) => setState(() => isLoadingMore = false));
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetDeliveryAccountsCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(_pagination);
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(_pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     searchController.dispose();
     super.dispose();
@@ -126,7 +115,10 @@ class _DeliveryAccountsViewBodyState extends State<DeliveryAccountsViewBody> {
                               if (index == 0)
                                 SizedBox(height: AppConstants.height5(context)),
                               DeliveryAccountItem(account: list[index]),
-                              if (isLoadingMore && index == list.length - 1)
+                              if (context
+                                      .read<GetDeliveryAccountsCubit>()
+                                      .isLoadingMore &&
+                                  index == list.length - 1)
                                 Padding(
                                   padding: EdgeInsets.all(
                                     AppConstants.sp10(context),
@@ -199,7 +191,7 @@ class _DeliveryAccountsViewBodyState extends State<DeliveryAccountsViewBody> {
 //                           border: Border.all(
 //                             color: selected
 //                                 ? AppColors.primaryColor
-//                                 : Colors.grey.shade400,
+//                                 : DsColor.textSubtle,
 //                           ),
 //                           borderRadius: BorderRadius.circular(
 //                             AppConstants.sp30(context),
@@ -210,7 +202,7 @@ class _DeliveryAccountsViewBodyState extends State<DeliveryAccountsViewBody> {
 //                           style: Styles.inter14500black(context).copyWith(
 //                             color: selected
 //                                 ? Colors.white
-//                                 : Colors.grey.shade700,
+//                                 : DsColor.text2,
 //                           ),
 //                         ),
 //                       ),
@@ -255,7 +247,7 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
+            Icon(Icons.error_outline, color: DsColor.danger, size: 48),
             SizedBox(height: AppConstants.height10(context)),
             Text(
               message,

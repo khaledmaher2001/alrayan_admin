@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -53,7 +55,7 @@ class _OTPViewBodyState extends State<OTPViewBody> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: MainStructureWidget(
-        title: "التحقق من OTB",
+        title: "s_verify_code".tr(),
         widget: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -69,9 +71,9 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                         child: Column(
                           children: [
                             AuthLogoWidget(
-                              title: "التحقق من OTP",
+                              title: "s_verify_code_2".tr(),
                               description:
-                                  "يرجى التحقق من بريدك الإلكتروني لرؤية رمز التحقق",
+                                  "s_check_your_email_for_the_verificatio".tr(),
                             ),
                             SizedBox(height: AppConstants.height20(context)),
                             Form(
@@ -126,9 +128,9 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                     enableActiveFill: true,
                                     validator: (String? value) {
                                       if (value!.isEmpty) {
-                                        return "من فضلك ادخل الرمز";
+                                        return "s_please_enter_the_code".tr();
                                       } else if (value.length < 6) {
-                                        return "لابد ان يكون الرمز مكون من 6 ارقام";
+                                        return "s_the_code_must_be_6_digits".tr();
                                       }
                                       return null;
                                     },
@@ -150,16 +152,16 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        "لم تستلم الرسالة؟",
+                                        "s_didn_t_get_the_message".tr(),
                                         style: TextStyle(
-                                          fontFamily: "Cairo",
+                                          fontFamily: "Inter",
                                           fontSize:
                                               MediaQuery.of(
                                                 context,
                                               ).size.height *
                                               .019,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
+                                          color: DsColor.textMuted,
                                         ),
                                       ),
                                       BlocConsumer<SendOtpCubit, SendOtpState>(
@@ -167,14 +169,14 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                           if (state is SendOtpSuccessState) {
                                             customSnackBar(
                                               message: state.message,
-                                              color: Colors.green,
+                                              color: DsColor.success,
                                               context: context,
                                             );
                                           } else if (state
                                               is SendOtpErrorState) {
                                             customSnackBar(
                                               message: state.error,
-                                              color: Colors.red,
+                                              color: DsColor.danger,
                                               context: context,
                                             );
                                           }
@@ -198,9 +200,9 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                                     });
                                                   },
                                                   child: Text(
-                                                    " حاول مرة أخرى",
+                                                    "s_try_again".tr(),
                                                     style: TextStyle(
-                                                      fontFamily: "Cairo",
+                                                      fontFamily: "Inter",
                                                       fontSize:
                                                           MediaQuery.of(
                                                             context,
@@ -264,10 +266,10 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                         height: AppConstants.height10(context),
                                       ),
                                       Text(
-                                        "تم ارسال رمز التحقق",
+                                        "s_verification_code_sent".tr(),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w400,
-                                          fontFamily: "Cairo",
+                                          fontFamily: "Inter",
                                           fontSize:
                                               MediaQuery.of(
                                                 context,
@@ -306,9 +308,9 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                         builder: (b) {
                           return SuccessPopup(
                             message:
-                                "صوتك مسموع، واقتراحاتك مهمة… تواصل مع نائب دائرتك بسهولة",
+                                "s_account_ready_hint".tr(),
                             withWidget: true,
-                            title: "تم انشاء حسابك بنجاح",
+                            title: "s_your_account_has_been_created".tr(),
                             widget: DefaultButton(
                               onPress: () {
                                 NavigationUtils.navigateAndClearStack(
@@ -316,7 +318,7 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                                   destinationScreen: LoginView(),
                                 );
                               },
-                              text: "تسجيل الدخول",
+                              text: "s_sign_in".tr(),
                             ),
                           );
                         },
@@ -325,7 +327,7 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                   }
                   else if(state is VerifyOtpErrorState)
                     {
-                      customSnackBar(message: state.error, color: Colors.red, context: context);
+                      customSnackBar(message: state.error, color: DsColor.danger, context: context);
                     }
                 },
                 builder: (context, state) {
@@ -335,12 +337,13 @@ class _OTPViewBodyState extends State<OTPViewBody> {
                         context.read<VerifyOtpCubit>().verifyOtp(
                           otp: otpCode.text,
                           email: widget.email,
+                          forgetPassword: widget.fromForget ?? false,
                         );
                       }
                     },
                     text: state is VerifyOtpLoadingState
-                        ? "جاري التحقق...."
-                        : "تحقق",
+                        ? "s_verifying".tr()
+                        : "s_verify".tr(),
                     elevation: 0,
                     borderRadius: AppConstants.sp10(context),
                   );

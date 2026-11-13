@@ -1,578 +1,316 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/features/coupons/data/models/coupons_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/shared_widgets/default_cached_network_image.dart';
 import '../../../../../core/shared_widgets/toast.dart';
-import '../../../../../core/utils/assets/assets.dart';
-import '../../../../../core/utils/colors/colors.dart';
-import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/navigation_utility.dart';
-import '../../../../../core/utils/text_styles/styles.dart';
 import '../create_coupon_view.dart';
 import '../view_model/delete_coupon/delete_coupon_cubit.dart';
 
-const List<String> _arabicMonths = [
-  "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-  "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
-];
-
-class CouponItem extends StatefulWidget {
+/// Coupon card. Hierarchy: the discount itself (what the customer gets) →
+/// name → copyable code → scope → usage/expiry footer. State is a badge,
+/// never a tinted card; edit/delete live in the ⋯ menu.
+class CouponItem extends StatelessWidget {
   const CouponItem({super.key, required this.couponData, required this.index});
 
   final Items couponData;
   final int index;
 
+  static const _typeIcons = {
+    'free_shipping': Icons.local_shipping_outlined,
+    'product_specific': Icons.inventory_2_outlined,
+    'category_specific': Icons.category_outlined,
+    'fixed_amount': Icons.payments_outlined,
+    'percentage': Icons.percent_rounded,
+  };
+
+  String _typeLabel(String type) => switch (type) {
+        'free_shipping' => 'شحن مجاني'.tr(),
+        'product_specific' => "s_product_discount".tr(),
+        'category_specific' => "s_category_discount".tr(),
+        'fixed_amount' => "ds_fixed_amount".tr(),
+        'percentage' => 'نسبة مئوية'.tr(),
+        _ => '',
+      };
+
+  String _value(String type) {
+    final v = couponData.discountValue;
+    return switch (type) {
+      'free_shipping' => "s_delivery_fee_discount".tr(),
+      'fixed_amount' => v != null ? DsFormat.money(v) : '-',
+      'percentage' || 'product_specific' || 'category_specific' => v != null ? '${dsLatin(v.toString())}%' : '-',
+      _ => v?.toString() ?? '',
+    };
+  }
+
+  bool get _isExpired {
+    final validTo = DateTime.tryParse(couponData.validTo ?? "");
+    return validTo != null && validTo.isBefore(DateTime.now());
+  }
+
+  void _copyCode() {
+    final code = couponData.code ?? '';
+    if (code.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: code));
+    toast(text: "s_coupon_code_copied".tr(), color: DsColor.success);
+  }
+
+  Future<void> _delete(BuildContext context) async {
+    final ok = await dsConfirm(
+      context,
+      title: "s_confirm_deletion".tr(),
+      message: "s_are_you_sure_you_want_to_delete_this_5".tr(),
+      confirmLabel: "s_delete".tr(),
+      destructive: true,
+    );
+    if (!ok || !context.mounted) return;
+    final cubit = context.read<DeleteCouponCubit>();
+    cubit.selectedIndex = index;
+    cubit.deleteCoupon(couponId: couponData.id!);
+  }
+
   @override
-  State<CouponItem> createState() => _CouponItemState();
+  Widget build(BuildContext context) {
+    final type = couponData.discountType ?? '';
+    final split = couponData.isSplitCoupon == true;
+    final expired = _isExpired;
+    // Only a real name is shown; the type is already under the value.
+    final title = couponData.name?.ar ?? couponData.name?.en ?? '';
+    final description = couponData.description?.ar ?? couponData.description?.en ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: DsSpace.page),
+      child: DsCard(
+        padding: const EdgeInsetsDirectional.fromSTEB(DsSpace.lg, DsSpace.md, DsSpace.xs, DsSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Discount value + type, status, actions.
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: DsColor.primarySoft, borderRadius: BorderRadius.circular(DsRadius.md)),
+                  child: Icon(split ? Icons.call_split_rounded : (_typeIcons[type] ?? Icons.local_offer_outlined), size: 20, color: DsColor.onPrimarySoft),
+                ),
+                const SizedBox(width: DsSpace.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_value(type), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.heading),
+                      Text(split ? "كوبون مجزئ".tr() : _typeLabel(type), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.caption),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: DsSpace.sm),
+                expired
+                    ? DsStatusBadge(status: null, label: "s_ended".tr(), fg: DsColor.danger, bg: DsColor.dangerBg)
+                    : DsStatusBadge(status: null, label: "s_active".tr(), fg: DsColor.success, bg: DsColor.successBg),
+                _Menu(index: index, onEdit: () => NavigationUtils.navigateTo(context: context, destinationScreen: CreateCouponView(editingCoupon: couponData)), onDelete: () => _delete(context)),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: DsSpace.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: DsSpace.md),
+                  if (title.isNotEmpty) Text(title, style: DsText.bodyStrong),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(description, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsText.caption),
+                  ],
+                  const SizedBox(height: DsSpace.md),
+                  // Code: the thing staff read out / paste, so it is one tappable row.
+                  Material(
+                    color: DsColor.fill,
+                    borderRadius: BorderRadius.circular(DsRadius.md),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(DsRadius.md),
+                      onTap: _copyCode,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(DsSpace.md, DsSpace.sm, DsSpace.sm, DsSpace.sm),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                couponData.code ?? "",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textDirection: TextDirection.ltr,
+                                textAlign: TextAlign.start,
+                                style: DsText.bodyStrong.copyWith(letterSpacing: 1),
+                              ),
+                            ),
+                            if ((couponData.applicableUserGroups ?? []).isNotEmpty) ...[
+                              DsStatusBadge(status: null, label: "i_x_customers_coupon".tr(namedArgs: {"a": "${couponData.applicableUserGroups!.length}"}), icon: Icons.group_outlined, fg: DsColor.primary, bg: DsColor.primarySoft),
+                              const SizedBox(width: DsSpace.sm),
+                            ] else ...[
+                              DsStatusBadge(status: null, label: "لكل العملاء".tr(), icon: Icons.groups_outlined, fg: DsColor.textMuted, bg: DsColor.fill),
+                              const SizedBox(width: DsSpace.sm),
+                            ],
+                            if (couponData.isHidden == true) ...[
+                              DsStatusBadge(status: null, label: "s_hidden".tr(), icon: Icons.visibility_off_outlined, fg: DsColor.warning, bg: DsColor.warningBg),
+                              const SizedBox(width: DsSpace.sm),
+                            ],
+                            Tooltip(message: "s_coupon_code_copied".tr(), child: const Icon(Icons.copy_rounded, size: 18, color: DsColor.textMuted)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (split) ...[
+                    const SizedBox(height: DsSpace.md),
+                    Text(
+                      type == "fixed_amount"
+                          ? "i_egp_x_off_each_use_11".tr(namedArgs: {"a": "${couponData.splitValue}"})
+                          : "i_x_off_each_use_12".tr(namedArgs: {"a": "${couponData.splitValue}"}),
+                      style: DsText.label,
+                    ),
+                    Text("i_this_code_can_be_used_x_times_13".tr(namedArgs: {"a": "${couponData.totalSplits}"}), style: DsText.caption),
+                  ],
+                  if (type == "category_specific" && (couponData.categories?.isNotEmpty ?? false))
+                    _Scope(
+                      title: "s_applies_to_these_categories".tr(),
+                      children: [for (final c in couponData.categories!) _ScopeChip(label: c.name ?? "")],
+                    ),
+                  if (type == "product_specific" && (couponData.products?.isNotEmpty ?? false))
+                    _Scope(
+                      title: "s_applies_to_these_products".tr(),
+                      children: [
+                        for (final p in couponData.products!)
+                          _ScopeChip(
+                            label: p.name ?? "",
+                            trailing: p.price != null ? DsFormat.money(p.price) : null,
+                            image: (p.images?.isNotEmpty ?? false) ? p.images!.first.attach : null,
+                          ),
+                      ],
+                    ),
+                  const SizedBox(height: DsSpace.md),
+                  const Divider(height: 1),
+                  const SizedBox(height: DsSpace.sm),
+                  Row(
+                    children: [
+                      const Icon(Icons.bar_chart_rounded, size: 16, color: DsColor.textMuted),
+                      const SizedBox(width: DsSpace.xs),
+                      Flexible(
+                        child: Text(
+                          "${"s_used".tr()}: ${"i_x_times_14".tr(namedArgs: {"a": DsFormat.count(couponData.usedCount ?? 0)})}",
+                          style: DsText.caption,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(Icons.event_outlined, size: 16, color: expired ? DsColor.danger : DsColor.textMuted),
+                      const SizedBox(width: DsSpace.xs),
+                      Text(
+                        DsFormat.date(context, couponData.validTo),
+                        style: DsText.caption.copyWith(color: expired ? DsColor.danger : DsColor.text2, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _CouponItemState extends State<CouponItem> {
-  final Map<String, String> typeIcons = {
-    'free_shipping': AssetData.shipping,
-    'product_specific': AssetData.product,
-    'category_specific': AssetData.department,
-    'fixed_amount': AssetData.fixed,
-    'percentage': AssetData.percentage,
-  };
+class _Menu extends StatelessWidget {
+  const _Menu({required this.index, required this.onEdit, required this.onDelete});
+  final int index;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  final Map<String, String> typeLabels = {
-    'free_shipping': 'شحن مجاني',
-    'product_specific': 'خصم منتج',
-    'category_specific': 'خصم قسم',
-    'fixed_amount': 'نسبة ثابتة',
-    'percentage': 'نسبة مئوية',
-  };
-
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    final bool? shouldDelete = await showDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            "تأكيد الحذف",
-            style: Styles.inter24600black(context),
-          ),
-          content: Text(
-            "هل أنت متأكد أنك تريد حذف الكوبون؟",
-            style: Styles.font18500Grey900(context),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              AppConstants.sp10(dialogContext),
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DeleteCouponCubit, DeleteCouponState>(
+      builder: (context, state) {
+        final deleting = state is DeleteCouponLoadingState && context.read<DeleteCouponCubit>().selectedIndex == index;
+        if (deleting) {
+          return const SizedBox(width: DsSize.touch, height: DsSize.touch, child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))));
+        }
+        return PopupMenuButton<String>(
+          tooltip: "s_edit".tr(),
+          icon: const Icon(Icons.more_vert_rounded, color: DsColor.textMuted),
+          onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: 'edit',
+              child: Row(children: [const Icon(Icons.edit_outlined, size: 20, color: DsColor.text2), const SizedBox(width: DsSpace.md), Text("s_edit".tr(), style: DsText.body)]),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-              child: Text(
-                "إلغاء",
-                style: Styles.inter18500Black(context),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.redColor,
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: Text(
-                "حذف",
-                style: Styles.inter16400white(context),
-              ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Row(children: [
+                const Icon(Icons.delete_outline_rounded, size: 20, color: DsColor.danger),
+                const SizedBox(width: DsSpace.md),
+                Text("s_delete".tr(), style: DsText.body.copyWith(color: DsColor.danger)),
+              ]),
             ),
           ],
         );
       },
     );
-
-    if (shouldDelete == true) {
-      context.read<DeleteCouponCubit>().selectedIndex = widget.index;
-      context.read<DeleteCouponCubit>().deleteCoupon(
-        couponId: widget.couponData.id!,
-      );
-    }
-  }
-
-  void _copyCode() {
-    final code = widget.couponData.code ?? '';
-    if (code.isEmpty) return;
-    Clipboard.setData(ClipboardData(text: code));
-    toast(text: "تم نسخ كود الكوبون", color: Colors.green);
-  }
-
-  bool get _isExpired {
-    final validTo = DateTime.tryParse(widget.couponData.validTo ?? "");
-    if (validTo == null) return false;
-    return validTo.isBefore(DateTime.now());
-  }
-
-  String _formatDate(String? iso) {
-    final date = DateTime.tryParse(iso ?? "");
-    if (date == null) return '-';
-    return "${date.day} ${_arabicMonths[date.month - 1]} ${date.year}";
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final String type = widget.couponData.discountType ?? '';
-    final isExpired = _isExpired;
-
-    final String iconAsset = typeIcons[type] ?? AssetData.edit;
-    final String label = typeLabels[type] ?? AssetData.edit;
-
-    String valueText = '';
-    if (type == 'percentage') {
-      final val = widget.couponData.discountValue;
-      valueText = val != null ? '${val.toString()}%' : '-';
-    } else if (type == 'fixed_amount') {
-      final val = widget.couponData.discountValue;
-      valueText = val != null ? '${val.toString()} جنية' : '-';
-    } else if (type == 'product_specific' || type == 'category_specific') {
-      final val = widget.couponData.discountValue;
-      valueText = val != null ? '${val.toString()}%' : '-';
-    } else if (type == 'free_shipping') {
-      valueText = 'خصم قيمة الشحن';
-    } else {
-      final val = widget.couponData.discountValue;
-      valueText = val != null ? val.toString() : '';
-    }
-
-    final title = widget.couponData.name?.ar ?? widget.couponData.name?.en ?? label;
-    final description = widget.couponData.description?.ar ?? widget.couponData.description?.en ?? '';
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
-      child: Container(
-        padding: EdgeInsets.all(AppConstants.sp15(context)),
-        decoration: BoxDecoration(
-          color: isExpired ? Colors.red.shade50 : Colors.white,
-          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          border: isExpired ? Border.all(color: Colors.red.shade200) : null,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1a000000),
-              blurRadius: 6,
-              spreadRadius: 0,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status pills + code chip + actions menu.
-            Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Container(
-                          padding: EdgeInsetsDirectional.symmetric(
-                            horizontal: AppConstants.width10(context) - 2,
-                            vertical: AppConstants.height10(context) - 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.gray.withOpacity(.15),
-                            borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  widget.couponData.code ?? "",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Styles.inter14500black(context).copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                              SizedBox(width: AppConstants.width5(context)),
-                              InkWell(
-                                onTap: _copyCode,
-                                child: Icon(Icons.copy_rounded, size: 14, color: AppColors.gray),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppConstants.width10(context)),
-                      if (isExpired)
-                        _StatusPill(
-                          label: "منتهي",
-                          icon: Icons.event_busy,
-                          color: Colors.red.shade800,
-                        )
-                      else
-                        _StatusPill(
-                          label: "نشط",
-                          icon: Icons.check_circle_outline,
-                          color: const Color(0xFF1C9A6C),
-                        ),
-                      if (widget.couponData.isHidden == true) ...[
-                        SizedBox(width: AppConstants.width5(context)),
-                        _StatusPill(
-                          label: "مخفي",
-                          iconAsset: AssetData.viewOff,
-                          color: Colors.orange.shade800,
-                        ),
-                      ],
-
-                    ],
-                  ),
-                ),
-                SizedBox(width: AppConstants.width10(context)),
-                BlocBuilder<DeleteCouponCubit, DeleteCouponState>(
-                  builder: (context, state) {
-                    final isDeleting =
-                        state is DeleteCouponLoadingState &&
-                            context.read<DeleteCouponCubit>().selectedIndex == widget.index;
-
-                    if (isDeleting) {
-                      return Padding(
-                        padding: EdgeInsets.all(AppConstants.sp10(context)),
-                        child: SizedBox(
-                          width: AppConstants.width15(context),
-                          height: AppConstants.width15(context),
-                          child: const CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      );
-                    }
-
-                    return PopupMenuButton<String>(
-                      icon: Icon(Icons.more_vert, color: Colors.black87),
-                      onSelected: (value) async {
-                        if (value == 'edit') {
-                          NavigationUtils.navigateTo(
-                            context: context,
-                            destinationScreen: CreateCouponView(editingCoupon: widget.couponData),
-                          );
-                        } else if (value == 'delete') {
-                          await _showDeleteConfirmationDialog(context);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(AssetData.edit, width: AppConstants.width15(context)),
-                              SizedBox(width: AppConstants.width10(context)),
-                              Text("تعديل", style: Styles.inter14500black(context)),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(AssetData.delete, width: AppConstants.width15(context)),
-                              SizedBox(width: AppConstants.width10(context)),
-                              Text("حذف", style: Styles.inter14500black(context).copyWith(color: AppColors.redColor)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.height10(context)),
-            Text(
-              title,
-              style: Styles.inter16500black(context).copyWith(fontWeight: FontWeight.w700),
-            ),
-            if (description.isNotEmpty) ...[
-              SizedBox(height: AppConstants.height5(context) / 2),
-              Text(description, style: Styles.inter14600gray(context)),
-            ],
-            SizedBox(height: AppConstants.height15(context)),
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: AppConstants.width10(context) - 2,
-                      vertical: AppConstants.height10(context) - 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.gray.withOpacity(.2),
-                      borderRadius: BorderRadius.circular(
-                        AppConstants.sp5(context),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          widget.couponData.isSplitCoupon!
-                              ? AssetData.split
-                              : iconAsset,
-                          width: MediaQuery.of(context).size.width * .06,
-                        ),
-                        SizedBox(width: AppConstants.width10(context)),
-                        Flexible(
-                          child: Text(
-                            widget.couponData.isSplitCoupon!
-                                ? "كوبون مجزئ"
-                                : label,
-                            overflow: TextOverflow.ellipsis,
-                            style: Styles.inter14500black(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(width: AppConstants.width20(context)),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: AppConstants.width10(context) - 2,
-                      vertical: AppConstants.height10(context) - 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.gray.withOpacity(.2),
-                      borderRadius: BorderRadius.circular(
-                        AppConstants.sp5(context),
-                      ),
-                    ),
-                    child: Text(
-                      valueText,
-                      style: Styles.inter14500black(context),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (widget.couponData.isSplitCoupon!) ...[
-              SizedBox(height: AppConstants.height10(context)),
-              Text(
-                widget.couponData.discountType == "fixed_amount"
-                    ? "خصم ${widget.couponData.splitValue} جنية للمرة الواحدة"
-                    : "خصم ${widget.couponData.splitValue}% للمرة الواحدة",
-                style: Styles.inter14500black(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: AppConstants.height5(context)),
-              Text(
-                "هذا الكود يتم استخدامة علي ${widget.couponData.totalSplits} مرات",
-                style: Styles.inter16500black(context).copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.gray,
-                ),
-              ),
-            ],
-            if (widget.couponData.discountType == "category_specific") ...[
-              SizedBox(height: AppConstants.height10(context)),
-              Container(
-                padding: EdgeInsets.all(AppConstants.sp10(context)),
-                decoration: BoxDecoration(
-                  color: AppColors.gray.withOpacity(.2),
-                  borderRadius: BorderRadius.circular(
-                    AppConstants.sp5(context),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: AppConstants.height5(context)),
-                    Row(
-                      children: [
-                        Text(
-                          "يطبق على الفئات الاتية",
-                          style: Styles.inter14500black(context),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: AppConstants.height10(context)),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * .05,
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) => Container(
-                          padding: EdgeInsets.all(AppConstants.sp10(context)),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.sp5(context),
-                            ),
-                          ),
-                          child: Text(
-                            widget.couponData.categories![index].name ?? "",
-                            style: Styles.inter14500black(context),
-                          ),
-                        ),
-                        separatorBuilder: (context, index) =>
-                            SizedBox(width: AppConstants.width10(context)),
-                        itemCount: widget.couponData.categories?.length ?? 0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            if (widget.couponData.discountType == "product_specific") ...[
-              SizedBox(height: AppConstants.height10(context)),
-              Container(
-                padding: EdgeInsets.all(AppConstants.sp10(context)),
-                decoration: BoxDecoration(
-                  color: AppColors.gray.withOpacity(.2),
-                  borderRadius: BorderRadius.circular(
-                    AppConstants.sp5(context),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: AppConstants.height5(context)),
-                    Row(
-                      children: [
-                        Text(
-                          "يطبق على المنتجات الاتية",
-                          style: Styles.inter14500black(context),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: AppConstants.height10(context)),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * .13,
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) => Container(
-                          padding: EdgeInsets.all(AppConstants.sp10(context)),
-                          decoration: BoxDecoration(
-                            color: AppColors.gray.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.sp5(context),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  AppConstants.sp10(context),
-                                ),
-                                child: DefaultCachedNetworkImage(
-                                  imageUrl:
-                                  widget.couponData.products![index].images!.first.attach ?? "",
-                                  imageHeight:
-                                  MediaQuery.of(context).size.height * .05,
-                                  imageWidth:
-                                  MediaQuery.of(context).size.height * .05,
-                                ),
-                              ),
-                              Text(
-                                widget.couponData.products![index].name ?? "",
-                                style: Styles.inter14500black(context),
-                              ),
-                              Text(
-                                widget.couponData.products![index].price.toString(),
-                                style: Styles.inter16500black(
-                                  context,
-                                ).copyWith(color: AppColors.primaryColor),
-                              ),
-                            ],
-                          ),
-                        ),
-                        separatorBuilder: (context, index) =>
-                            SizedBox(width: AppConstants.width10(context)),
-                        itemCount: widget.couponData.products?.length ?? 0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            SizedBox(height: AppConstants.height15(context)),
-            Divider(color: AppColors.gray.withOpacity(.2), height: 1),
-            SizedBox(height: AppConstants.height10(context)),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("تم الاستخدام", style: Styles.inter10400grey(context)),
-                      SizedBox(height: AppConstants.height5(context) / 2),
-                      Text(
-                        "${widget.couponData.usedCount ?? 0} مرة",
-                        style: Styles.inter14500black(context).copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text("تاريخ انتهاء الكوبون", style: Styles.inter10400grey(context)),
-                      SizedBox(height: AppConstants.height5(context) / 2),
-                      Text(
-                        _formatDate(widget.couponData.validTo),
-                        style: Styles.inter14500black(context).copyWith(
-                          color: isExpired ? Colors.red.shade800 : null,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color, this.icon, this.iconAsset});
-
-  final String label;
-  final Color color;
-  final IconData? icon;
-  final String? iconAsset;
+class _Scope extends StatelessWidget {
+  const _Scope({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsetsDirectional.symmetric(
-        horizontal: AppConstants.width10(context) - 2,
-        vertical: AppConstants.height10(context) - 2,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(.12),
-        borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) Icon(icon, size: AppConstants.width15(context), color: color),
-          if (iconAsset != null)
-            SvgPicture.asset(
-              iconAsset!,
-              width: AppConstants.width15(context),
-              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: DsSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: DsText.caption),
+            const SizedBox(height: DsSpace.sm),
+            Wrap(spacing: DsSpace.sm, runSpacing: DsSpace.sm, children: children),
+          ],
+        ),
+      );
+}
+
+class _ScopeChip extends StatelessWidget {
+  const _ScopeChip({required this.label, this.trailing, this.image});
+  final String label;
+  final String? trailing;
+  final String? image;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: EdgeInsetsDirectional.fromSTEB(image != null ? 4 : DsSpace.md, 4, DsSpace.md, 4),
+        decoration: BoxDecoration(
+          color: DsColor.surface,
+          border: Border.all(color: DsColor.border),
+          borderRadius: BorderRadius.circular(DsRadius.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (image != null) ...[
+              ClipOval(child: DefaultCachedNetworkImage(imageUrl: image!, imageHeight: 24, imageWidth: 24)),
+              const SizedBox(width: DsSpace.sm),
+            ],
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 180),
+              child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.label),
             ),
-          SizedBox(width: AppConstants.width5(context)),
-          Text(
-            label,
-            style: Styles.inter12500Black(context).copyWith(color: color, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
+            if (trailing != null) ...[
+              const SizedBox(width: DsSpace.sm),
+              Text(trailing!, style: DsText.caption.copyWith(color: DsColor.primary, fontWeight: FontWeight.w700)),
+            ],
+          ],
+        ),
+      );
 }

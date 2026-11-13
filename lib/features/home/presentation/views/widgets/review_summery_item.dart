@@ -1,5 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter/material.dart';
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 
@@ -16,7 +16,7 @@ final Color back;
         SizedBox(
           width: MediaQuery.of(context).size.width*.15,
           child: Text(title,style: Styles.inter16500black(context).copyWith(
-              color: Colors.grey[600]
+              color: DsColor.textMuted
           )),
         ),
         SizedBox(width: AppConstants.width10(context)),

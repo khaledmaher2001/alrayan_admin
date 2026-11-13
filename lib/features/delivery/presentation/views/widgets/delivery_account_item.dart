@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -89,7 +90,7 @@ class DeliveryAccountItem extends StatelessWidget {
                         vertical: AppConstants.height5(context) / 2,
                       ),
                       decoration: BoxDecoration(
-                        color: isAvailable ? const Color(0xff22C55E) : Colors.grey.shade400,
+                        color: isAvailable ? const Color(0xff22C55E) : DsColor.textSubtle,
                         borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
                       ),
                       child: Text(
@@ -100,7 +101,7 @@ class DeliveryAccountItem extends StatelessWidget {
                 ],
               ),
               SizedBox(height: AppConstants.height15(context)),
-              Divider(color: Colors.grey.shade100, height: 1),
+              Divider(color: DsColor.fill, height: 1),
               SizedBox(height: AppConstants.height15(context)),
               Row(
                 children: [
@@ -120,7 +121,7 @@ class DeliveryAccountItem extends StatelessWidget {
                 ],
               ),
               SizedBox(height: AppConstants.height15(context)),
-              Divider(color: Colors.grey.shade100, height: 1),
+              Divider(color: DsColor.fill, height: 1),
               SizedBox(height: AppConstants.height15(context)),
               Row(
                 children: [
@@ -140,7 +141,7 @@ class DeliveryAccountItem extends StatelessWidget {
                   Expanded(
                     child: _StatColumn(
                       label: "wallet_balance".tr(),
-                      value: account.walletBalance != null ? "${account.walletBalance} ج.م" : "-",
+                      value: account.walletBalance != null ? "${account.walletBalance} ${"s_egp".tr()}" : "-",
                     ),
                   ),
                 ],
@@ -255,12 +256,12 @@ class DeliveryAccountItem extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade50,
+                            color: DsColor.dangerBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.delete_outline_rounded,
-                            color: Colors.red.shade400,
+                            color: DsColor.danger,
                             size: MediaQuery.of(context).size.width * .08,
                           ),
                         ),
@@ -284,21 +285,21 @@ class DeliveryAccountItem extends StatelessWidget {
                       "delete_courier_message".tr(),
                       style: Styles.inter14500black(
                         context,
-                      ).copyWith(color: Colors.grey.shade700),
+                      ).copyWith(color: DsColor.text2),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
+                        color: DsColor.page,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: DsColor.border),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.local_shipping_outlined,
-                            color: Colors.grey.shade500,
+                            color: DsColor.textMuted,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
@@ -320,7 +321,7 @@ class DeliveryAccountItem extends StatelessWidget {
                       "cannot_undo_action".tr(),
                       style: Styles.inter14500black(
                         context,
-                      ).copyWith(color: Colors.red.shade400),
+                      ).copyWith(color: DsColor.danger),
                     ),
                     SizedBox(height: AppConstants.height20(context)),
                     Row(
@@ -328,7 +329,7 @@ class DeliveryAccountItem extends StatelessWidget {
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: DsColor.danger,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -364,7 +365,7 @@ class DeliveryAccountItem extends StatelessWidget {
                             "cancel".tr(),
                             style: Styles.inter16500black(
                               context,
-                            ).copyWith(color: Colors.grey.shade600),
+                            ).copyWith(color: DsColor.textMuted),
                           ),
                         ),
                       ],

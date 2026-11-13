@@ -1,11 +1,12 @@
 import 'package:bloc/bloc.dart';
+import 'package:alrayan_admin/core/shared_cubit/request_guard_mixin.dart';
 
 import '../../../data/models/delivery_transaction_model.dart';
 import '../../../data/repo/delivery_repo.dart';
 import 'get_delivery_transactions_states.dart';
 
-class GetDeliveryTransactionsCubit
-    extends Cubit<GetDeliveryTransactionsStates> {
+class GetDeliveryTransactionsCubit extends Cubit<GetDeliveryTransactionsStates>
+    with RequestGuardMixin {
   GetDeliveryTransactionsCubit(this.repo)
     : super(GetDeliveryTransactionsInitState());
 
@@ -26,6 +27,7 @@ class GetDeliveryTransactionsCubit
     required int userId,
     bool withLoading = true,
   }) async {
+    final reqId = beginRequest();
     if (withLoading) {
       emit(GetDeliveryTransactionsLoadingState());
     }
@@ -40,7 +42,9 @@ class GetDeliveryTransactionsCubit
         if (startDate != null) 'startDate': startDate,
         if (endDate != null) 'endDate': endDate,
       },
+      cancelToken: requestCancelToken,
     );
+    if (!isCurrentRequest(reqId)) return;
 
     result.fold(
       (failure) => emit(GetDeliveryTransactionsErrorState(failure.errMessage)),
@@ -50,6 +54,12 @@ class GetDeliveryTransactionsCubit
         emit(GetDeliveryTransactionsSuccessState(model: data));
       },
     );
+  }
+
+  @override
+  Future<void> close() {
+    cancelInFlightRequest();
+    return super.close();
   }
 
   /// Jumps to [pageNumber] and re-fetches, replacing the currently shown

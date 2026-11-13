@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/features/orders/data/repo/order_finance_repo.dart';
 import 'package:alrayan_admin/features/ads/data/repo/ads/ads_repo_impl.dart';
 import 'package:alrayan_admin/features/all_users/data/repo/all_users_repo_impl.dart';
 import 'package:alrayan_admin/features/auth/data/repo/auth_repo_impl.dart';
@@ -11,6 +12,7 @@ import 'package:alrayan_admin/features/lucky_wheel/data/repo/lucky_wheel_repo_im
 import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
 import 'package:alrayan_admin/features/orders/data/services/orders_socket_service.dart';
 import 'package:alrayan_admin/features/products/data/repo/products_repo_impl.dart';
+import 'package:alrayan_admin/features/scheduled_notifications/data/repo/scheduled_notifications_repo_impl.dart';
 import 'package:alrayan_admin/features/profile/data/repo/profile_repo/profile_repo_impl.dart';
 import 'package:alrayan_admin/features/top_users/data/repo/top_users_repo_impl.dart';
 import 'package:alrayan_admin/features/zones/data/repo/zones_repo_impl.dart';
@@ -29,7 +31,12 @@ final getIt = GetIt.instance;
 void setup() {
   getIt.registerLazySingleton<IFilePickerService>(() => FilePickerService());
 
-  getIt.registerSingleton<ApiService>(ApiService(Dio()));
+  // Without timeouts one dropped request on a weak network never returns,
+  // leaving its screen stuck on loading forever.
+  getIt.registerSingleton<ApiService>(ApiService(Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 20),
+    receiveTimeout: const Duration(seconds: 30),
+  ))));
   getIt.registerSingleton<AuthRepoImpl>(AuthRepoImpl(getIt.get<ApiService>()));
   getIt.registerLazySingleton<CategoriesRepoImpl>(
     () => CategoriesRepoImpl(getIt.get<ApiService>()),
@@ -40,6 +47,7 @@ void setup() {
   getIt.registerLazySingleton<NotificationsRepoImpl>(
     () => NotificationsRepoImpl(getIt.get<ApiService>()),
   );
+  getIt.registerLazySingleton<OrderFinanceRepo>(() => OrderFinanceRepo(getIt.get<ApiService>()));
   getIt.registerLazySingleton<OrdersRepoImpl>(
     () => OrdersRepoImpl(getIt.get<ApiService>()),
   );
@@ -84,5 +92,8 @@ void setup() {
   );
   getIt.registerLazySingleton<DeliverySettingsRepoImpl>(
     () => DeliverySettingsRepoImpl(getIt.get<ApiService>()),
+  );
+  getIt.registerLazySingleton<ScheduledNotificationsRepoImpl>(
+    () => ScheduledNotificationsRepoImpl(getIt.get<ApiService>()),
   );
 }

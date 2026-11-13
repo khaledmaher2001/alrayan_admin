@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/shared_cubit/request_guard_mixin.dart';
 import 'package:alrayan_admin/features/orders/data/models/orders_model.dart';
 import 'package:alrayan_admin/features/orders/data/repo/orders_repo.dart';
 import 'package:bloc/bloc.dart';
@@ -9,7 +10,7 @@ import 'get_awaiting_customer_orders_states.dart';
 /// its own pagination/search state so the customer-facing Orders tab
 /// (`GetOrdersCubit`) is never touched.
 class GetAwaitingCustomerOrdersCubit
-    extends Cubit<GetAwaitingCustomerOrdersStates> {
+    extends Cubit<GetAwaitingCustomerOrdersStates> with RequestGuardMixin {
   GetAwaitingCustomerOrdersCubit(this.repo)
     : super(GetAwaitingCustomerOrdersInitState());
 
@@ -20,6 +21,8 @@ class GetAwaitingCustomerOrdersCubit
   List<Items> ordersList = [];
   OrdersModel? ordersModel;
   int page = 1;
+  bool hasMore = true;
+  bool isLoadingMore = false;
 
   /// Inline search box query. `GET /orders` only filters by `orderNumber` on
   /// the server, so — to honor "search by order number / customer name /
@@ -47,16 +50,27 @@ class GetAwaitingCustomerOrdersCubit
       ordersModel?.data?.metadata?.totalItems ?? ordersList.length;
 
   Future<void> getOrders({bool withLoading = true}) async {
+    final reqId = beginRequest();
     if (withLoading) {
       ordersModel = null;
       ordersList.clear();
       page = 1;
+      hasMore = true;
       emit(GetAwaitingCustomerOrdersLoadingState());
     }
 
+    final pageToLoad = page;
     final result = await repo.getOrders(
-      data: {'page': page, 'limit': 15, 'status': status, 'sortOrder': 'DESC'},
+      data: {
+        'page': pageToLoad,
+        'limit': 15,
+        'status': status,
+        'sortOrder': 'DESC',
+      },
+      cancelToken: requestCancelToken,
     );
+
+    if (!isCurrentRequest(reqId)) return;
 
     result.fold(
       (failure) =>
@@ -64,18 +78,44 @@ class GetAwaitingCustomerOrdersCubit
       (data) {
         ordersModel = data;
         ordersList = ordersList + (data.data?.items ?? []);
+        final totalPages = data.data?.metadata?.totalPages;
+        hasMore = totalPages != null
+            ? page < totalPages
+            : (data.data?.items?.isNotEmpty ?? false);
         emit(GetAwaitingCustomerOrdersSuccessState(model: data));
       },
     );
+  }
+
+  Future<void> loadMore() async {
+    if (!hasMore || isLoadingMore || isClosed || ordersModel == null) return;
+    isLoadingMore = true;
+    emit(GetAwaitingCustomerOrdersSuccessState(model: ordersModel!));
+    page++;
+    try {
+      await getOrders(withLoading: false);
+    } finally {
+      if (!isClosed) {
+        isLoadingMore = false;
+        if (ordersModel != null) {
+          emit(GetAwaitingCustomerOrdersSuccessState(model: ordersModel!));
+        }
+      }
+    }
   }
 
   /// Reloads page 1 from the server without flipping the screen back to the
   /// full-screen loading state — used after a reopen/cancel so the list
   /// reflects backend truth even when the action response carried no data.
   Future<void> refreshSilently() async {
+    final reqId = beginRequest();
     final result = await repo.getOrders(
       data: {'page': 1, 'limit': 15, 'status': status, 'sortOrder': 'DESC'},
+      cancelToken: requestCancelToken,
     );
+
+    if (!isCurrentRequest(reqId)) return;
+
     result.fold(
       (failure) =>
           emit(GetAwaitingCustomerOrdersErrorState(failure.errMessage)),
@@ -86,6 +126,12 @@ class GetAwaitingCustomerOrdersCubit
         emit(GetAwaitingCustomerOrdersSuccessState(model: data));
       },
     );
+  }
+
+  @override
+  Future<void> close() {
+    cancelInFlightRequest();
+    return super.close();
   }
 
   /// Drops an order from the list after a successful reopen / cancel and

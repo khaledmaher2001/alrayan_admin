@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../../../core/utils/colors/colors.dart';
 
 class SmallSwitch extends StatefulWidget {
   final bool value;

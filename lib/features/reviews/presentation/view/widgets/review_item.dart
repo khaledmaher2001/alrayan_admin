@@ -1,16 +1,12 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/features/reviews/data/models/reviews_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../../core/shared_widgets/custom_button.dart';
-import '../../../../../core/utils/assets/assets.dart';
-import '../../../../../core/utils/colors/colors.dart';
-import '../../../../../core/utils/constants.dart';
-import '../../../../../core/utils/text_styles/styles.dart';
 import 'order_bottom_sheet.dart';
 
+/// One customer review: who, stars and date, the comment, and a text action
+/// to open the related order.
 class ReviewItem extends StatelessWidget {
   const ReviewItem({super.key, required this.data, required this.index});
 
@@ -19,106 +15,90 @@ class ReviewItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppConstants.sp10(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1a000000),
-            blurRadius: 6,
-            spreadRadius: 0,
-            offset: Offset(0, 4)
-          )
-        ]
-      ),
+    final name = data.user?.fullName ?? '';
+    final initials = name.split(' ').take(2).map((e) => e.isNotEmpty ? e[0] : '').join().toUpperCase();
+    final rating = double.tryParse('${data.rating}') ?? 0;
+    final date = DateTime.tryParse(data.createdAt ?? '');
+    return DsCard(
+      padding: const EdgeInsetsDirectional.fromSTEB(DsSpace.lg, DsSpace.md, DsSpace.sm, DsSpace.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(color: DsColor.primarySoft, shape: BoxShape.circle),
+                child: Text(initials, style: DsText.label.copyWith(color: DsColor.onPrimarySoft)),
+              ),
+              const SizedBox(width: DsSpace.md),
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      radius: MediaQuery.of(context).size.width * 0.065, // نصف عرض الصورة القديمة
-                      backgroundColor: Colors.primaries[
-                      index % Colors.primaries.length], // لون عشوائي لكل يوزر
-                      child: Text(
-                        (data.user!.fullName ?? '')
-                            .split(' ')
-                            .take(2)
-                            .map((e) => e.isNotEmpty ? e[0] : '')
-                            .join()
-                            .toUpperCase(), // أول حرفين من الاسم
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: AppConstants.width10(context)),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.bodyStrong),
+                    const SizedBox(height: 2),
+                    Row(
                       children: [
-                        Text(data.user?.fullName ?? "", style: Styles.font16500Grey900(context)),
-                        SizedBox(height: AppConstants.height5(context)),
-                        RatingBar.builder(
-                          initialRating: double.parse(data.rating.toString()),
-                          direction: Axis.horizontal,
-                          allowHalfRating: true,
-                          itemCount: 5,
-                          ignoreGestures: true,
-                          glowColor: const Color(0xffF5BE00),
-                          itemPadding: EdgeInsetsDirectional.only(end: AppConstants.width5(context)),
-                          unratedColor: AppColors.greyColor[300],
-                          itemBuilder: (context, _) => SvgPicture.asset(AssetData.star),
-                          itemSize: MediaQuery.of(context).size.width * 0.03,
-                          onRatingUpdate: (rating) {},
-                        ),
-                        SizedBox(height: AppConstants.height5(context)),
-                        Text(
-                          DateFormat("yyyy/MM/dd").format(DateTime.parse(data.createdAt ?? "")),
-                          style: Styles.font16500Grey500(context),
-                        ),
+                        _Stars(rating: rating),
+                        if (date != null) ...[
+                          const SizedBox(width: DsSpace.sm),
+                          Text(DsFormat.date(context, data.createdAt), style: DsText.caption),
+                        ],
                       ],
                     ),
                   ],
                 ),
               ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.25,
-                child: DefaultButton(
-                  onPress: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.white,
-                      isScrollControlled: true,
-                      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
-                      builder: (context) => Container(decoration: BoxDecoration(
-                        color: Colors.white
-                      ),child: OrderBottomSheet(orderId: data.order!.id!)),
-                    );
-                  },
-                  text: "عرض الطلب".tr(),
-                  borderRadius: AppConstants.sp10(context),
-                  backgroundColor: Colors.white,
-                  hasBorder: true,
-                  fontSize: 14,
-                  elevation: 0,
-                  height: AppConstants.height10(context),
-                  borderColor: AppColors.primaryColor,
-                  textColor: AppColors.primaryColor,
-                ),
-              ),
             ],
           ),
-          SizedBox(height: AppConstants.height10(context)),
-          Text(data.comment ?? "", style: Styles.font16500Grey900(context)),
+          if ((data.comment ?? '').isNotEmpty) ...[
+            const SizedBox(height: DsSpace.md),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: DsSpace.sm),
+              child: Text(data.comment!, style: DsText.body.copyWith(color: DsColor.text2)),
+            ),
+          ],
+          if (data.order?.id != null)
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+                  builder: (context) => OrderBottomSheet(orderId: data.order!.id!),
+                ),
+                icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                label: Text("s_view_order".tr()),
+              ),
+            ),
         ],
       ),
     );
   }
+}
+
+class _Stars extends StatelessWidget {
+  const _Stars({required this.rating});
+  final double rating;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: '${rating.toStringAsFixed(1)} / 5',
+        excludeSemantics: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 1; i <= 5; i++)
+              Icon(
+                rating >= i ? Icons.star_rounded : (rating >= i - .5 ? Icons.star_half_rounded : Icons.star_outline_rounded),
+                size: 16,
+                color: rating >= i - .5 ? const Color(0xFFF5A623) : DsColor.border,
+              ),
+          ],
+        ),
+      );
 }

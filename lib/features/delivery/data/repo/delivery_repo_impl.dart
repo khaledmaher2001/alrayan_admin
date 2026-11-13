@@ -36,12 +36,14 @@ class DeliveryRepoImpl implements DeliveryRepo {
   @override
   Future<Either<Failure, DeliveryAccountsModel>> getDeliveryAccounts({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await apiService!.get(
         endPoint: EndPoints.deliveryAccounts,
         query: data,
         sendToken: true,
+        cancelToken: cancelToken,
       );
       return right(DeliveryAccountsModel.fromJson(response.data));
     } catch (e) {
@@ -49,6 +51,26 @@ class DeliveryRepoImpl implements DeliveryRepo {
       if (e is DioException) return left(ServerFailure.fromDioError(e));
       return left(ServerFailure(e.toString()));
     }
+  }
+
+  @override
+  Future<Either<Failure, DeliveryAccount?>> findDeliveryAccount(int userId) async {
+    const pageSize = 100; // backend max
+    const maxPages = 20;
+    for (var page = 1; page <= maxPages; page++) {
+      final result = await getDeliveryAccounts(data: {'page': page, 'limit': pageSize});
+      if (result.isLeft()) {
+        return left(result.fold((failure) => failure, (_) => ServerFailure('')));
+      }
+      final data = result.getOrElse(() => DeliveryAccountsModel.fromJson(const {})).data;
+      final items = data?.items ?? const <DeliveryAccount>[];
+      for (final account in items) {
+        if (account.userId == userId) return right(account);
+      }
+      final totalPages = data?.metadata?.totalPages;
+      if (items.length < pageSize || (totalPages != null && page >= totalPages)) break;
+    }
+    return right(null);
   }
 
   @override
@@ -142,12 +164,14 @@ class DeliveryRepoImpl implements DeliveryRepo {
   Future<Either<Failure, DeliveryTransactionsModel>> getDeliveryTransactions({
     required int userId,
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await apiService!.get(
         endPoint: EndPoints.deliveryAccountTransactions(userId),
         query: data,
         sendToken: true,
+        cancelToken: cancelToken,
       );
       return right(DeliveryTransactionsModel.fromJson(response.data));
     } catch (e) {
@@ -160,12 +184,14 @@ class DeliveryRepoImpl implements DeliveryRepo {
   @override
   Future<Either<Failure, ReleaseLogsModel>> getReleaseLogs({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await apiService!.get(
         endPoint: EndPoints.deliveryReleaseLogs,
         query: data,
         sendToken: true,
+        cancelToken: cancelToken,
       );
       return right(ReleaseLogsModel.fromJson(response.data));
     } catch (e) {
@@ -178,12 +204,14 @@ class DeliveryRepoImpl implements DeliveryRepo {
   @override
   Future<Either<Failure, RemittancesModel>> getRemittances({
     required Map<String, dynamic> data,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await apiService!.get(
         endPoint: EndPoints.deliveryRemittances,
         query: data,
         sendToken: true,
+        cancelToken: cancelToken,
       );
       return right(RemittancesModel.fromJson(response.data));
     } catch (e) {

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
@@ -94,7 +96,7 @@ class _AddZoneViewState extends State<AddZoneView> {
 
   Future<Map<String, dynamic>?> _saveZone() async {
     if (polygonPoints.length < 3) {
-      cherryToast(text: "لازم على الأقل 3 نقاط علشان تعمل منطقة", context: context, isSuccess: false);
+      cherryToast(text: "s_an_area_needs_at_least_3_points".tr(), context: context, isSuccess: false);
       return null;
     }
 
@@ -132,7 +134,7 @@ class _AddZoneViewState extends State<AddZoneView> {
             children: [
               SizedBox(height: AppConstants.height10(context)),
               Text(
-                widget.zoneData != null ? "تعديل المنطقة" : "اضافة منطقة جديدة",
+                widget.zoneData != null ? "s_edit_zone".tr() : "s_add_a_new_zone".tr(),
                 textAlign: TextAlign.center,
                 style: Styles.inter18500Black(context),
               ),
@@ -177,10 +179,10 @@ class _AddZoneViewState extends State<AddZoneView> {
                                 DefaultTextFormField(
                                   textInputType: TextInputType.text,
                                   controller: zoneName,
-                                  hintText: "ادخل اسم المنطقة",
+                                  hintText: "s_enter_the_zone_name".tr(),
                                   borderRadius: AppConstants.sp15(context),
-                                  validationMsg: "يجب ادخال اسم المنطقة",
-                                  fillColor: Colors.grey[100],
+                                  validationMsg: "s_zone_name_is_required".tr(),
+                                  fillColor: DsColor.fill,
                                   isFilled: true,
                                   hasBorder: false,
                                 ),
@@ -189,15 +191,15 @@ class _AddZoneViewState extends State<AddZoneView> {
                                 DefaultTextFormField(
                                   textInputType: TextInputType.number,
                                   controller: zoneCost,
-                                  hintText: "ادخل تكلفة التوصيل للمنطقة",
-                                  validationMsg: "يجب إدخال تكلفة التوصيل للمنطقة",
+                                  hintText: "s_enter_the_delivery_fee_for_the_zone".tr(),
+                                  validationMsg: "s_delivery_fee_for_the_zone_is_require".tr(),
                                   borderRadius: AppConstants.sp15(context),
-                                  fillColor: Colors.grey[100],
+                                  fillColor: DsColor.fill,
                                   isFilled: true,
                                   hasBorder: false,
                                 ),
                                 SizedBox(height: AppConstants.height5(context)),
-                                Divider(color: Colors.grey[200]),
+                                Divider(color: DsColor.border),
                                 SizedBox(height: AppConstants.height5(context)),
                                 BlocConsumer<AddZoneCubit, AddZoneStates>(
                                   listener: (context, addState) async {
@@ -264,13 +266,13 @@ class _AddZoneViewState extends State<AddZoneView> {
                                                   }
                                                 },
                                                 borderRadius: AppConstants.sp10(context),
-                                                text: widget.zoneData != null ? "تعديل المنطقة" : "حفظ المنطقة",
+                                                text: widget.zoneData != null ? "s_edit_zone".tr() : "s_save_zone".tr(),
                                               ),
                                             ),
                                             SizedBox(width: AppConstants.width10(context)),
                                             FloatingActionButton(
                                               heroTag: "delete_last",
-                                              tooltip: "مسح آخر نقطة",
+                                              tooltip: "s_remove_last_point".tr(),
                                               onPressed: removeLastPoint,
                                               backgroundColor: AppColors.secondaryColor,
                                               child: Icon(Icons.undo, color: Colors.white),

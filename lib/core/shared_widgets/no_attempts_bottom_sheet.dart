@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -54,14 +55,14 @@ class _NoAttemptsBottomSheetState extends State<NoAttemptsBottomSheet> {
                 borderRadius: BorderRadius.circular(
                   AppConstants.width20(context),
                 ),
-                color: Colors.grey.withOpacity(.3),
+                color: DsColor.textMuted.withOpacity(.3),
               ),
             ),
             SizedBox(height: AppConstants.height10(context)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("لا محاولات".tr(), style: Styles.inter18500Black(context)),
+                Text("s_no_spins".tr(), style: Styles.inter18500Black(context)),
               ],
             ),
             SizedBox(height: AppConstants.height15(context)),
@@ -74,13 +75,13 @@ class _NoAttemptsBottomSheetState extends State<NoAttemptsBottomSheet> {
                     children: [
                       SvgPicture.asset(AssetData.noSpin,width: MediaQuery.of(context).size.width*.3,color: AppColors.gray.withOpacity(.5),),
                       Text(
-                        "لا توجد ليدك اي محاولات اخري".tr(),
+                        "s_you_have_no_spins_left".tr(),
                         style: Styles.inter14600gray(context),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: AppConstants.height20(context)),
                       Text(
-                        "أبدا في التسوق وقم بعملية شراء حتي تتمكن من لعب عجلة الحظ الخاصة بك".tr(),
+                        "s_start_shopping_and_place_an_order_to".tr(),
                         style: Styles.inter14600gray(context),
                         textAlign: TextAlign.center,
                       ),
@@ -93,7 +94,7 @@ class _NoAttemptsBottomSheetState extends State<NoAttemptsBottomSheet> {
             DefaultButton(onPress: (){
               context.read<ChangeNavBarStatusCubit>().currentIndex=0;
               NavigationUtils.navigateReplacement(context: context, destinationScreen: MainLayoutView());
-            }, text: "أبدا التسوق الان",borderRadius: AppConstants.sp10(context),),
+            }, text: "s_start_shopping_now".tr(),borderRadius: AppConstants.sp10(context),),
             SizedBox(height: AppConstants.height20(context),),
 
           ],

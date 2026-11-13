@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_dropdown_formfield.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
@@ -46,7 +47,7 @@ class CategoryRowItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextFieldHeader(text: "الصنف"),
+                  TextFieldHeader(text: "s_category".tr()),
                   SizedBox(height: AppConstants.height5(context)),
                   BlocBuilder<GetCategoriesCubit, GetCategoriesStates>(
                     builder: (context, state) {
@@ -57,7 +58,7 @@ class CategoryRowItem extends StatelessWidget {
                       final categories = state.categoriesModel.data ?? [];
 
                       return CustomDropDownButton(
-                        hintText: "اختر الصنف",
+                        hintText: "s_choose_a_category_2".tr(),
                         value: selectCubit.mainCategory,
                         items: categories.map((e) => _categoryName(e)).toList(),
                         onChanged: (value) {
@@ -75,7 +76,7 @@ class CategoryRowItem extends StatelessWidget {
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "اختر الصنف الرئيسى";
+                            return "s_choose_the_main_category".tr();
                           }
                           return null;
                         },
@@ -91,7 +92,7 @@ class CategoryRowItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFieldHeader(
-                    text: "اختر الصنف الفرعى",
+                    text: "s_choose_a_subcategory".tr(),
                     isRequired: false,
                   ),
                   SizedBox(height: AppConstants.height5(context)),
@@ -114,7 +115,7 @@ class CategoryRowItem extends StatelessWidget {
                       final bool isEnabled = subItems.isNotEmpty;
 
                       return CustomDropDownButton(
-                        hintText: "اختر الصنف الفرعى",
+                        hintText: "s_choose_a_subcategory".tr(),
                         value: selectCubit.subCategory,
                         items: subItems.map((e) => _subCategoryName(e)).toList(),
                         onChanged: isEnabled

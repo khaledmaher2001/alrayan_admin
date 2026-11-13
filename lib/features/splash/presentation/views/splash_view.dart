@@ -2,7 +2,6 @@ import 'package:alrayan_admin/features/splash/presentation/views/widgets/splash_
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/utils/colors/colors.dart';
 
 class SplashView extends StatelessWidget {
   const SplashView({super.key});

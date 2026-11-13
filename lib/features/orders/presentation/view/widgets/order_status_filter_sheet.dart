@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -26,7 +27,7 @@ Future<void> showOrderStatusFilterSheet(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("فرز حسب الحالة", style: Styles.inter18500Black(sheetContext)),
+              Text("s_sort_by_status".tr(), style: Styles.inter18500Black(sheetContext)),
               SizedBox(height: AppConstants.height15(sheetContext)),
               ...List.generate(filterCubit.status.length, (index) {
                 final status = filterCubit.status[index];
@@ -45,7 +46,7 @@ Future<void> showOrderStatusFilterSheet(BuildContext context) {
                     color: selected ? AppColors.primaryColor : AppConstants.getTextColor(status),
                   ),
                   title: Text(
-                    isAll ? "الكل" : AppConstants.getStatusText(status),
+                    isAll ? "s_all".tr() : AppConstants.getStatusText(status),
                     style: Styles.inter16500black(sheetContext).copyWith(
                       color: selected ? AppColors.primaryColor : Colors.black,
                     ),

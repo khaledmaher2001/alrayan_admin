@@ -12,7 +12,7 @@ class GetProductsDetailsCubit extends Cubit<GetProductsDetailsStates> {
     var result = await productsRepo!.getProductDetails(productId: productId);
     return result.fold(
       (failure) {
-        emit(GetProductsDetailsErrorState());
+        emit(GetProductsDetailsErrorState(failure.errMessage));
       },
       (data) {
         emit(GetProductsDetailsSuccessState(productDetails: data));

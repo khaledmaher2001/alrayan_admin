@@ -55,7 +55,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:alrayan_admin/core/utils/services/remote_services/push_subscription_sync.dart';
 
+import 'core/utils/notification_navigation_handler.dart';
 import 'core/utils/roots/app_router.dart';
 import 'core/utils/services/local_services/cache_helper.dart';
 import 'core/utils/services/local_services/local_notification_service.dart';
@@ -93,13 +95,23 @@ Future<void> main() async {
   await CacheHelper.init();
   setup();
 
-  OneSignal.initialize("b0493d6a-f68a-48a8-a5c5-a8659369fc5a");
+  // Admin app's own OneSignal app (since 2026-11; channel alrayan_admin_sound).
+  OneSignal.initialize("1e191b8d-8107-43bd-aa57-bac068371a55");
+  PushSubscriptionSync.start();
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 
-  await OneSignal.Notifications.requestPermission(true);
+  // Ask once via the system prompt without blocking start-up; no English
+  // "go to settings" dialog on every launch for people who said no.
+  OneSignal.Notifications.requestPermission(false);
 
   await LocalNotificationService.initialize();
   await setupOneSignalForegroundNotifications();
+
+  // Tapping a push opens the screen it is about (foreground, background or
+  // cold start); the handler waits for the main layout before navigating.
+  OneSignal.Notifications.addClickListener((event) {
+    NotificationNavigationHandler.handleRaw(event.notification.additionalData);
+  });
 
   runApp(
     EasyLocalization(
@@ -317,12 +329,10 @@ class _AdminAppBootstrapState extends State<_AdminAppBootstrap>
     try {
       _didInitialLoad = true;
 
-      context.read<GetAllUsersCubit>().getAllUsers(
-        data: {'page': 1, 'limit': 12},
-      );
+      context.read<GetAllUsersCubit>().getAllUsers();
       context.read<GetTopUsersCubit>().getTopUsers();
       context.read<GetTopProductsCubit>().getTopProducts();
-      context.read<GetReviewsCubit>().getReviews(page: 1);
+      context.read<GetReviewsCubit>().getReviews();
       context.read<GetReviewsSummeryCubit>().getReviewsSummery();
       context.read<GetSettingsCubit>().getSettings();
       context.read<GetNotificationsCubit>().getNotifications();

@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +12,7 @@ Future<ImageSource?> showImageSourceSelector(BuildContext context) async {
   return showModalBottomSheet<ImageSource>(
     context: context,
     useSafeArea: true,
-    backgroundColor: Colors.red,
+    backgroundColor: DsColor.danger,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppConstants.width20(context))),
@@ -32,7 +34,7 @@ Future<ImageSource?> showImageSourceSelector(BuildContext context) async {
                 decoration: BoxDecoration(
                     borderRadius:
                         BorderRadius.circular(AppConstants.width20(context)),
-                    color: Colors.grey,),
+                    color: DsColor.textMuted,),
               ),
               SizedBox(height: AppConstants.height20(context)),
               GestureDetector(
@@ -51,7 +53,7 @@ Future<ImageSource?> showImageSourceSelector(BuildContext context) async {
                       Icon(CupertinoIcons.camera),
                       SizedBox(width: AppConstants.width10(context)),
                       Text(
-                        'فتح الكاميرا',
+                        "s_open_camera".tr(),
                         style: Styles.inter18500Black(context).copyWith(
                           color: Colors.black
                         ),
@@ -77,7 +79,7 @@ Future<ImageSource?> showImageSourceSelector(BuildContext context) async {
                       Icon(CupertinoIcons.photo_on_rectangle),
                       SizedBox(width: AppConstants.width10(context)),
                       Text(
-                        'فتح المعرض',
+                        "s_open_gallery".tr(),
                         style: Styles.inter18500Black(context).copyWith(
                             color: Colors.black
                         ),
@@ -93,7 +95,7 @@ Future<ImageSource?> showImageSourceSelector(BuildContext context) async {
                   color: Colors.black,
                 ),
                 title: Text(
-                  'اغلاق',
+                  "s_close".tr(),
                   style: Styles.inter16500black(context).copyWith(
                       color: Colors.black
                   ),

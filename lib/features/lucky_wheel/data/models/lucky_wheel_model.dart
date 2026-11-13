@@ -1,3 +1,5 @@
+import 'spin_wheel_config_model.dart';
+
 class LuckyWheelModel {
   bool? success;
   String? message;
@@ -23,13 +25,21 @@ class LuckyWheelModel {
 }
 
 class Data {
+  /// Staff: the lucky-time switch (orders placed now earn spins).
   bool? isActive;
   List<Rewards>? rewards;
+
+  /// Spins by order value (empty = 1 spin per delivered order).
+  List<SpinOrderRule> orderRules = [];
 
   Data({this.isActive, this.rewards});
 
   Data.fromJson(Map<String, dynamic> json) {
-    isActive = json['isActive'];
+    isActive = json['earningOpen'] ?? json['isActive'];
+    orderRules = [
+      for (final r in (json['orderRules'] as List? ?? const []))
+        if (r is Map) SpinOrderRule.fromJson(Map<String, dynamic>.from(r)),
+    ];
     if (json['rewards'] != null) {
       rewards = <Rewards>[];
       json['rewards'].forEach((v) {
@@ -64,6 +74,8 @@ class Rewards {
   String? description;
   String? expiresAt;
   String? minOrderAmount;
+  // Days a won coupon stays valid from the win (null = fixed date / 7 days).
+  int? validityDays;
 
   Rewards(
       {this.id,
@@ -98,6 +110,7 @@ class Rewards {
     description = json['description'];
     expiresAt = json['expiresAt'];
     minOrderAmount = json['minOrderAmount'];
+    validityDays = json['validityDays'] is num ? (json['validityDays'] as num).toInt() : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -117,6 +130,7 @@ class Rewards {
     data['description'] = this.description;
     data['expiresAt'] = this.expiresAt;
     data['minOrderAmount'] = this.minOrderAmount;
+    data['validityDays'] = this.validityDays;
     return data;
   }
 }

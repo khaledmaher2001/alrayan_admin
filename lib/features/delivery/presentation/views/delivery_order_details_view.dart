@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_cubit/file_picker_cubit/full_screen_image_viewer.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
@@ -77,7 +78,7 @@ class DeliveryOrderDetailsView extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.error_outline,
-                                color: Colors.red.shade300,
+                                color: DsColor.danger,
                                 size: 48,
                               ),
                               SizedBox(height: AppConstants.height10(context)),
@@ -230,7 +231,7 @@ class _OrderDetailsContent extends StatelessWidget {
                     "unassigned_order".tr(),
                     style: Styles.inter14500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
           ),
           SizedBox(height: AppConstants.height20(context)),
@@ -248,7 +249,7 @@ class _OrderDetailsContent extends StatelessWidget {
                     "no_delivery_proof".tr(),
                     style: Styles.inter14500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   )
                 : _DeliveryProofImage(imageUrl: order.deliveryProofImage!),
           ),
@@ -294,7 +295,7 @@ class _OrderDetailsContent extends StatelessWidget {
                   amount: "${order.shippingAmount ?? 0}",
                   padding: 0,
                 ),
-                Divider(color: Colors.grey.shade200),
+                Divider(color: DsColor.border),
                 PaymentAmountItem(
                   title: "total".tr(),
                   amount: "${order.totalAmount ?? 0}",
@@ -369,9 +370,7 @@ class _Section extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 4),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,7 +413,7 @@ class _PhoneRow extends StatelessWidget {
                   label,
                   style: Styles.inter14500black(
                     context,
-                  ).copyWith(color: Colors.grey.shade600),
+                  ).copyWith(color: DsColor.textMuted),
                 ),
                 Text(phone!, style: Styles.inter14600black(context)),
               ],
@@ -429,7 +428,7 @@ class _PhoneRow extends StatelessWidget {
                 vertical: AppConstants.height5(context),
               ),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: DsColor.success,
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
               ),
               child: Row(
@@ -517,16 +516,16 @@ class _NotesBanner extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(AppConstants.sp15(context)),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: DsColor.dangerBg,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        border: Border.all(color: Colors.red.shade200),
+        border: Border.all(color: DsColor.danger),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.error_outline,
-            color: Colors.red.shade700,
+            color: DsColor.danger,
             size: AppConstants.sp20(context),
           ),
           SizedBox(width: AppConstants.width10(context)),
@@ -537,7 +536,7 @@ class _NotesBanner extends StatelessWidget {
                 Text(
                   "notes".tr(),
                   style: Styles.inter14600black(context).copyWith(
-                    color: Colors.red.shade700,
+                    color: DsColor.danger,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -545,7 +544,7 @@ class _NotesBanner extends StatelessWidget {
                 Text(
                   notes,
                   style: Styles.inter14600black(context).copyWith(
-                    color: Colors.red.shade700,
+                    color: DsColor.danger,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -586,7 +585,7 @@ class _DeliveryProofImage extends StatelessWidget {
         SizedBox(height: AppConstants.height5(context)),
         Text(
           "delivery_proof_note".tr(),
-          style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+          style: Styles.inter12500Black(context).copyWith(color: DsColor.textMuted),
         ),
       ],
     );
@@ -605,7 +604,7 @@ class _DeliveryTimeline extends StatelessWidget {
         "delivery_stage_none".tr(),
         style: Styles.inter14500black(
           context,
-        ).copyWith(color: Colors.grey.shade600),
+        ).copyWith(color: DsColor.textMuted),
       );
     }
 
@@ -622,7 +621,7 @@ class _DeliveryTimeline extends StatelessWidget {
               children: [
                 Icon(
                   isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: isDone ? AppColors.primaryColor : Colors.grey.shade400,
+                  color: isDone ? AppColors.primaryColor : DsColor.textSubtle,
                   size: AppConstants.sp20(context),
                 ),
                 if (index != _deliveryStagesOrder.length - 1)
@@ -631,7 +630,7 @@ class _DeliveryTimeline extends StatelessWidget {
                     height: AppConstants.height20(context),
                     color: isDone
                         ? AppColors.primaryColor
-                        : Colors.grey.shade300,
+                        : DsColor.border,
                   ),
               ],
             ),
@@ -641,7 +640,7 @@ class _DeliveryTimeline extends StatelessWidget {
               child: Text(
                 deliveryStageLabel(stage),
                 style: Styles.inter14500black(context).copyWith(
-                  color: isDone ? Colors.black : Colors.grey.shade500,
+                  color: isDone ? Colors.black : DsColor.textMuted,
                   fontWeight: isDone ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),

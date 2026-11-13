@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
@@ -164,11 +166,11 @@ class AddEditProductItem extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "تأكيد الحذف",
+            "s_confirm_deletion".tr(),
             style: Styles.inter24600black(context),
           ),
           content: Text(
-            "هل أنت متأكد أنك تريد حذف المنتج؟",
+            "s_are_you_sure_you_want_to_delete_this_7".tr(),
             style: Styles.font18500Grey900(context),
           ),
           shape: RoundedRectangleBorder(
@@ -182,7 +184,7 @@ class AddEditProductItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(false);
               },
               child: Text(
-                "إلغاء",
+                "s_cancel".tr(),
                 style: Styles.inter18500Black(context),
               ),
             ),
@@ -194,7 +196,7 @@ class AddEditProductItem extends StatelessWidget {
                 Navigator.of(dialogContext).pop(true);
               },
               child: Text(
-                "حذف",
+                "s_delete".tr(),
                 style: Styles.inter16400white(context),
               ),
             ),
@@ -242,7 +244,7 @@ class AddEditProductItem extends StatelessWidget {
 
                     if (photosCubit.productPhotos.isEmpty) {
                       cherryToast(
-                        text: "يجب اختيار صور للمنتج اولا",
+                        text: "s_please_choose_product_images_first".tr(),
                         context: context,
                         isSuccess: false,
                       );
@@ -257,7 +259,7 @@ class AddEditProductItem extends StatelessWidget {
 
                     if (currentCategoryId == 0) {
                       cherryToast(
-                        text: "اختر الصنف الرئيسى",
+                        text: "s_choose_the_main_category".tr(),
                         context: context,
                         isSuccess: false,
                       );
@@ -276,7 +278,7 @@ class AddEditProductItem extends StatelessWidget {
                       ),
                     );
                   },
-                  text: "اضافة",
+                  text: "s_add_2".tr(),
                   borderRadius: AppConstants.sp10(context),
                 );
               },
@@ -317,7 +319,7 @@ class AddEditProductItem extends StatelessWidget {
 
                     if (!hasOldImages && !hasNewImages) {
                       cherryToast(
-                        text: "يجب اختيار صور للمنتج اولا",
+                        text: "s_please_choose_product_images_first".tr(),
                         context: context,
                         isSuccess: false,
                       );
@@ -332,7 +334,7 @@ class AddEditProductItem extends StatelessWidget {
 
                     if (currentCategoryId == 0) {
                       cherryToast(
-                        text: "اختر الصنف الرئيسى",
+                        text: "s_choose_the_main_category".tr(),
                         context: context,
                         isSuccess: false,
                       );
@@ -356,8 +358,8 @@ class AddEditProductItem extends StatelessWidget {
                       ),
                     );
                   },
-                  text: "تعديل",
-                  backgroundColor: Colors.green,
+                  text: "s_edit".tr(),
+                  backgroundColor: DsColor.success,
                   borderRadius: AppConstants.sp10(context),
                 );
               },

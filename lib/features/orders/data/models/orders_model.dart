@@ -37,9 +37,13 @@ class Items {
   dynamic discountAmount;
   dynamic shippingAmount;
   dynamic totalAmount;
+  // Money actually received / given back (server records, 2026-10-09).
+  dynamic amountCollected;
+  dynamic amountRefunded;
   ShippingAddress? shippingAddress;
   List<OrderItems>? orderItems;
   String? notes;
+  String? cancellationReason;
   String? shippedAt;
   String? deliveredAt;
   String? createdAt;
@@ -70,6 +74,8 @@ class Items {
   String? previousCourierPhone;
 
   Items.fromJson(Map<String, dynamic> json) {
+    amountCollected = json['amountCollected'];
+    amountRefunded = json['amountRefunded'];
     id = json['id'];
     orderNumber = json['orderNumber'];
     status = json['status'];
@@ -92,6 +98,7 @@ class Items {
     }
 
     notes = json['notes'];
+    cancellationReason = json['cancellationReason'];
     shippedAt = json['shippedAt'];
     deliveredAt = json['deliveredAt'];
     createdAt = json['createdAt'];
@@ -255,8 +262,15 @@ class OrderItems {
   dynamic discount;
   dynamic totalPrice;
   String? unit;
+  int? returnedQuantity;
+  // Shelf grouping sent by the server (items already arrive sorted by it).
+  ShelfCategory? mainCategory;
+  ShelfCategory? subCategory;
 
   OrderItems.fromJson(Map<String, dynamic> json) {
+    returnedQuantity = json['returnedQuantity'];
+    mainCategory = json['mainCategory'] is Map ? ShelfCategory.fromJson(Map<String, dynamic>.from(json['mainCategory'])) : null;
+    subCategory = json['subCategory'] is Map ? ShelfCategory.fromJson(Map<String, dynamic>.from(json['subCategory'])) : null;
     id = json['id'];
     productId = json['productId'];
     productName = json['productName'];
@@ -270,6 +284,24 @@ class OrderItems {
     discount = json['discount'];
     totalPrice = json['totalPrice'];
     unit = json['unit'];
+  }
+}
+
+class ShelfCategory {
+  int? id;
+  String? name;
+  String? nameEn;
+
+  ShelfCategory.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    nameEn = json['nameEn'];
+  }
+
+  String label(String languageCode) {
+    final en = (nameEn ?? '').isNotEmpty ? nameEn! : (name ?? '');
+    final ar = (name ?? '').isNotEmpty ? name! : (nameEn ?? '');
+    return languageCode == 'en' ? en : ar;
   }
 }
 

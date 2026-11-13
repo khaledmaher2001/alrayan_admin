@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -37,16 +39,16 @@ Future<void> showReopenOrderDialog({
           ),
           SizedBox(height: AppConstants.height10(context)),
           Text(
-            "إعادة فتح الطلب",
+            "s_reopen_order".tr(),
             textAlign: TextAlign.center,
             style: Styles.inter16500black(context),
           ),
           SizedBox(height: AppConstants.height10(context)),
           Text(
-            "سيتم إتاحة الطلب مرة أخرى لعمال التوصيل. هل أنت متأكد؟",
+            "s_the_order_will_be_made_available_to_".tr(),
             style: Styles.inter14500black(
               context,
-            ).copyWith(color: Colors.grey.shade700),
+            ).copyWith(color: DsColor.text2),
           ),
           SizedBox(height: AppConstants.height20(context)),
           Row(
@@ -65,7 +67,7 @@ Future<void> showReopenOrderDialog({
                     onConfirm();
                   },
                   child: Text(
-                    "إعادة فتح",
+                    "s_reopen".tr(),
                     style: Styles.inter16500black(
                       context,
                     ).copyWith(color: Colors.white),
@@ -75,10 +77,10 @@ Future<void> showReopenOrderDialog({
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
                 child: Text(
-                  "رجوع",
+                  "s_back_2".tr(),
                   style: Styles.inter16500black(
                     context,
-                  ).copyWith(color: Colors.grey.shade600),
+                  ).copyWith(color: DsColor.textMuted),
                 ),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/shimmer_helpers.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
@@ -22,9 +23,8 @@ class TopProductsViewBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: AppConstants.height20(context)),
           CustomAppBar(
-            title: "المنتجات الاكثر طلبا",
+            title: "s_best_sellers".tr(),
             textColor: Colors.black,
             withNotifications: false,
             hasBack: true,
@@ -33,7 +33,7 @@ class TopProductsViewBody extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
             child: Text(
-              "حاول توفير المنتجات الاكثر طلبا باستمرار",
+              "s_keep_the_most_requested_products_in_".tr(),
               style: Styles.inter14600gray(context),
             ),
           ),
@@ -44,7 +44,7 @@ class TopProductsViewBody extends StatelessWidget {
                 if (state is! GetTopProductsLoaded) return const _TopProductsShimmer();
                 if (state.users.isEmpty) {
                   return Center(
-                    child: Text("لا يوجد منتجات حتى الآن", style: Styles.inter14600gray(context)),
+                    child: Text("s_no_products_yet".tr(), style: Styles.inter14600gray(context)),
                   );
                 }
 
@@ -159,9 +159,6 @@ class _RankedProductItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
         border: isTopThree ? Border.all(color: rankColor.withOpacity(.3)) : null,
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-        ],
       ),
       child: Row(
         children: [
@@ -204,12 +201,12 @@ class _RankedProductItem extends StatelessWidget {
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 Text(
-                  "مباع ${product.totalSold ?? 0} مرة",
+                  "i_sold_x_times_87".tr(namedArgs: {"a": "${product.totalSold ?? 0}"}),
                   style: Styles.inter10400grey(context),
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 Text(
-                  "الإيراد: ${_formatMoney(product.revenue)} ج.م",
+                  "i_revenue_egp_x_88".tr(namedArgs: {"a": "${_formatMoney(product.revenue)}"}),
                   style: Styles.inter10400grey(context).copyWith(color: rankColor, fontWeight: FontWeight.w600),
                 ),
               ],

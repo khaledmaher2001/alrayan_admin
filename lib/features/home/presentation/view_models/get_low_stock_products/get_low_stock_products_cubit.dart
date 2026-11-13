@@ -1,10 +1,12 @@
 import 'package:bloc/bloc.dart';
+import 'package:alrayan_admin/core/shared_cubit/request_guard_mixin.dart';
 
 import '../../../data/models/low_stock_product_model.dart';
 import '../../../data/repo/home_repo.dart';
 import 'get_low_stock_products_state.dart';
 
-class GetLowStockProductsCubit extends Cubit<GetLowStockProductsState> {
+class GetLowStockProductsCubit extends Cubit<GetLowStockProductsState>
+    with RequestGuardMixin {
   GetLowStockProductsCubit(this.repo) : super(GetLowStockProductsInitial());
 
   final HomeRepo repo;
@@ -25,6 +27,7 @@ class GetLowStockProductsCubit extends Cubit<GetLowStockProductsState> {
       this.search = search.trim();
     }
 
+    final reqId = beginRequest();
     if (withLoading) {
       page = 1;
       hasMore = true;
@@ -37,7 +40,9 @@ class GetLowStockProductsCubit extends Cubit<GetLowStockProductsState> {
       page: page,
       limit: limit,
       search: this.search.isEmpty ? null : this.search,
+      cancelToken: requestCancelToken,
     );
+    if (!isCurrentRequest(reqId)) return;
     result.fold(
       (failure) => emit(GetLowStockProductsError(failure.errMessage)),
       (response) {
@@ -54,10 +59,19 @@ class GetLowStockProductsCubit extends Cubit<GetLowStockProductsState> {
   }
 
   Future<void> loadMore() async {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMore || isLoadingMore || isClosed) return;
     isLoadingMore = true;
     page++;
-    await getLowStockProducts(withLoading: false);
-    isLoadingMore = false;
+    try {
+      await getLowStockProducts(withLoading: false);
+    } finally {
+      if (!isClosed) isLoadingMore = false;
+    }
+  }
+
+  @override
+  Future<void> close() {
+    cancelInFlightRequest();
+    return super.close();
   }
 }

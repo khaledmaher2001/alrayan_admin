@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/ads/presentation/views/ads_view.dart';
@@ -47,7 +48,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
+                    color: DsColor.dangerBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: SvgPicture.asset(
@@ -63,7 +64,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
               children: [
                 Expanded(
                   child: Text(
-                    "تسجيل الخروج",
+                    "s_log_out".tr(),
                     textAlign: TextAlign.center,
                     style: Styles.inter16500black(context),
                   ),
@@ -72,10 +73,10 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
             ),
             SizedBox(height: AppConstants.height10(context)),
             Text(
-              "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+              "s_are_you_sure_you_want_to_log_out".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.grey.shade700),
+              ).copyWith(color: DsColor.text2),
             ),
             SizedBox(height: AppConstants.height20(context)),
             Row(
@@ -83,7 +84,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -94,7 +95,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       context.read<LogoutCubit>().logout();
                     },
                     child: Text(
-                      "تسجيل الخروج",
+                      "s_log_out".tr(),
                       style: Styles.inter16500black(
                         context,
                       ).copyWith(color: Colors.white),
@@ -104,10 +105,10 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(
-                    "إلغاء",
+                    "s_cancel".tr(),
                     style: Styles.inter16500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ),
               ],
@@ -123,7 +124,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
     return Column(
       children: [
         SizedBox(height: AppConstants.height10(context)),
-        Text("الحساب", style: Styles.inter18500Black(context)),
+        Text("s_account".tr(), style: Styles.inter18500Black(context)),
         SizedBox(height: AppConstants.height15(context)),
         Padding(
           padding: EdgeInsets.symmetric(
@@ -164,7 +165,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                                 borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
                               ),
                               child: Text(
-                                "مدير المتجر",
+                                "s_store_manager".tr(),
                                 style: Styles.inter12500Black(
                                   context,
                                 ).copyWith(color: Colors.white),
@@ -191,7 +192,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                         child: Padding(
                           padding: EdgeInsets.all(AppConstants.sp10(context)),
                           child: Image.asset(
-                            AssetData.logoBackSecondry,
+                            AssetData.logo,
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -220,14 +221,14 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  Text("إعدادات التشغيل", style: Styles.inter12400Primary(context)),
+                  Text("s_operations_settings".tr(), style: Styles.inter12400Primary(context)),
                   SizedBox(height: AppConstants.height10(context)),
                   GroupedSettingsCard(
                     children: [
                       GroupedSettingsItem(
                         icon: AssetData.update,
-                        title: "اعدادات النظام",
-                        subtitle: "إعدادات المتجر والتطبيق",
+                        title: "s_system_settings".tr(),
+                        subtitle: "s_store_and_app_settings".tr(),
                         onTap: () => NavigationUtils.navigateTo(
                           context: context,
                           destinationScreen: const SystemSettingsView(),
@@ -235,8 +236,8 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       ),
                       GroupedSettingsItem(
                         icon: AssetData.accountAddresses,
-                        title: "مناطق التوصيل",
-                        subtitle: "إدارة المناطق ورسوم التوصيل",
+                        title: "s_delivery_zones".tr(),
+                        subtitle: "s_manage_areas_and_delivery_fees".tr(),
                         onTap: () => NavigationUtils.navigateTo(
                           context: context,
                           destinationScreen: ZonesView(),
@@ -245,7 +246,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       GroupedSettingsItem(
                         icon: AssetData.delivery,
                         title: "delivery_management".tr(),
-                        subtitle: "المندوبون وحالات التوصيل",
+                        subtitle: "s_couriers_and_delivery_status".tr(),
                         onTap: () => NavigationUtils.navigateTo(
                           context: context,
                           destinationScreen: const DeliveryManagementView(),
@@ -255,14 +256,14 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                   ),
                   SizedBox(height: AppConstants.height20(context)),
 
-                  Text("التسويق والعروض", style: Styles.inter12400Primary(context)),
+                  Text("s_marketing_offers".tr(), style: Styles.inter12400Primary(context)),
                   SizedBox(height: AppConstants.height10(context)),
                   Row(
                     children: [
                       Expanded(
                         child: MarketingActionCard(
                           icon: AssetData.ads,
-                          title: "ادارة الاعلانات".tr(),
+                          title: "s_ads_management".tr(),
                           onTap: () => NavigationUtils.navigateTo(
                             context: context,
                             destinationScreen: const AdsView(),
@@ -273,7 +274,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                       Expanded(
                         child: MarketingActionCard(
                           icon: AssetData.wheel,
-                          title: "عجلة الحظ",
+                          title: "s_lucky_wheel".tr(),
                           onTap: () => NavigationUtils.navigateTo(
                             context: context,
                             destinationScreen: const LuckyWheelView(),
@@ -295,14 +296,14 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
                   ),
                   SizedBox(height: AppConstants.height20(context)),
 
-                  Text("الحماية", style: Styles.inter12400Primary(context)),
+                  Text("s_security".tr(), style: Styles.inter12400Primary(context)),
                   SizedBox(height: AppConstants.height10(context)),
                   GroupedSettingsCard(
                     children: [
                       GroupedSettingsItem(
                         icon: AssetData.accountPassword,
                         title: "change_password".tr(),
-                        subtitle: "تحديث كلمة المرور الخاصة بك",
+                        subtitle: "s_update_your_password".tr(),
                         onTap: () => NavigationUtils.navigateTo(
                           context: context,
                           destinationScreen: ChangePasswordView(),
@@ -325,7 +326,7 @@ class _ProfileViewBodyState extends State<ProfileViewBody> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: DsColor.danger,
                 ),
               );
             }

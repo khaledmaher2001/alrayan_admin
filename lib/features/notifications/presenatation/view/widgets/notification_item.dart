@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
@@ -5,7 +6,6 @@ import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:readmore/readmore.dart';
 
-import '../../../../../core/utils/services/local_services/cache_keys.dart';
 import '../../../data/model/notifications_model.dart';
 
 class NotificationItem extends StatelessWidget {
@@ -18,7 +18,6 @@ class NotificationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRead = data.recipients?.first.isRead ?? false;
-    final accentColor = isRead ? Colors.grey.shade300 : AppColors.primaryColor;
 
     // Stack + PositionedDirectional accent bar — not IntrinsicHeight (its
     // sizing pass isn't implemented safely by ReadMoreText's custom layout
@@ -82,8 +81,8 @@ class NotificationItem extends StatelessWidget {
                             trimLines: 2,
                             style: Styles.inter14500black(context).copyWith(color: const Color(0xff6A7282)),
                             colorClickableText: AppColors.primaryColor,
-                            trimCollapsedText: 'عرض المزيد',
-                            trimExpandedText: 'عرض اقل',
+                            trimCollapsedText: "s_show_more".tr(),
+                            trimExpandedText: "s_show_less".tr(),
                             lessStyle: Styles.inter14500black(context)
                                 .copyWith(color: AppColors.primaryColor, fontWeight: FontWeight.w600),
                             moreStyle: Styles.inter14500black(context).copyWith(
@@ -95,22 +94,12 @@ class NotificationItem extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.access_time_rounded,
-                              color: Colors.grey.shade400,
+                              color: DsColor.textSubtle,
                               size: AppConstants.sp15(context),
                             ),
                             SizedBox(width: AppConstants.width5(context)),
-                            Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: Text(DateFormat(
-                                  "d MMMM , y  h:mm a",
-                                  CacheKeysManger
-                                      .getUserLanguageFromCache())
-                                  .format(DateTime.parse(data.createdAt??
-                                  '')),
-                                  style: Styles.inter12500Black(context).copyWith(
-                                    color: Colors.grey.shade500,
-                                  )),
-                            ),
+                            // Shared date format (Latin digits, like every other date in the app).
+                            Text(DsFormat.dateTime(context, data.createdAt), style: DsText.caption),
                           ],
                         ),
                       ],
@@ -119,12 +108,6 @@ class NotificationItem extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          PositionedDirectional(
-            start: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(width: 4, color: accentColor),
           ),
         ],
       ),

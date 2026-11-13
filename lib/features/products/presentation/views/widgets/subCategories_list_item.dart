@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
@@ -59,7 +60,7 @@ class SubCategoriesListItem extends StatelessWidget {
                               border: Border.all(
                                 color: context.read<ChangeCategoryCubit>().selectedSubCategoryIndex == index
                                     ? AppColors.primaryColor
-                                    : Colors.grey,
+                                    : DsColor.textMuted,
                               ),
                             ),
                             child: Text(

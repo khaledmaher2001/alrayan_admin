@@ -23,7 +23,7 @@ class OrderStatusUi {
       case "refunded":
         return Icons.replay_circle_filled_rounded;
       default:
-        return Icons.grid_view_rounded; // "الكل"
+        return Icons.grid_view_rounded; // "s_all".tr()
     }
   }
 }

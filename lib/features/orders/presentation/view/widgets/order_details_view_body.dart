@@ -4,7 +4,6 @@ import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
-import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
 import 'package:alrayan_admin/features/delivery/presentation/views/widgets/delivery_order_item.dart' show deliveryStageLabel;
 import 'package:alrayan_admin/features/delivery_settings/presentation/view_model/get_app_settings/get_app_settings_cubit.dart';
@@ -12,6 +11,8 @@ import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
 import 'package:alrayan_admin/features/orders/presentation/utils/order_payment_labels.dart';
 import 'package:alrayan_admin/features/orders/presentation/utils/order_status_ui.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/order_product_row.dart';
+import 'package:alrayan_admin/features/orders/presentation/view/widgets/cancel_order_dialog.dart';
+import 'package:alrayan_admin/features/orders/presentation/view/widgets/order_money_section.dart';
 import 'package:alrayan_admin/features/orders/presentation/view/widgets/row_item.dart';
 import 'package:alrayan_admin/features/orders/data/models/orders_model.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/cancel_order/cancel_order_cubit.dart';
@@ -21,6 +22,7 @@ import 'package:alrayan_admin/features/orders/presentation/view_model/change_ord
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_order_details/get_order_details_cubit.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
@@ -59,9 +61,9 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
   }
 
   String getButtonText() {
-    if (currentStatus == "pending") return "تأكيد الطلب";
-    if (currentStatus == "confirmed") return "بدأ التوصيل";
-    if (currentStatus == "shipped") return "تم التوصيل";
+    if (currentStatus == "pending") return "s_confirm_order".tr();
+    if (currentStatus == "confirmed") return "s_delivery_started".tr();
+    if (currentStatus == "shipped") return "s_delivered".tr();
     return "";
   }
 
@@ -71,22 +73,22 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
   }
 
   String _formatDuration(Duration d) {
-    if (d.isNegative) return "0 دقيقة";
+    if (d.isNegative) return "s_0_min".tr();
     final days = d.inDays;
     final hours = d.inHours % 24;
     final minutes = d.inMinutes % 60;
     if (days > 0) {
-      return "$days يوم${hours > 0 ? ' و $hours ساعة' : ''}";
+      return "${"i_dur_days".tr(namedArgs: {"a": "$days"})}${hours > 0 ? "${"i_dur_and".tr()}${"i_dur_hours".tr(namedArgs: {"a": "$hours"})}" : ""}";
     } else if (hours > 0) {
-      return "$hours ساعة${minutes > 0 ? ' و $minutes دقيقة' : ''}";
+      return "${"i_dur_hours".tr(namedArgs: {"a": "$hours"})}${minutes > 0 ? "${"i_dur_and".tr()}${"i_dur_minutes".tr(namedArgs: {"a": "$minutes"})}" : ""}";
     }
-    return "$minutes دقيقة";
+    return "i_x_min_68".tr(namedArgs: {"a": "${minutes}"});
   }
 
   IconData _timingIcon(String label) {
-    if (label.contains("التجهيز")) return Icons.timer_outlined;
-    if (label.contains("الشحن")) return Icons.local_shipping_outlined;
-    if (label.contains("الإلغاء")) return Icons.cancel_outlined;
+    if (label.contains("s_preparation".tr())) return Icons.timer_outlined;
+    if (label.contains("s_shipping".tr())) return Icons.local_shipping_outlined;
+    if (label.contains("s_cancellation".tr())) return Icons.cancel_outlined;
     return Icons.access_time_rounded;
   }
 
@@ -107,7 +109,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       final cancelledAt = updatedAt ?? DateTime.now();
       rows.add(
         MapEntry(
-          "الوقت حتى الإلغاء",
+          "s_time_until_cancellation".tr(),
           _formatDuration(cancelledAt.difference(createdAt)),
         ),
       );
@@ -120,7 +122,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       if (processingEnd != null) {
         rows.add(
           MapEntry(
-            "مدة التجهيز",
+            "s_preparation_time".tr(),
             _formatDuration(processingEnd.difference(createdAt)),
           ),
         );
@@ -132,7 +134,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
         if (shippingEnd != null) {
           rows.add(
             MapEntry(
-              "مدة الشحن",
+              "s_shipping_time".tr(),
               _formatDuration(shippingEnd.difference(shippedAt)),
             ),
           );
@@ -143,8 +145,8 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       rows.add(
         MapEntry(
           currentStatus == "delivered"
-              ? "إجمالي الوقت حتى التوصيل"
-              : "الوقت المنقضي",
+              ? "s_total_time_to_delivery".tr()
+              : "s_time_elapsed".tr(),
           _formatDuration(totalEnd.difference(createdAt)),
         ),
       );
@@ -178,7 +180,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
     final header = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: AppConstants.sp20(context), color: AppColors.secondaryColor),
+        Icon(icon, size: AppConstants.sp20(context), color: AppColors.primaryColor),
         SizedBox(width: AppConstants.width10(context)),
         Text(title, style: Styles.inter16500black(context)),
       ],
@@ -213,17 +215,17 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
-          border: Border.all(color: AppColors.secondaryColor),
+          border: Border.all(color: AppColors.primaryColor),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              label ?? "اتصال",
+              label ?? "s_call".tr(),
               style: Styles.inter14500black(context).copyWith(fontWeight: FontWeight.w600),
             ),
             SizedBox(width: AppConstants.width5(context)),
-            Icon(Icons.call_rounded, size: AppConstants.sp15(context), color: AppColors.secondaryColor),
+            Icon(Icons.call_rounded, size: AppConstants.sp15(context), color: AppColors.primaryColor),
           ],
         ),
       ),
@@ -243,7 +245,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(context, icon: Icons.person_rounded, title: "بيانات العميل"),
+          _sectionHeader(context, icon: Icons.person_rounded, title: "s_customer_details".tr()),
           SizedBox(height: AppConstants.height15(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -288,11 +290,11 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
             SizedBox(height: AppConstants.height10(context)),
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: _callButton(context, address!.phone2!, label: "اتصال (2)"),
+              child: _callButton(context, address!.phone2!, label: "s_call_2".tr()),
             ),
           ],
           SizedBox(height: AppConstants.height15(context)),
-          Divider(height: 1, color: Colors.grey.shade200),
+          Divider(height: 1, color: DsColor.border),
           SizedBox(height: AppConstants.height15(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,17 +328,17 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
-                        border: Border.all(color: AppColors.secondaryColor),
+                        border: Border.all(color: AppColors.primaryColor),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            "فتح الخريطة",
+                            "s_open_map".tr(),
                             style: Styles.inter14500black(context).copyWith(fontWeight: FontWeight.w600),
                           ),
                           SizedBox(width: AppConstants.width5(context)),
-                          Icon(Icons.map_rounded, size: AppConstants.sp15(context), color: AppColors.secondaryColor),
+                          Icon(Icons.map_rounded, size: AppConstants.sp15(context), color: AppColors.primaryColor),
                         ],
                       ),
                     ),
@@ -363,7 +365,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "ملاحظات مهمه",
+                          "s_important_notes".tr(),
                           style: Styles.inter14500black(context).copyWith(color: AppColors.primaryColor),
                         ),
                         SizedBox(height: AppConstants.height5(context)),
@@ -389,6 +391,25 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+          ],
+          if ((widget.orderData.cancellationReason ?? '').isNotEmpty) ...[
+            SizedBox(height: AppConstants.height15(context)),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(AppConstants.sp10(context)),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(.08),
+                borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("s_cancellation_reason".tr(), style: Styles.inter14500black(context).copyWith(color: Colors.red)),
+                  SizedBox(height: AppConstants.height5(context)),
+                  Text(widget.orderData.cancellationReason!, style: Styles.inter14500black(context)),
                 ],
               ),
             ),
@@ -438,7 +459,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: AppConstants.width15(context)),
-              child: VerticalDivider(width: 1, color: Colors.grey.shade200),
+              child: VerticalDivider(width: 1, color: DsColor.border),
             ),
             Expanded(
               child: Column(
@@ -469,7 +490,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(context, icon: Icons.delivery_dining_rounded, title: "بيانات المندوب"),
+          _sectionHeader(context, icon: Icons.delivery_dining_rounded, title: "s_courier_details".tr()),
           SizedBox(height: AppConstants.height10(context)),
           Row(
             children: [
@@ -479,7 +500,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                   children: [
                     Text(
                       "courier_name".tr(),
-                      style: Styles.inter14500black(context).copyWith(color: Colors.grey.shade600),
+                      style: Styles.inter14500black(context).copyWith(color: DsColor.textMuted),
                     ),
                     Text(
                       details.deliveryUser!.fullName ?? '-',
@@ -499,7 +520,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
           ),
           if (hasProof) ...[
             SizedBox(height: AppConstants.height10(context)),
-            Text("delivery_proof".tr(), style: Styles.inter14500black(context).copyWith(color: Colors.grey.shade600)),
+            Text("delivery_proof".tr(), style: Styles.inter14500black(context).copyWith(color: DsColor.textMuted)),
             SizedBox(height: AppConstants.height5(context)),
             InkWell(
               onTap: () => FullScreenImageViewer.show(context, details.deliveryProofImage!),
@@ -564,13 +585,13 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader(context, icon: Icons.receipt_long_rounded, title: "ملخص الحساب"),
+          _sectionHeader(context, icon: Icons.receipt_long_rounded, title: "s_bill_summary".tr()),
           SizedBox(height: AppConstants.height15(context)),
-          _summaryRow(context, "تكلفة المنتجات", "${widget.orderData.subtotal} ج.م"),
-          _summaryRow(context, "رسوم التوصيل", "${widget.orderData.shippingAmount} ج.م"),
+          _summaryRow(context, "s_products_cost".tr(), "${widget.orderData.subtotal} ${"s_egp".tr()}"),
+          _summaryRow(context, "s_delivery_fees".tr(), "${widget.orderData.shippingAmount} ${"s_egp".tr()}"),
           if ((widget.orderData.discountAmount ?? 0).toString() != "0")
-            _summaryRow(context, "الخصم", "- ${widget.orderData.discountAmount} ج.م", color: AppColors.redColor),
-          Divider(height: AppConstants.height20(context), color: Colors.grey.shade200),
+            _summaryRow(context, "s_discount".tr(), "- ${widget.orderData.discountAmount} ${"s_egp".tr()}", color: AppColors.redColor),
+          Divider(height: AppConstants.height20(context), color: DsColor.border),
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(
@@ -584,12 +605,12 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("الإجمالي", style: Styles.inter16500black(context)),
+                Text("s_total".tr(), style: Styles.inter16500black(context)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "${widget.orderData.totalAmount} ج.م",
+                      "${widget.orderData.totalAmount} ${"s_egp".tr()}",
                       style: Styles.inter18500Black(context).copyWith(color: AppColors.primaryColor),
                     ),
                     SizedBox(width: AppConstants.width10(context)),
@@ -615,10 +636,10 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
     final items = widget.orderData.orderItems ?? [];
     final count = items.length;
     final countLabel = count == 1
-        ? "منتج واحد"
+        ? "s_one_product".tr()
         : count == 2
-            ? "منتجان"
-            : "$count منتجات";
+            ? "s_two_products".tr()
+            : "i_x_products_73".tr(namedArgs: {"a": "${count}"});
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +647,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
         _sectionHeader(
           context,
           icon: Icons.inventory_2_rounded,
-          title: "المنتجات",
+          title: "s_products".tr(),
           trailing: Container(
             padding: EdgeInsets.symmetric(
               horizontal: AppConstants.width10(context),
@@ -640,97 +661,80 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
           ),
         ),
         SizedBox(height: AppConstants.height10(context)),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) => OrderProductRow(item: items[index]),
-          separatorBuilder: (context, index) => SizedBox(height: AppConstants.height10(context)),
-          itemCount: items.length,
-        ),
+        for (final group in _groupByShelf(context, items)) ...[
+          _shelfHeader(context, group),
+          SizedBox(height: AppConstants.height10(context)),
+          for (final item in group.items) ...[
+            OrderProductRow(item: item),
+            SizedBox(height: AppConstants.height10(context)),
+          ],
+        ],
       ],
     );
   }
 
+  /// Consecutive items of the same main + subcategory form one shelf group; the
+  /// server already sorts items by the catalog's category order.
+  List<_ShelfGroup> _groupByShelf(BuildContext context, List<OrderItems> items) {
+    final lang = context.locale.languageCode;
+    final groups = <_ShelfGroup>[];
+    for (final item in items) {
+      final key = '${item.mainCategory?.id ?? '-'}:${item.subCategory?.id ?? '-'}';
+      if (groups.isNotEmpty && groups.last.key == key) {
+        groups.last.items.add(item);
+        continue;
+      }
+      final main = item.mainCategory?.label(lang) ?? '';
+      groups.add(_ShelfGroup(
+        key: key,
+        main: main.isNotEmpty ? main : "s_no_category".tr(),
+        sub: item.subCategory?.label(lang) ?? '',
+        items: [item],
+      ));
+    }
+    return groups;
+  }
+
+  Widget _shelfHeader(BuildContext context, _ShelfGroup group) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConstants.width10(context),
+        vertical: AppConstants.height5(context),
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xffF5F6FA),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                text: group.main,
+                style: Styles.inter14600black(context),
+                children: [
+                  if (group.sub.isNotEmpty)
+                    TextSpan(text: '  ›  ${group.sub}', style: Styles.inter14600gray(context)),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text('${group.items.length}', style: Styles.inter14600gray(context)),
+        ],
+      ),
+    );
+  }
+
+  // Same reason dialog as the awaiting-customer card, so both cancel paths send {"reason": ...}.
   void _confirmCancel(BuildContext context, CancelOrderCubit cubit) {
-    showDialog(
+    showCancelOrderDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.white,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.cancel_outlined, size: MediaQuery.of(context).size.width * .08, color: AppColors.redColor),
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.height10(context)),
-            Text(
-              "إلغاء الطلب",
-              textAlign: TextAlign.center,
-              style: Styles.inter16500black(context),
-            ),
-            SizedBox(height: AppConstants.height10(context)),
-            Text(
-              "هل أنت متأكد من إلغاء الطلب رقم ${widget.orderData.orderNumber ?? ''}؟",
-              style: Styles.inter14500black(
-                context,
-              ).copyWith(color: Colors.grey.shade700),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "لا يمكن التراجع عن هذا الإجراء",
-              style: Styles.inter14500black(
-                context,
-              ).copyWith(color: Colors.red.shade400),
-            ),
-            SizedBox(height: AppConstants.height20(context)),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                      cubit.cancelOrder(orderId: widget.orderData.id!);
-                    },
-                    child: Text(
-                      "تأكيد الإلغاء",
-                      style: Styles.inter16500black(
-                        context,
-                      ).copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(
-                    "تراجع",
-                    style: Styles.inter16500black(
-                      context,
-                    ).copyWith(color: Colors.grey.shade600),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      onConfirm: (reason) => cubit.cancelOrder(
+        orderId: widget.orderData.id!,
+        data: {"reason": reason},
       ),
     );
   }
@@ -751,7 +755,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
+                    color: DsColor.dangerBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: SvgPicture.asset(
@@ -764,23 +768,23 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
             ),
             SizedBox(height: AppConstants.height10(context)),
             Text(
-              "استرداد قيمة الطلب",
+              "s_full_order_return".tr(),
               textAlign: TextAlign.center,
               style: Styles.inter16500black(context),
             ),
             SizedBox(height: AppConstants.height10(context)),
             Text(
-              "هل أنت متأكد من استرداد قيمة هذا الطلب بمبلغ ${widget.orderData.totalAmount} ${"lE!".tr()}؟",
+              "s_all_products_are_recorded_as_returne".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.grey.shade700),
+              ).copyWith(color: DsColor.text2),
             ),
             const SizedBox(height: 4),
             Text(
-              "لا يمكن التراجع عن هذا الإجراء",
+              "s_this_action_can_t_be_undone".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.red.shade400),
+              ).copyWith(color: DsColor.danger),
             ),
             SizedBox(height: AppConstants.height20(context)),
             Row(
@@ -788,7 +792,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -802,7 +806,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                       );
                     },
                     child: Text(
-                      "تأكيد الاسترداد",
+                      "s_confirm_full_return".tr(),
                       style: Styles.inter16500black(
                         context,
                       ).copyWith(color: Colors.white),
@@ -812,10 +816,10 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(
-                    "إلغاء",
+                    "s_cancel".tr(),
                     style: Styles.inter16500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ),
               ],
@@ -827,131 +831,73 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(child: Text("تفاصيل الطلب",textAlign: TextAlign.center, style: Styles.inter18500Black(context))),
-              ],
-            ),
-            SizedBox(height: AppConstants.height5(context) / 2),
-            Text(
-              widget.orderData.orderNumber ?? '',
-              style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB), letterSpacing: 0.5),
-            ),
-          ],
-        ),
-        PositionedDirectional(
-          start: 0,
-          child: InkWell(
-            onTap: () => NavigationUtils.navigateBack(context: context),
-            borderRadius: BorderRadius.circular(100),
-            child: Container(
-              width: AppConstants.width20(context) * 2.2,
-              height: AppConstants.width20(context) * 2.2,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.gray.withValues(alpha: .15)),
-              child: Icon(Icons.arrow_back_rounded, color: Colors.black),
-            ),
-          ),
-        ),
-      ],
-    );
+    return DsTopBar(title: "s_order_details".tr(), subtitle: DsFormat.orderNo(widget.orderData.orderNumber));
   }
 
+  /// Status header in the status's own colour (light tint + dark text, readable),
+  /// with the order timings underneath.
   Widget _buildStatusCard(BuildContext context) {
-    final statusColor = AppConstants.getTextColor(currentStatus);
+    final fg = AppConstants.getTextColor(currentStatus);
     final timingRows = _timingRows();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(DsSpace.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(DsRadius.lg),
+        border: Border.all(color: fg.withValues(alpha: .35)),
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            color: AppColors.secondaryColor,
-            padding: EdgeInsets.all(AppConstants.sp15(context)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(color: AppConstants.getStatusColor(currentStatus), borderRadius: BorderRadius.circular(DsRadius.md)),
+                child: Icon(OrderStatusUi.icon(currentStatus), color: fg, size: 26),
+              ),
+              const SizedBox(width: DsSpace.md),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "حالة الطلب",
-                            style: Styles.inter14500black(context).copyWith(color: Colors.white70),
-                          ),
-                          SizedBox(height: AppConstants.height5(context)),
-                          Row(
-                            children: [
-                              Text(
-                                AppConstants.getStatusText(currentStatus),
-                                style: Styles.inter18500Black(context).copyWith(color: Colors.white),
-                              ),
-                              SizedBox(width: AppConstants.width10(context)),
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(AppConstants.sp10(context)),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                      ),
-                      child: Icon(OrderStatusUi.icon(currentStatus), color: AppColors.secondaryColor, size: 28),
-                    ),
+                    Text("s_order_status_2".tr(), style: DsText.caption),
+                    const SizedBox(height: 2),
+                    Text(AppConstants.getStatusText(currentStatus), style: DsText.heading.copyWith(color: fg)),
                   ],
                 ),
-                if (timingRows.isNotEmpty) ...[
-                  SizedBox(height: AppConstants.height15(context)),
-                  Divider(height: 1, color: Colors.white.withValues(alpha: .12)),
-                  SizedBox(height: AppConstants.height15(context)),
+              ),
+            ],
+          ),
+          if (timingRows.isNotEmpty) ...[
+            const SizedBox(height: DsSpace.md),
+            const Divider(height: 1, color: DsColor.divider),
+            const SizedBox(height: DsSpace.md),
+            Wrap(
+              spacing: DsSpace.xl,
+              runSpacing: DsSpace.sm,
+              children: [
+                for (final row in timingRows)
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (var i = 0; i < timingRows.length; i++) ...[
-                        if (i != 0)
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: AppConstants.width10(context)),
-                            child: Container(width: 1, height: 18, color: Colors.white.withValues(alpha: .2)),
-                          ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "${timingRows[i].key}  ",
-                              style: Styles.inter14500black(context).copyWith(color: Colors.white70, fontSize: 12),
-                            ),
-                            Text(
-                              timingRows[i].value,
-                              style: Styles.inter14500black(context).copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-                            ),
-                            SizedBox(width: AppConstants.width5(context)),
-                            Icon(_timingIcon(timingRows[i].key), size: 14, color: Colors.white70),
-                          ],
-                        ),
-                      ],
+                      Icon(_timingIcon(row.key), size: 16, color: DsColor.textMuted),
+                      const SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(row.key, style: DsText.caption),
+                          Text(row.value, style: DsText.bodyStrong),
+                        ],
+                      ),
                     ],
                   ),
-                ],
               ],
             ),
-          ),
-          Container(height: 4, color: statusColor),
+          ],
         ],
       ),
     );
@@ -971,13 +917,9 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height10(context)),
-          Padding(
-            padding: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
-            child: _buildHeader(context),
-          ),
-          SizedBox(height: AppConstants.height15(context)),
-          Divider(height: 1, color: Colors.grey.shade200),
+          _buildHeader(context),
+          const SizedBox(height: DsSpace.sm),
+          Divider(height: 1, color: DsColor.border),
 
           Expanded(
             child: ListView(
@@ -1000,6 +942,11 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildPaymentDeliveryCard(context, details),
+                        SizedBox(height: AppConstants.height15(context)),
+                        OrderMoneySection(
+                          order: details,
+                          onChanged: () => context.read<GetOrderDetailsCubit>().getOrderDetails(orderId: details.id!),
+                        ),
                         if (hasCourier) ...[
                           SizedBox(height: AppConstants.height15(context)),
                           _buildCourierSection(context, details),
@@ -1057,7 +1004,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                                     context,
                                     context.read<CancelOrderCubit>(),
                                   ),
-                                  text: "إلغاء الطلب",
+                                  text: "s_cancel_order".tr(),
                                   borderRadius: AppConstants.sp30(context) * 3,
                                   height: AppConstants.height15(context),
                                   hasBorder: true,
@@ -1110,12 +1057,21 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                               return state is ChangeOrderStatusLoadingState
                                   ? const CustomLoadingItem()
                                   : DefaultButton(
-                                      onPress: () {
+                                      // Moving an order forward is consequential: ask first.
+                                      onPress: () async {
+                                        final next = getNextStatus();
+                                        final ok = await dsConfirm(
+                                          context,
+                                          title: getButtonText(),
+                                          message: "ord_move_confirm".tr(namedArgs: {"s": AppConstants.getStatusText(next)}),
+                                          confirmLabel: getButtonText(),
+                                        );
+                                        if (!ok || !context.mounted) return;
                                         context
                                             .read<ChangeOrderStatusCubit>()
                                             .changeOrderStatus(
                                               orderId: widget.orderData.id!,
-                                              data: {"status": getNextStatus()},
+                                              data: {"status": next},
                                             );
                                       },
                                       text: getButtonText(),
@@ -1137,13 +1093,13 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                         vertical: AppConstants.height15(context),
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: DsColor.fill,
                         borderRadius: BorderRadius.circular(AppConstants.sp30(context) * 3),
                       ),
                       child: Text(
                         "awaiting_courier_update".tr(),
                         textAlign: TextAlign.center,
-                        style: Styles.inter14500black(context).copyWith(color: Colors.grey.shade700),
+                        style: Styles.inter14500black(context).copyWith(color: DsColor.text2),
                       ),
                     ),
                   ),
@@ -1185,7 +1141,7 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
                                         context,
                                         context.read<ChangeOrderStatusCubit>(),
                                       ),
-                                      text: "استرداد قيمة الطلب",
+                                      text: "s_refund_the_order".tr(),
                                       borderRadius: AppConstants.sp30(context) * 3,
                                       height: AppConstants.height15(context),
                                       hasBorder: true,
@@ -1235,4 +1191,13 @@ class _OrderDetailsViewBodyState extends State<OrderDetailsViewBody> {
       ),
     );
   }
+}
+
+class _ShelfGroup {
+  _ShelfGroup({required this.key, required this.main, required this.sub, required this.items});
+
+  final String key;
+  final String main;
+  final String sub;
+  final List<OrderItems> items;
 }

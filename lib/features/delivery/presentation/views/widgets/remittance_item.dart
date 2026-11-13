@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -49,7 +50,7 @@ class RemittanceItem extends StatelessWidget {
               builder: (context, state) {
                 final isLoading = state is UpdateRemittanceStatusLoadingState;
                 final accentColor = _isUnknownStatus
-                    ? Colors.grey.shade500
+                    ? DsColor.textMuted
                     : AppColors.primaryColor;
                 return Container(
                   padding: EdgeInsets.all(AppConstants.sp15(context)),
@@ -57,21 +58,11 @@ class RemittanceItem extends StatelessWidget {
                     horizontal: AppConstants.width20(context),
                   ),
                   decoration: BoxDecoration(
-                    color: _isUnknownStatus ? Colors.grey.shade50 : Colors.white,
+                    color: _isUnknownStatus ? DsColor.page : Colors.white,
                     borderRadius: BorderRadius.circular(
                       AppConstants.sp15(context),
                     ),
-                    border: _isUnknownStatus
-                        ? Border.all(color: Colors.grey.shade200)
-                        : null,
-                    boxShadow: _isUnknownStatus
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              blurRadius: 6,
-                            ),
-                          ],
+                    border: Border.all(color: DsColor.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,11 +120,11 @@ class RemittanceItem extends StatelessWidget {
                                   "remittance_amount".tr(),
                                   style: Styles.inter12500Black(
                                     context,
-                                  ).copyWith(color: Colors.grey.shade600),
+                                  ).copyWith(color: DsColor.textMuted),
                                 ),
                                 Text(
                                   remittance.amount != null
-                                      ? "${remittance.amount!.toStringAsFixed(2)} ج.م"
+                                      ? "${remittance.amount!.toStringAsFixed(2)} ${"s_egp".tr()}"
                                       : "-",
                                   style: TextStyle(
                                     fontSize: AppConstants.sp20(context) * 1.1,
@@ -178,7 +169,7 @@ class RemittanceItem extends StatelessWidget {
                       ),
                       if (_isPending) ...[
                         SizedBox(height: AppConstants.height10(context)),
-                        Divider(color: Colors.grey.shade100, height: 1),
+                        Divider(color: DsColor.fill, height: 1),
                         SizedBox(height: AppConstants.height10(context)),
                         if (isLoading)
                           CustomLoadingItem(
@@ -191,7 +182,7 @@ class RemittanceItem extends StatelessWidget {
                                 child: _ActionButton(
                                   label: "approve".tr(),
                                   icon: Icons.check_circle_outline,
-                                  color: Colors.green.shade600,
+                                  color: DsColor.success,
                                   filled: true,
                                   onTap: () => _confirm(context, isApprove: true),
                                 ),
@@ -231,7 +222,7 @@ class RemittanceItem extends StatelessWidget {
 
   void _confirm(BuildContext context, {required bool isApprove}) {
     final cubit = context.read<UpdateRemittanceStatusCubit>();
-    final color = isApprove ? Colors.green.shade600 : AppColors.redColor;
+    final color = isApprove ? DsColor.success : AppColors.redColor;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -275,27 +266,27 @@ class RemittanceItem extends StatelessWidget {
                   : "confirm_reject_remittance_message".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.grey.shade700),
+              ).copyWith(color: DsColor.text2),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: DsColor.page,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: DsColor.border),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Colors.grey.shade500,
+                    color: DsColor.textMuted,
                     size: 18,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "${"remittance_amount".tr()}: ${remittance.amount != null ? remittance.amount!.toStringAsFixed(2) : '-'} ج.م",
+                      "${"remittance_amount".tr()}: ${remittance.amount != null ? remittance.amount!.toStringAsFixed(2) : '-'} ${"s_egp".tr()}",
                       style: Styles.inter14500black(context),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -338,7 +329,7 @@ class RemittanceItem extends StatelessWidget {
                     "cancel".tr(),
                     style: Styles.inter16500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ),
               ],
@@ -361,35 +352,24 @@ class _StatusBadge extends StatelessWidget {
     final String label;
     switch (status) {
       case 'pending':
-        color = Colors.orange.shade700;
+        color = DsColor.warning;
         label = "remittance_status_pending".tr();
         break;
       case 'approved':
-        color = Colors.green.shade600;
+        color = DsColor.success;
         label = "remittance_status_approved".tr();
         break;
       case 'rejected':
-        color = AppColors.redColor;
+        color = DsColor.danger;
         label = "remittance_status_rejected".tr();
         break;
       default:
-        color = Colors.grey.shade500;
+        color = DsColor.textMuted;
         label = "remittance_status_unknown".tr();
     }
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppConstants.width10(context),
-        vertical: AppConstants.height5(context) / 2,
-      ),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-      ),
-      child: Text(
-        label,
-        style: Styles.inter12500Black(context).copyWith(color: Colors.white),
-      ),
-    );
+    // Same dot + text on a faint tint as every other status in the app.
+    final bg = color == DsColor.warning ? DsColor.warningBg : color == DsColor.success ? DsColor.successBg : color == DsColor.textMuted ? DsColor.fill : DsColor.dangerBg;
+    return DsStatusBadge(status: null, label: label, fg: color, bg: bg);
   }
 }
 

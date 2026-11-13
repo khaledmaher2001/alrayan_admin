@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -30,11 +32,11 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
   // يسمح فقط بأرقام صحيحة موجبة (بدون فاصلة عشرية وبدون إشارة سالبة)
   String? _positiveIntegerValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "هذا الحقل مطلوب";
+      return "s_this_field_is_required_2".tr();
     }
     final number = int.tryParse(value.trim());
     if (number == null || number <= 0) {
-      return "يجب إدخال رقم صحيح موجب";
+      return "s_enter_a_valid_positive_number".tr();
     }
     return null;
   }
@@ -42,11 +44,11 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
   // يسمح بأرقام موجبة صحيحة أو عشرية (بدون إشارة سالبة)
   String? _positiveNumberValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "هذا الحقل مطلوب";
+      return "s_this_field_is_required_2".tr();
     }
     final number = double.tryParse(value.trim());
     if (number == null || number <= 0) {
-      return "يجب إدخال رقم موجب";
+      return "s_enter_a_positive_number".tr();
     }
     return null;
   }
@@ -69,9 +71,8 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height20(context)),
           CustomAppBar(
-            title: "اعدادات نقاط الولاء",
+            title: "s_loyalty_points_settings".tr(),
             textColor: Colors.black,
             hasBack: true,
             withNotifications: false,
@@ -108,13 +109,13 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                             ),
                             decoration: BoxDecoration(
                               color: enabled
-                                  ? Colors.green.shade50
-                                  : Colors.grey.shade100,
+                                  ? DsColor.successBg
+                                  : DsColor.fill,
                               borderRadius: BorderRadius.circular(
                                 AppConstants.sp10(context),
                               ),
                               border: Border.all(
-                                color: enabled ? Colors.green : Colors.grey,
+                                color: enabled ? DsColor.success : DsColor.textMuted,
                               ),
                             ),
                             child: Row(
@@ -125,18 +126,18 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "تفعيل نظام نقاط الولاء",
+                                        "s_enable_loyalty_points".tr(),
                                         style: Styles.inter14500black(
                                           context,
                                         ),
                                       ),
                                       Text(
-                                        enabled ? "مفعل" : "غير مفعل",
+                                        enabled ? "s_enabled".tr() : "s_disabled".tr(),
                                         style: Styles.inter12500Black(context)
                                             .copyWith(
                                               color: enabled
-                                                  ? Colors.green
-                                                  : Colors.grey.shade600,
+                                                  ? DsColor.success
+                                                  : DsColor.textMuted,
                                             ),
                                       ),
                                     ],
@@ -144,7 +145,7 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                                 ),
                                 Switch(
                                   value: enabled,
-                                  activeThumbColor: Colors.green,
+                                  activeThumbColor: DsColor.success,
                                   onChanged: (value) {
                                     setState(() {
                                       enabled = value;
@@ -156,20 +157,20 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "نسبة اكتساب النقاط",
-                            hint: "مثال: 5",
+                            title: "s_points_earning_rate".tr(),
+                            hint: "s_e_g_5".tr(),
                             controller: pointsEarnRatioController,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                             ],
-                            validationText: "هذا الحقل مطلوب",
+                            validationText: "s_this_field_is_required_2".tr(),
                             validator: _positiveIntegerValidator,
                           ),
                           SizedBox(height: AppConstants.height20(context)),
                           CustomCouponField(
-                            title: "قيمة استبدال النقطة",
-                            hint: "مثال: 0.5",
+                            title: "s_point_redemption_value".tr(),
+                            hint: "s_e_g_0_5".tr(),
                             controller: pointsRedeemValueController,
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
@@ -179,7 +180,7 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                                 RegExp(r'^\d*\.?\d*'),
                               ),
                             ],
-                            validationText: "هذا الحقل مطلوب",
+                            validationText: "s_this_field_is_required_2".tr(),
                             validator: _positiveNumberValidator,
                           ),
                         ],
@@ -243,7 +244,7 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                   backgroundColor: isLoading
                       ? AppColors.primaryColor.shade500
                       : AppColors.primaryColor,
-                  text: isLoading ? "" : "تحديث البيانات",
+                  text: isLoading ? "" : "s_update".tr(),
                   borderRadius: AppConstants.sp10(context),
                 );
               },
@@ -251,8 +252,8 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                 if (state is UpdateLoyaltyConfigSuccessState) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text("تم تحديث بيانات نقاط الولاء بنجاح"),
-                      backgroundColor: Colors.green,
+                      content: Text("s_loyalty_points_settings_updated".tr()),
+                      backgroundColor: DsColor.success,
                     ),
                   );
                   context.read<GetLoyaltyConfigCubit>().getLoyaltyConfig();
@@ -260,7 +261,7 @@ class _LoyaltySettingsViewBodyState extends State<LoyaltySettingsViewBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.errorMessage),
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                     ),
                   );
                 }

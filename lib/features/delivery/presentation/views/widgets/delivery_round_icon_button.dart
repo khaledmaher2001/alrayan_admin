@@ -1,11 +1,8 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:flutter/material.dart';
 
-/// Pink-circle, red-icon round button used across the "الدليفري" screens'
-/// headers (back/forward, filter, edit) — the design language every
-/// delivery screen shares, distinct from the app-wide grey [CustomBackButton].
+/// Header icon button used by the delivery screens (back, filter, edit).
 class DeliveryRoundIconButton extends StatelessWidget {
   const DeliveryRoundIconButton({
     super.key,
@@ -27,16 +24,11 @@ class DeliveryRoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(AppConstants.sp10(context)),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor.withOpacity(.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: AppColors.primaryColor, size: 20),
-      ),
+    // Same neutral 48dp icon button as every other top bar.
+    return IconButton(
+      onPressed: onTap,
+      constraints: const BoxConstraints.tightFor(width: DsSize.touch, height: DsSize.touch),
+      icon: Icon(icon == Icons.arrow_back ? Icons.arrow_back_rounded : icon, color: DsColor.text),
     );
   }
 }

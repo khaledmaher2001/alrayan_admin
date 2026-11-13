@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -6,6 +8,7 @@ import 'package:alrayan_admin/features/home/data/models/inventory_analytics_mode
 import 'package:alrayan_admin/features/home/data/models/low_stock_product_model.dart';
 import 'package:alrayan_admin/features/home/data/models/sales_report_model.dart';
 import 'package:alrayan_admin/features/home/presentation/views/inventory_analytics_view.dart';
+import 'package:alrayan_admin/features/home/presentation/views/item_analytics_view.dart';
 import 'package:alrayan_admin/features/home/presentation/views/low_stock_products_view.dart';
 import 'package:alrayan_admin/features/home/presentation/views/sales_report_details_view.dart';
 import 'package:flutter/material.dart';
@@ -23,16 +26,16 @@ class SalesReportSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (error != null) {
-      return const HomeFeatureErrorCard(
-        title: "تقارير المبيعات",
-        message: "تعذر تحميل تقرير المبيعات حاليا",
+      return HomeFeatureErrorCard(
+        title: "s_sales_reports".tr(),
+        message: "s_couldn_t_load_the_sales_report_right".tr(),
       );
     }
 
     if (report == null) {
-      return const HomeFeatureEmptyCard(
-        title: "تقارير المبيعات",
-        message: "لا يوجد تقرير مبيعات متاح حاليا",
+      return HomeFeatureEmptyCard(
+        title: "s_sales_reports".tr(),
+        message: "s_no_sales_report_available_right_now".tr(),
       );
     }
 
@@ -45,8 +48,8 @@ class SalesReportSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           HomeSectionHeader(
-            title: "تقارير المبيعات",
-            subtitle: "ملخص أداء الطلبات والمبيعات خلال آخر 30 يوم",
+            title: "s_sales_reports".tr(),
+            subtitle: "s_orders_and_sales_performance_over_th".tr(),
             trailing: HomeViewAllButton(
               onTap: () {
                 NavigationUtils.navigateTo(
@@ -61,8 +64,8 @@ class SalesReportSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _ReportHeroItem(
-                  title: "إجمالي المبيعات",
-                  value: "${_formatNumber(summary?.totalRevenue)} ج",
+                  title: "s_total_sales".tr(),
+                  value: "${_formatNumber(summary?.totalRevenue)} ${"s_egp".tr()}",
                   color: AppColors.primarySwatchColor,
                 ),
               ),
@@ -73,7 +76,7 @@ class SalesReportSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _ReportHeroItem(
-                  title: "عدد الطلبات",
+                  title: "s_orders".tr(),
                   value: _formatNumber(summary?.totalOrders),
                   color: AppColors.secondaryColor,
                 ),
@@ -81,36 +84,36 @@ class SalesReportSection extends StatelessWidget {
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _ReportHeroItem(
-                  title: "صافي الربح",
-                  value: "${_formatNumber(summary?.totalNetProfit)} ج",
-                  color: Colors.green,
+                  title: "s_net_profit".tr(),
+                  value: "${_formatNumber(summary?.totalNetProfit)} ${"s_egp".tr()}",
+                  color: DsColor.success,
                 ),
               ),
             ],
           ),
           SizedBox(height: AppConstants.height20(context)),
           _ProgressMetric(
-            title: "نسبة اكتمال الطلبات",
+            title: "s_order_completion_rate".tr(),
             value: breakdown?.completionRate,
-            color: Colors.green,
+            color: DsColor.success,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة إلغاء الطلبات",
+            title: "s_order_cancellation_rate".tr(),
             value: breakdown?.cancellationRate,
-            color: Colors.red,
+            color: DsColor.danger,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة الطلبات المسترجعة",
+            title: "s_returned_orders_rate".tr(),
             value: _percentage(breakdown?.refundedOrders, totalOrders),
-            color: Colors.grey,
+            color: DsColor.textMuted,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة الطلبات المعلقة",
+            title: "s_pending_orders_rate".tr(),
             value: _percentage(breakdown?.pendingOrders, totalOrders),
-            color: Colors.orange,
+            color: DsColor.warning,
           ),
         ],
       ),
@@ -135,17 +138,17 @@ class SalesReportDetailsContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const HomeSectionHeader(
-            title: "تفاصيل تقارير المبيعات",
-            subtitle: "كل مؤشرات الطلبات والمبيعات والعملاء",
+          HomeSectionHeader(
+            title: "s_sales_report_details".tr(),
+            subtitle: "s_all_order_sales_and_customer_indicat".tr(),
           ),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             children: [
               Expanded(
                 child: _ReportHeroItem(
-                  title: "إجمالي المبيعات",
-                  value: "${_formatNumber(summary?.totalRevenue)} ج",
+                  title: "s_total_sales".tr(),
+                  value: "${_formatNumber(summary?.totalRevenue)} ${"s_egp".tr()}",
                   color: AppColors.primarySwatchColor,
                 ),
               ),
@@ -156,7 +159,7 @@ class SalesReportDetailsContent extends StatelessWidget {
             children: [
               Expanded(
                 child: _ReportHeroItem(
-                  title: "عدد الطلبات",
+                  title: "s_orders".tr(),
                   value: _formatNumber(summary?.totalOrders),
                   color: AppColors.secondaryColor,
                 ),
@@ -164,9 +167,9 @@ class SalesReportDetailsContent extends StatelessWidget {
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _ReportHeroItem(
-                  title: "صافي الربح",
-                  value: "${_formatNumber(summary?.totalNetProfit)} ج",
-                  color: Colors.green,
+                  title: "s_net_profit".tr(),
+                  value: "${_formatNumber(summary?.totalNetProfit)} ${"s_egp".tr()}",
+                  color: DsColor.success,
                 ),
               ),
             ],
@@ -177,83 +180,83 @@ class SalesReportDetailsContent extends StatelessWidget {
             runSpacing: AppConstants.height10(context),
             children: [
               _SmallMetricChip(
-                title: "متوسط الطلب",
-                value: "${_formatNumber(summary?.averageOrderValue)} ج",
+                title: "s_average_order".tr(),
+                value: "${_formatNumber(summary?.averageOrderValue)} ${"s_egp".tr()}",
               ),
               _SmallMetricChip(
-                title: "القطع المباعة",
+                title: "s_items_sold".tr(),
                 value: _formatNumber(summary?.totalItemsSold),
               ),
               _SmallMetricChip(
-                title: "إجمالي الخصم",
-                value: "${_formatNumber(summary?.totalDiscountGiven)} ج",
+                title: "s_total_discount".tr(),
+                value: "${_formatNumber(summary?.totalDiscountGiven)} ${"s_egp".tr()}",
               ),
               _SmallMetricChip(
-                title: "إيراد الشحن",
-                value: "${_formatNumber(summary?.totalShippingRevenue)} ج",
+                title: "s_delivery_revenue".tr(),
+                value: "${_formatNumber(summary?.totalShippingRevenue)} ${"s_egp".tr()}",
               ),
               _SmallMetricChip(
-                title: "طلبات مكتملة",
+                title: "s_completed_orders".tr(),
                 value: _formatNumber(breakdown?.completedOrders),
               ),
               _SmallMetricChip(
-                title: "طلبات معلقة",
+                title: "s_pending_orders".tr(),
                 value: _formatNumber(breakdown?.pendingOrders),
               ),
               _SmallMetricChip(
-                title: "طلبات ملغية",
+                title: "s_cancelled_orders_2".tr(),
                 value: _formatNumber(breakdown?.cancelledOrders),
               ),
               _SmallMetricChip(
-                title: "طلبات مسترجعة",
+                title: "s_returned_orders".tr(),
                 value: _formatNumber(breakdown?.refundedOrders),
               ),
             ],
           ),
           SizedBox(height: AppConstants.height20(context)),
           _ProgressMetric(
-            title: "نسبة اكتمال الطلبات",
+            title: "s_order_completion_rate".tr(),
             value: breakdown?.completionRate,
-            color: Colors.green,
+            color: DsColor.success,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة إلغاء الطلبات",
+            title: "s_order_cancellation_rate".tr(),
             value: breakdown?.cancellationRate,
-            color: Colors.red,
+            color: DsColor.danger,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة الطلبات المسترجعة",
+            title: "s_returned_orders_rate".tr(),
             value: _percentage(breakdown?.refundedOrders, totalOrders),
-            color: Colors.grey,
+            color: DsColor.textMuted,
           ),
           SizedBox(height: AppConstants.height10(context)),
           _ProgressMetric(
-            title: "نسبة الطلبات المعلقة",
+            title: "s_pending_orders_rate".tr(),
             value: _percentage(breakdown?.pendingOrders, totalOrders),
-            color: Colors.orange,
+            color: DsColor.warning,
           ),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             children: [
               Expanded(
                 child: _InsightBox(
-                  title: "عملاء مختلفين",
+                  title: "s_unique_customers_2".tr(),
                   value: _formatNumber(insights?.uniqueCustomers),
                 ),
               ),
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _InsightBox(
-                  title: "عملاء متكررين",
+                  title: "s_returning_customers".tr(),
                   value: _formatNumber(insights?.returningCustomers),
                 ),
               ),
               SizedBox(width: AppConstants.width10(context)),
               Expanded(
                 child: _InsightBox(
-                  title: "طلب/عميل",
+                  title: "s_orders_customer".tr(),
                   value: _formatNumber(insights?.averageOrdersPerCustomer),
                 ),
               ),
@@ -262,7 +265,7 @@ class SalesReportDetailsContent extends StatelessWidget {
           if (products.isNotEmpty) ...[
             SizedBox(height: AppConstants.height20(context)),
             Text(
-              "أفضل المنتجات في التقرير",
+              "s_top_products_in_the_report".tr(),
               style: Styles.inter14500black(context),
             ),
             SizedBox(height: AppConstants.height10(context)),
@@ -289,16 +292,16 @@ class LowStockProductsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (error != null) {
-      return const HomeFeatureErrorCard(
-        title: "المخزون المنخفض",
-        message: "تعذر تحميل المنتجات منخفضة المخزون حاليا",
+      return HomeFeatureErrorCard(
+        title: "s_low_stock".tr(),
+        message: "s_couldn_t_load_low_stock_products_rig".tr(),
       );
     }
 
     if (products.isEmpty) {
-      return const HomeFeatureEmptyCard(
-        title: "المخزون المنخفض",
-        message: "كل المنتجات مخزونها جيد حاليا",
+      return HomeFeatureEmptyCard(
+        title: "s_low_stock".tr(),
+        message: "s_all_products_are_well_stocked".tr(),
       );
     }
 
@@ -307,8 +310,8 @@ class LowStockProductsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           HomeSectionHeader(
-            title: "المخزون المنخفض",
-            subtitle: "منتجات وصلت لحد منخفض وتحتاج متابعة",
+            title: "s_low_stock".tr(),
+            subtitle: "s_products_that_reached_a_low_level_an".tr(),
             trailing: Row(
               children: [
                 // Matches the limit GetHomeStatisticsCubit fetches for this preview.
@@ -351,9 +354,9 @@ class InventoryAnalyticsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (error != null) {
-      return const HomeFeatureErrorCard(
-        title: "تحليل المخزون",
-        message: "تعذر تحميل تحليل المخزون حاليا",
+      return HomeFeatureErrorCard(
+        title: "s_stock_analysis".tr(),
+        message: "s_couldn_t_load_the_stock_analysis_rig".tr(),
       );
     }
 
@@ -367,9 +370,9 @@ class InventoryAnalyticsSection extends StatelessWidget {
       );
 
     if (displayedItems.isEmpty) {
-      return const HomeFeatureEmptyCard(
-        title: "تحليل المخزون",
-        message: "لا يوجد بيانات تحليل مخزون حاليا",
+      return HomeFeatureEmptyCard(
+        title: "s_stock_analysis".tr(),
+        message: "s_no_stock_analysis_data_right_now".tr(),
       );
     }
 
@@ -378,8 +381,8 @@ class InventoryAnalyticsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           HomeSectionHeader(
-            title: "تحليل المخزون",
-            subtitle: "تابع المتاح والمباع ونسبة دوران المنتج",
+            title: "s_stock_analysis".tr(),
+            subtitle: "s_track_available_and_sold_stock_and_t".tr(),
             trailing: HomeViewAllButton(
               onTap: () {
                 NavigationUtils.navigateTo(
@@ -391,7 +394,20 @@ class InventoryAnalyticsSection extends StatelessWidget {
           ),
           SizedBox(height: AppConstants.height20(context)),
           ...displayedItems.take(2).map(
-                (item) => InventoryAnalyticsListItem(item: item),
+                (item) => InventoryAnalyticsListItem(
+                  item: item,
+                  onTap: item.id == null
+                      ? null
+                      : () {
+                          NavigationUtils.navigateTo(
+                            context: context,
+                            destinationScreen: ItemAnalyticsView(
+                              productId: item.id!,
+                              productName: item.name,
+                            ),
+                          );
+                        },
+                ),
               ),
         ],
       ),
@@ -406,20 +422,14 @@ class HomeAnalyticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Design-system surface: white, 1px line, 16 radius, no shadow.
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppConstants.sp20(context)),
+      padding: const EdgeInsets.all(DsSpace.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 3,
-            offset: const Offset(0, 0),
-          ),
-        ],
+        color: DsColor.surface,
+        borderRadius: BorderRadius.circular(DsRadius.lg),
+        border: Border.all(color: DsColor.border),
       ),
       child: child,
     );
@@ -446,9 +456,9 @@ class HomeSectionHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Styles.inter16500black(context)),
-              SizedBox(height: AppConstants.height5(context)),
-              Text(subtitle, style: Styles.inter10400grey(context)),
+              Text(title, style: DsText.subheading),
+              const SizedBox(height: 2),
+              Text(subtitle, style: DsText.caption),
             ],
           ),
         ),
@@ -465,24 +475,21 @@ class HomeViewAllButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppConstants.width15(context),
-          vertical: AppConstants.height10(context) / 1.5,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor.shade50,
-          borderRadius: BorderRadius.circular(AppConstants.sp5(context)),
-        ),
-        child: Text(
-          "عرض الكل",
-          style: Styles.inter10400grey(context).copyWith(
-            color: AppColors.primaryColor,
-          ),
-        ),
+    // Tertiary text action with a full 48dp touch target.
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        minimumSize: const Size(48, DsSize.touch),
+        padding: const EdgeInsets.symmetric(horizontal: DsSpace.sm),
+        foregroundColor: DsColor.primary,
+        textStyle: DsText.label,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text("s_view_all".tr()),
+          const Icon(Icons.chevron_right_rounded, size: 18),
+        ],
       ),
     );
   }
@@ -503,7 +510,7 @@ class HomeFeatureErrorCard extends StatelessWidget {
     return HomeAnalyticsCard(
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.red.shade700),
+          Icon(Icons.error_outline, color: DsColor.danger),
           SizedBox(width: AppConstants.width10(context)),
           Expanded(
             child: Column(
@@ -729,14 +736,14 @@ class _TopReportProductItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  "مباع ${_formatNumber(product.quantitySold)} مرة",
+                  "i_sold_x_times_42".tr(namedArgs: {"a": "${_formatNumber(product.quantitySold)}"}),
                   style: Styles.inter10400grey(context),
                 ),
               ],
             ),
           ),
           Text(
-            "${_formatNumber(product.revenue)} ج",
+            "${_formatNumber(product.revenue)} ${"s_egp".tr()}",
             style: Styles.inter14500black(context),
           ),
         ],
@@ -754,7 +761,7 @@ class LowStockProductListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final stock = product.currentStock ?? 0;
     final isCritical = stock <= 1;
-    final color = isCritical ? Colors.red : Colors.orange;
+    final color = isCritical ? DsColor.danger : DsColor.warning;
 
     return Padding(
       padding: EdgeInsets.only(bottom: AppConstants.height10(context)),
@@ -788,7 +795,7 @@ class LowStockProductListItem extends StatelessWidget {
                   ),
                   SizedBox(height: AppConstants.height5(context)),
                   Text(
-                    "المباع: ${_formatNumber(product.sold)}",
+                    "i_sold_x_44".tr(namedArgs: {"a": "${_formatNumber(product.sold)}"}),
                     style: Styles.inter10400grey(context),
                   ),
                 ],
@@ -804,7 +811,7 @@ class LowStockProductListItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
               ),
               child: Text(
-                "المتاح ${_formatNumber(stock)}",
+                "i_available_x_45".tr(namedArgs: {"a": "${_formatNumber(stock)}"}),
                 style: Styles.inter12500Black(context).copyWith(color: color),
               ),
             ),
@@ -816,16 +823,21 @@ class LowStockProductListItem extends StatelessWidget {
 }
 
 class InventoryAnalyticsListItem extends StatelessWidget {
-  const InventoryAnalyticsListItem({super.key, required this.item});
+  const InventoryAnalyticsListItem({
+    super.key,
+    required this.item,
+    this.onTap,
+  });
 
   final InventoryAnalyticsModel item;
+  final VoidCallback? onTap;
 
   /// Sell-through rate is already computed by the API — this just maps
   /// that existing number onto a color scale so it reads at a glance.
   Color _rateColor(double rate) {
     if (rate >= 70) return const Color(0xFF1C9A6C); // fast-moving
     if (rate >= 30) return AppColors.primaryColor; // normal
-    return Colors.orange.shade700; // slow-moving
+    return DsColor.warning; // slow-moving
   }
 
   @override
@@ -833,9 +845,12 @@ class InventoryAnalyticsListItem extends StatelessWidget {
     final rate = (item.sellThroughRate ?? 0).clamp(0, 100).toDouble();
     final rateColor = _rateColor(rate);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppConstants.height5(context)),
-      child: Column(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: AppConstants.height5(context)),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -859,7 +874,7 @@ class InventoryAnalyticsListItem extends StatelessWidget {
               ),
               SizedBox(width: AppConstants.width10(context)),
               Text(
-                "${_formatNumber(item.currentPrice)} ج",
+                "${_formatNumber(item.currentPrice)} ${"s_egp".tr()}",
                 style: Styles.inter12500Black(context).copyWith(
                   color: AppColors.primaryColor,
                   fontWeight: FontWeight.w700,
@@ -884,20 +899,21 @@ class InventoryAnalyticsListItem extends StatelessWidget {
             children: [
               _InventoryStatChip(
                 icon: Icons.widgets_outlined,
-                label: "المتاح ${_formatNumber(item.currentStock)}",
+                label: "i_available_x_47".tr(namedArgs: {"a": "${_formatNumber(item.currentStock)}"}),
               ),
               _InventoryStatChip(
                 icon: Icons.shopping_bag_outlined,
-                label: "مباع ${_formatNumber(item.totalSold)}",
+                label: "i_sold_x_48".tr(namedArgs: {"a": "${_formatNumber(item.totalSold)}"}),
               ),
               _InventoryStatChip(
                 icon: Icons.trending_up_rounded,
-                label: "دوران ${_formatNumber(item.sellThroughRate)}%",
+                label: "i_turnover_x_49".tr(namedArgs: {"a": "${_formatNumber(item.sellThroughRate)}"}),
                 color: rateColor,
               ),
             ],
           ),
         ],
+        ),
       ),
     );
   }
@@ -955,13 +971,13 @@ class _CountBadge extends StatelessWidget {
         vertical: AppConstants.height5(context),
       ),
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+        color: DsColor.warningBg,
         borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
       ),
       child: Text(
-        isAtLeast ? "$count+ منتج" : "$count منتج",
+        isAtLeast ? "i_x_products_50".tr(namedArgs: {"a": "${count}"}) : "i_x_products_51".tr(namedArgs: {"a": "${count}"}),
         style: Styles.inter12500Black(context).copyWith(
-          color: Colors.orange.shade800,
+          color: DsColor.warning,
         ),
       ),
     );
@@ -970,7 +986,7 @@ class _CountBadge extends StatelessWidget {
 
 String _safeName(String? value) {
   final name = value?.trim() ?? '';
-  if (name.isEmpty || name == '.' || name == '٠') return "منتج بدون اسم";
+  if (name.isEmpty || name == '.' || name == '٠') return "s_unnamed_product".tr();
   return name;
 }
 

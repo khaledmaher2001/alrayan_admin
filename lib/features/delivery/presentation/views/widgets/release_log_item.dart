@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
@@ -50,7 +51,7 @@ class ReleaseLogItem extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: AppConstants.height15(context)),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: DsColor.border),
                     SizedBox(height: AppConstants.height10(context)),
                     _InfoLine(
                       label: "order_number".tr(),
@@ -238,7 +239,7 @@ class _StatusTransition extends StatelessWidget {
           child: _StatusChip(
             label: "status_before".tr(),
             status: before,
-            color: Colors.grey.shade600,
+            color: DsColor.textMuted,
           ),
         ),
         Padding(
@@ -248,7 +249,7 @@ class _StatusTransition extends StatelessWidget {
           child: Icon(
             Icons.arrow_back_rounded,
             size: AppConstants.sp15(context),
-            color: Colors.grey.shade500,
+            color: DsColor.textMuted,
           ),
         ),
         Expanded(
@@ -365,10 +366,7 @@ class _Timeline extends StatelessWidget {
             ),
             SizedBox(width: AppConstants.width10(context)),
             Text(
-              DateFormat(
-                "d MMMM yyyy",
-                CacheKeysManger.getUserLanguageFromCache(),
-              ).format(date),
+              dsLatin(DateFormat("d MMMM yyyy", CacheKeysManger.getUserLanguageFromCache()).format(date)),
               style: Styles.inter14500black(context),
             ),
           ],
@@ -382,7 +380,7 @@ class _Timeline extends StatelessWidget {
                 child: Container(
                   width: 1,
                   height: AppConstants.height15(context),
-                  color: Colors.grey.shade300,
+                  color: DsColor.border,
                 ),
               ),
             ),
@@ -390,17 +388,14 @@ class _Timeline extends StatelessWidget {
             Icon(
               Icons.access_time_rounded,
               size: 14,
-              color: Colors.grey.shade500,
+              color: DsColor.textMuted,
             ),
             SizedBox(width: AppConstants.width5(context)),
             Text(
-              DateFormat(
-                "hh:mm a",
-                CacheKeysManger.getUserLanguageFromCache(),
-              ).format(date),
+              dsLatin(DateFormat("hh:mm a", CacheKeysManger.getUserLanguageFromCache()).format(date)),
               style: Styles.inter12500Black(
                 context,
-              ).copyWith(color: Colors.grey.shade600),
+              ).copyWith(color: DsColor.textMuted),
             ),
           ],
         ),

@@ -1,6 +1,6 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_cubit.dart';
 import 'package:alrayan_admin/features/home/presentation/view_models/get_home_statistics/get_home_statistics_states.dart';
@@ -8,6 +8,7 @@ import 'package:alrayan_admin/features/orders/presentation/utils/order_status_ui
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 int? _baseCountForStatus(HomeStatisticsModel? model, String? status) {
@@ -35,10 +36,10 @@ class StatusFilterList extends StatelessWidget {
         : homeStats.ordersModel;
 
     return SizedBox(
-      height: MediaQuery.of(context).size.height * .105,
+      height: 48,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(vertical: 1),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         itemBuilder: (context, index) {
           final status = filterCubit.status[index];
           final isAll = status == null;
@@ -50,7 +51,7 @@ class StatusFilterList extends StatelessWidget {
             children: [
               if (index == 0) SizedBox(width: AppConstants.width15(context)),
               _StatusFilterCard(
-                label: isAll ? "الكل" : AppConstants.getStatusText(status),
+                label: isAll ? "s_all".tr() : AppConstants.getStatusText(status),
                 status: status,
                 isAll: isAll,
                 selected: selected,
@@ -75,6 +76,8 @@ class StatusFilterList extends StatelessWidget {
   }
 }
 
+/// Filter chip: label + live count, status icon; the selected one is filled
+/// with the brand colour. 40dp tall inside a 48dp row.
 class _StatusFilterCard extends StatelessWidget {
   const _StatusFilterCard({
     required this.label,
@@ -96,65 +99,50 @@ class _StatusFilterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = selected ? AppColors.secondaryColor : Colors.white;
-    final fg = selected ? Colors.white : const Color(0xff0F0F0E);
+    final fg = selected ? Colors.white : DsColor.text;
     final iconColor = selected ? Colors.white : AppConstants.getTextColor(status);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            constraints: BoxConstraints(minWidth: AppConstants.width50(context) * 1.5),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppConstants.width15(context),
-              vertical: AppConstants.height10(context),
-            ),
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-              border: Border.all(color: selected ? bg : const Color(0xffE3E7EC)),
-            ),
-            child: Column(
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$label $count',
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? AppColors.primaryColor : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DsRadius.pill),
+          side: BorderSide(color: selected ? AppColors.primaryColor : DsColor.border),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const StadiumBorder(),
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: DsSpace.md),
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: Styles.inter14500black(context).copyWith(color: fg, fontWeight: FontWeight.w600),
-                    ),
-                    if (!isAll) ...[
-                      SizedBox(width: AppConstants.width5(context)),
-                      Icon(OrderStatusUi.icon(status), size: 16, color: iconColor),
-                    ],
-                  ],
+                if (!isAll) ...[
+                  Icon(OrderStatusUi.icon(status), size: 16, color: iconColor),
+                  const SizedBox(width: 6),
+                ],
+                Text(label, style: DsText.body.copyWith(color: fg, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: selected ? Colors.white.withValues(alpha: .22) : DsColor.page,
+                    borderRadius: BorderRadius.circular(DsRadius.pill),
+                  ),
+                  child: Text(DsFormat.count(count), style: DsText.label.copyWith(color: fg)),
                 ),
-                SizedBox(height: AppConstants.height5(context)),
-                Text(
-                  "$count",
-                  style: Styles.inter18500Black(context).copyWith(color: fg),
-                ),
+                if (showDot) ...[
+                  const SizedBox(width: 6),
+                  Container(width: 8, height: 8, decoration: const BoxDecoration(color: DsColor.danger, shape: BoxShape.circle)),
+                ],
               ],
             ),
           ),
-          if (showDot)
-            PositionedDirectional(
-              top: -4,
-              end: -4,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

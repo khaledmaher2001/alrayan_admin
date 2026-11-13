@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/shimmer_helpers.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -24,9 +26,8 @@ class TopUsersViewBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: AppConstants.height20(context)),
           CustomAppBar(
-            title: "العملاء الاكثر طلبا",
+            title: "s_top_customers".tr(),
             textColor: Colors.black,
             withNotifications: false,
             hasBack: true,
@@ -35,7 +36,7 @@ class TopUsersViewBody extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
             child: Text(
-              "حاول انشاء كوبونات خصم تشجيعا للعملاء الاكثر طلبا",
+              "s_create_discount_coupons_to_reward_yo".tr(),
               style: Styles.inter14600gray(context),
             ),
           ),
@@ -46,7 +47,7 @@ class TopUsersViewBody extends StatelessWidget {
                 if (state is! GetTopUsersLoaded) return const _TopUsersShimmer();
                 if (state.users.isEmpty) {
                   return Center(
-                    child: Text("لا يوجد عملاء حتى الآن", style: Styles.inter14600gray(context)),
+                    child: Text("s_no_customers_yet".tr(), style: Styles.inter14600gray(context)),
                   );
                 }
 
@@ -246,9 +247,6 @@ class _PodiumCard extends StatelessWidget {
                   color: Colors.white,
                   shape: BoxShape.circle,
                   border: Border.all(color: style.avatarColor, width: 2),
-                  boxShadow: [
-                    BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-                  ],
                 ),
                 child: CircleAvatar(
                   backgroundColor: style.avatarColor.withOpacity(.15),
@@ -287,9 +285,6 @@ class _PodiumCard extends StatelessWidget {
               color: emphasized ? style.badgeColor.withOpacity(.08) : Colors.white,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               border: Border.all(color: style.badgeColor.withOpacity(.4)),
-              boxShadow: [
-                BoxShadow(color: Colors.grey.withOpacity(0.15), spreadRadius: 1, blurRadius: 3),
-              ],
             ),
             height: MediaQuery.of(context).size.height * height,
             child: Column(
@@ -304,7 +299,7 @@ class _PodiumCard extends StatelessWidget {
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 Text(
-                  "${customer.orderCount ?? 0} طلب",
+                  "i_x_orders_89".tr(namedArgs: {"a": "${customer.orderCount ?? 0}"}),
                   style: Styles.inter10400grey(context),
                 ),
               ],
@@ -333,9 +328,7 @@ class _RankedListItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.2), spreadRadius: 2, blurRadius: 3),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Row(
         children: [
@@ -385,7 +378,7 @@ class _RankedListItem extends StatelessWidget {
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 Text(
-                  "${customer.orderCount ?? 0} طلب",
+                  "i_x_orders_89".tr(namedArgs: {"a": "${customer.orderCount ?? 0}"}),
                   style: Styles.inter10400grey(context),
                 ),
               ],

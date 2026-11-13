@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -37,8 +38,8 @@ class NotificationLoadingItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Shimmer.fromColors(
-                          baseColor:Colors.grey[400]!,
-                          highlightColor: Colors.grey[200]!,
+                          baseColor:DsColor.textSubtle!,
+                          highlightColor: DsColor.border!,
                           child: Container(
                             height: MediaQuery.of(context).size.width * .025,
                             width: MediaQuery.of(context).size.width * .22,
@@ -50,8 +51,8 @@ class NotificationLoadingItem extends StatelessWidget {
                         ),
                         SizedBox(height: AppConstants.height5(context)),
                         Shimmer.fromColors(
-                          baseColor:Colors.grey[400]!,
-                          highlightColor: Colors.grey[200]!,
+                          baseColor:DsColor.textSubtle!,
+                          highlightColor: DsColor.border!,
                           child: Container(
                             height: MediaQuery.of(context).size.width * .02,
                             width: MediaQuery.of(context).size.width * .8,
@@ -63,8 +64,8 @@ class NotificationLoadingItem extends StatelessWidget {
                         ),
                         SizedBox(height: AppConstants.height5(context)),
                         Shimmer.fromColors(
-                          baseColor:Colors.grey[400]!,
-                          highlightColor: Colors.grey[200]!,
+                          baseColor:DsColor.textSubtle!,
+                          highlightColor: DsColor.border!,
                           child: Container(
                             height: MediaQuery.of(context).size.width * .02,
                             width: MediaQuery.of(context).size.width * .8,
@@ -76,8 +77,8 @@ class NotificationLoadingItem extends StatelessWidget {
                         ),
                         SizedBox(height: AppConstants.height5(context)),
                         Shimmer.fromColors(
-                          baseColor:Colors.grey[400]!,
-                          highlightColor: Colors.grey[200]!,
+                          baseColor:DsColor.textSubtle!,
+                          highlightColor: DsColor.border!,
                           child: Container(
                             height: MediaQuery.of(context).size.width * .02,
                             width: MediaQuery.of(context).size.width * .8,
@@ -97,8 +98,8 @@ class NotificationLoadingItem extends StatelessWidget {
                             ),
                             SizedBox(width: AppConstants.width5(context)),
                             Shimmer.fromColors(
-                              baseColor:Colors.grey[400]!,
-                              highlightColor: Colors.grey[200]!,
+                              baseColor:DsColor.textSubtle!,
+                              highlightColor: DsColor.border!,
                               child: Container(
                                 height:
                                     MediaQuery.of(context).size.width * .025,

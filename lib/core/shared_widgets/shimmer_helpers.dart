@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -8,8 +9,8 @@ import '../utils/constants.dart';
 /// as one consistent effect no matter which screen it's on.
 Widget appShimmer({required Widget child}) {
   return Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
+    baseColor: DsColor.border,
+    highlightColor: DsColor.fill,
     child: child,
   );
 }

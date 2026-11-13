@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_back_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
@@ -18,7 +20,6 @@ import 'package:alrayan_admin/features/categories/presentation/view_model/delete
 import 'package:alrayan_admin/features/categories/presentation/view_model/delete_sub_category/delete_sub_category_states.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/edit_sub_category/edit_sub_category_cubit.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/edit_sub_category/edit_sub_category_states.dart';
-import 'package:alrayan_admin/features/categories/presentation/view_model/get_categories/get_categories_cubit.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/get_sub_categories/get_sub_categories_cubit.dart';
 import 'package:alrayan_admin/features/product_details/presentation/views/widgets/text_field_header.dart';
 import 'package:dio/dio.dart';
@@ -63,11 +64,11 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            "تأكيد الحذف",
+            "s_confirm_deletion".tr(),
             style: Styles.inter24600black(context),
           ),
           content: Text(
-            "هل أنت متأكد أنك تريد حذف القسم الفرعى؟",
+            "s_are_you_sure_you_want_to_delete_this_4".tr(),
             style: Styles.font18500Grey900(context),
           ),
           shape: RoundedRectangleBorder(
@@ -81,7 +82,7 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                 Navigator.of(dialogContext).pop(false);
               },
               child: Text(
-                "إلغاء",
+                "s_cancel".tr(),
                 style: Styles.inter18500Black(context),
               ),
             ),
@@ -93,7 +94,7 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                 Navigator.of(dialogContext).pop(true);
               },
               child: Text(
-                "حذف",
+                "s_delete".tr(),
                 style: Styles.inter16400white(context),
               ),
             ),
@@ -153,8 +154,8 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                       CustomBackButton(),
                       Text(
                         widget.subCategoryData == null
-                            ? "قسم فرعى جديد"
-                            : "تعديل",
+                            ? "s_new_subcategory".tr()
+                            : "s_edit".tr(),
                         style: Styles.inter18500Black(context),
                       ),
                       SizedBox(width: AppConstants.width20(context) * 2),
@@ -252,22 +253,22 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                                 ],
                               ),
                             ),
-                            TextFieldHeader(text: "اسم القسم الفرعى"),
+                            TextFieldHeader(text: "s_subcategory_name".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType: TextInputType.text,
                               controller: nameAr,
-                              hintText: "ادخل القسم الفرعى",
-                              validationMsg: "يجب ادخال القسم الفرعى",
+                              hintText: "s_enter_the_subcategory".tr(),
+                              validationMsg: "s_subcategory_is_required".tr(),
                             ),
                             SizedBox(height: AppConstants.height20(context)),
-                            TextFieldHeader(text: "القسم الفرعى (EN)"),
+                            TextFieldHeader(text: "s_subcategory_en".tr()),
                             SizedBox(height: AppConstants.height5(context)),
                             DefaultTextFormField(
                               textInputType: TextInputType.text,
                               controller: nameEn,
-                              hintText: "ادخل القسم الفرعى (EN)",
-                              validationMsg: "يجب ادخال القسم الفرعى (EN)",
+                              hintText: "s_enter_the_subcategory_en".tr(),
+                              validationMsg: "s_subcategory_en_is_required".tr(),
                             ),
                             SizedBox(
                               height: AppConstants.height20(context) * 2,
@@ -307,14 +308,14 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                                     } else {
                                       cherryToast(
                                         text:
-                                        "اختر ايقونة القسم الفرعى اولا",
+                                        "s_choose_a_subcategory_icon_first".tr(),
                                         context: context,
                                         isSuccess: false,
                                       );
                                     }
                                   }
                                 },
-                                text: "حفظ",
+                                text: "s_save".tr(),
                                 borderRadius: AppConstants.sp10(context),
                               ),
                             if (widget.subCategoryData != null)
@@ -390,8 +391,8 @@ class _CreateSubCategoryViewState extends State<CreateSubCategoryView> {
                                               );
                                             }
                                           },
-                                          text: "تعديل",
-                                          backgroundColor: Colors.green,
+                                          text: "s_edit".tr(),
+                                          backgroundColor: DsColor.success,
                                           borderRadius:
                                           AppConstants.sp10(context),
                                         );

@@ -15,9 +15,17 @@ class AllUsersRepoImpl implements AllUsersRepo {
   AllUsersRepoImpl(this.apiService);
 
   @override
-  Future<Either<Failure, AllUsersModel>> getAllUsers({required Map<String, dynamic> data}) async {
+  Future<Either<Failure, AllUsersModel>> getAllUsers({
+    required Map<String, dynamic> data,
+    CancelToken? cancelToken,
+  }) async {
     try {
-      var response = await apiService!.get(endPoint: EndPoints.users, query: data, sendToken: true);
+      var response = await apiService!.get(
+        endPoint: EndPoints.users,
+        query: data,
+        sendToken: true,
+        cancelToken: cancelToken,
+      );
       return right(AllUsersModel.fromJson(response.data));
     } catch (e) {
       debugPrint(e.toString());

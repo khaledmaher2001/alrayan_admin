@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
@@ -168,8 +169,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height10(context)),
-          CustomAppBar(title: isEditing ? "تعديل الكوبون" : "انشاء كوبون خصم", hasBack: true,textColor: Colors.black,withNotifications: false,),
+          CustomAppBar(title: isEditing ? "s_edit_coupon".tr() : "s_create_discount_coupon".tr(), hasBack: true,textColor: Colors.black,withNotifications: false,),
           SizedBox(height: AppConstants.height10(context)),
           BlocBuilder<CreateCouponAssetsCubit, CreateCouponAssetsState>(
             builder: (context, state) {
@@ -190,7 +190,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text("مستخدمين الكوبون", style: Styles.inter14600black(context)),
+                                      Text("s_coupon_users".tr(), style: Styles.inter14600black(context)),
                                       Text(
                                         "*",
                                         style: Styles.inter14600black(context).copyWith(color: AppColors.redColor),
@@ -199,31 +199,31 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   ),
                                   SizedBox(height: AppConstants.height5(context)),
                                   CustomDropDownButton(
-                                    hintText: "اختر المستخدمين",
-                                    items: ['كل المستخدمين', 'مستخدمين محددين'],
+                                    hintText: "s_choose_users".tr(),
+                                    items: ['لكل العملاء', 'عملاء محددين'],
                                     borderRadius: AppConstants.sp10(context),
                                     hasBorder: true,
                                     height: MediaQuery.of(context).size.height * .06,
                                     onChanged: (v) {
                                       switch (v) {
-                                        case 'كل المستخدمين':
+                                        case 'لكل العملاء':
                                           couponAssetsCubit.selectUsersType(type: "all");
                                           break;
-                                        case 'مستخدمين محددين':
+                                        case 'عملاء محددين':
                                           couponAssetsCubit.selectUsersType(type: "specific_users");
                                           break;
                                       }
                                     },
                                     validator: (String? value) {
                                       if (value == null) {
-                                        return "من فضلك اختر المستخدمين";
+                                        return "s_please_choose_the_users".tr();
                                       }
                                       return null;
                                     },
                                     value: couponAssetsCubit.usersType == "all"
-                                        ? 'كل المستخدمين'
+                                        ? 'لكل العملاء'
                                         : couponAssetsCubit.usersType == "specific_users"
-                                            ? 'مستخدمين محددين'
+                                            ? 'عملاء محددين'
                                             : null,
                                   ),
                                 ],
@@ -236,17 +236,17 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: couponAssetsCubit.usersType != "all"
-                                      ? Colors.grey.shade100
+                                      ? DsColor.fill
                                       : couponAssetsCubit.isHidden
-                                          ? Colors.orange.shade50
+                                          ? DsColor.warningBg
                                           : const Color(0xffF7F7F8),
                                   borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
                                   border: Border.all(
                                     color: couponAssetsCubit.usersType != "all"
-                                        ? Colors.grey.shade300
+                                        ? DsColor.border
                                         : couponAssetsCubit.isHidden
-                                            ? Colors.orange
-                                            : Colors.grey.shade300,
+                                            ? DsColor.warning
+                                            : DsColor.border,
                                   ),
                                 ),
                                 child: Row(
@@ -255,20 +255,20 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text("إخفاء الكوبون", style: Styles.inter14600black(context)),
+                                          Text("s_hide_coupon".tr(), style: Styles.inter14600black(context)),
                                           SizedBox(height: AppConstants.height5(context) / 2),
                                           Text(
                                             couponAssetsCubit.usersType != "all"
-                                                ? "غير متاح: لا يمكن إخفاء كوبون مخصص لمستخدمين محددين"
+                                                ? "s_not_available_a_coupon_for_specific_".tr()
                                                 : couponAssetsCubit.isHidden
-                                                    ? "الكوبون مخفي ولن يظهر إلا لمن أرسلت له الكود"
-                                                    : "الكوبون ظاهر لكل المستخدمين",
+                                                    ? "s_the_coupon_is_hidden_and_only_shows_".tr()
+                                                    : "s_the_coupon_is_visible_to_all_users".tr(),
                                             style: Styles.inter12500Black(context).copyWith(
                                               color: couponAssetsCubit.usersType != "all"
-                                                  ? Colors.grey.shade600
+                                                  ? DsColor.textMuted
                                                   : couponAssetsCubit.isHidden
-                                                      ? Colors.orange.shade800
-                                                      : Colors.grey.shade600,
+                                                      ? DsColor.warning
+                                                      : DsColor.textMuted,
                                             ),
                                           ),
                                         ],
@@ -276,7 +276,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     ),
                                     Switch(
                                       value: couponAssetsCubit.usersType == "all" ? couponAssetsCubit.isHidden : false,
-                                      activeThumbColor: Colors.orange,
+                                      activeThumbColor: DsColor.warning,
                                       onChanged: couponAssetsCubit.usersType == "all"
                                           ? (value) => couponAssetsCubit.toggleIsHidden(value)
                                           : null,
@@ -292,7 +292,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            "المستخدمين التي تم اختيارها",
+                                            "s_selected_users".tr(),
                                             style: Styles.inter14600black(context),
                                           ),
                                         ),
@@ -333,7 +333,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
-                                                  Text("اضافة المستخدمين", style: Styles.inter14600gray(context)),
+                                                  Text("s_add_users".tr(), style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
@@ -350,8 +350,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                       radius: MediaQuery.of(context).size.width * 0.065,
                                                       // نصف عرض الصورة القديمة
                                                       backgroundColor:
-                                                          Colors.primaries[index % Colors.primaries.length],
-                                                      // لون عشوائي لكل يوزر
+                                                          DsColor.primarySoft, // initials avatar: one neutral brand tint, not a random colour
                                                       child: Text(
                                                         (context
                                                                     .read<CreateCouponAssetsCubit>()
@@ -378,7 +377,9 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                           context
                                                               .read<CreateCouponAssetsCubit>()
                                                               .selectedUsers[index]
-                                                              .fullName!,
+                                                              .fullName ??
+                                                              context.read<CreateCouponAssetsCubit>().selectedUsers[index].phoneNumber ??
+                                                              '',
                                                           style: Styles.inter16500black(context),
                                                         ),
                                                         Padding(
@@ -424,7 +425,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text("نوع الكوبون", style: Styles.inter14600black(context)),
+                                      Text("s_coupon_type".tr(), style: Styles.inter14600black(context)),
                                       Text(
                                         "*",
                                         style: Styles.inter14600black(context).copyWith(color: AppColors.redColor),
@@ -433,7 +434,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   ),
                                   SizedBox(height: AppConstants.height5(context)),
                                   CustomDropDownButton(
-                                    hintText: "نوع كوبون الخصم",
+                                    hintText: "s_discount_coupon_type".tr(),
                                     items: [
                                       'كوبون مجزئ',
                                       'شحن مجاني',
@@ -469,7 +470,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     },
                                     validator: (String? value) {
                                       if (value == null) {
-                                        return "من فضلك اختر نوع الكوبون";
+                                        return "s_please_choose_the_coupon_type".tr();
                                       }
                                       return null;
                                     },
@@ -492,7 +493,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            "المنتجات التي تم اختيارها",
+                                            "s_selected_products".tr(),
                                             style: Styles.inter14600black(context),
                                           ),
                                         ),
@@ -533,7 +534,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
-                                                  Text("اضافة المنتجات", style: Styles.inter14600gray(context)),
+                                                  Text("s_add_products".tr(), style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
@@ -622,7 +623,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            "الاقسام التي تم اختيارها",
+                                            "s_selected_categories".tr(),
                                             style: Styles.inter14600black(context),
                                           ),
                                         ),
@@ -663,7 +664,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
-                                                  Text("اضافة الاقسام", style: Styles.inter14600gray(context)),
+                                                  Text("s_add_categories".tr(), style: Styles.inter14600gray(context)),
                                                 ],
                                               ),
                                             ),
@@ -754,11 +755,11 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Expanded(
                                     child:  CustomCouponField(
-                                      title: "كود الخصم",
-                                      hint: "كود الخصم",
+                                      title: "s_discount_code".tr(),
+                                      hint: "s_discount_code".tr(),
                                       controller: couponAssetsCubit.codeController,
                                       keyboardType: TextInputType.text,
-                                      validationText: "من فضلك ادخل كود الخصم",
+                                      validationText: "s_please_enter_the_discount_code".tr(),
                                     ),
                                   ),
                                   if(couponAssetsCubit.couponType!= "free_shipping")...[SizedBox(width: AppConstants.width20(context)),
@@ -769,7 +770,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                         children: [
                                           Row(
                                             children: [
-                                              Text("قيمة الخصم", style: Styles.inter14600black(context)),
+                                              Text("s_discount_value".tr(), style: Styles.inter14600black(context)),
                                               Text("*", style: Styles.inter14600black(context).copyWith(color: AppColors.redColor)),
                                             ],
                                           ),
@@ -778,12 +779,12 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                             onTap: (){},
                                             validation: (String? value) {
                                               if (value == null || value.isEmpty) {
-                                                return "من فضلك ادخل قيمة الخصم";
+                                                return "s_please_enter_the_discount_value".tr();
                                               }else if(couponAssetsCubit.couponType== "percentage")
                                                 {
                                                   if(int.parse(value)>100)
                                                     {
-                                                      return "اقصي قيمة للخصم 100%";
+                                                      return "s_maximum_discount_is_100".tr();
                                                     }
                                                 }
                                               return null;
@@ -791,7 +792,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                             style: Styles.inter14600black(context),
                                             fillColor: const Color(0xffF7F7F8),
                                             contentPaddingHorizontal: AppConstants.width15(context),
-                                            hintText: "قيمة الخصم",
+                                            hintText: "s_discount_value".tr(),
                                             textInputType: TextInputType.number,
                                             controller: couponAssetsCubit.discountValueController,
                                             readOnly: false,
@@ -806,19 +807,19 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                               SizedBox(height: AppConstants.height15(context)),
                              if(couponAssetsCubit.couponType!= "free_shipping")...[
                                if(couponAssetsCubit.couponType!= "fixed_amount"&&couponAssetsCubit.couponType!="fixed_split")...[CustomCouponField(
-                                title: "الحد الاقصي للخصم",
-                                hint: "الحد الاقصي للخصم",
+                                title: "s_maximum_discount".tr(),
+                                hint: "s_maximum_discount".tr(),
                                 controller: couponAssetsCubit.maxDiscountAmountController,
                                 keyboardType: TextInputType.text,
-                                validationText: "من فضلك ادخل الحد الاقصي للخصم",
+                                validationText: "s_please_enter_the_maximum_discount".tr(),
                               ),
                               SizedBox(height: AppConstants.height15(context)),],
                               CustomCouponField(
-                                title: "الحد الادني لقيمة الطلب",
-                                hint: "الحد الادني لقيمة الطلب",
+                                title: "s_minimum_order_value".tr(),
+                                hint: "s_minimum_order_value".tr(),
                                 controller: couponAssetsCubit.minOrderAmountController,
                                 keyboardType: TextInputType.number,
-                                validationText: "من فضلك ادخل الحد الادني لقيمة الطلب",
+                                validationText: "s_please_enter_the_minimum_order_value".tr(),
                               ),
                               SizedBox(height: AppConstants.height15(context)),],
                               Row(
@@ -827,12 +828,12 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                 children: [
                                   Expanded(
                                     child: CustomCouponField(
-                                      title: "تاريخ البداية",
-                                      hint: "تاريخ البداية",
+                                      title: "s_start_date".tr(),
+                                      hint: "s_start_date".tr(),
                                       readOnly: true,
                                       controller: couponAssetsCubit.startDateController,
                                       keyboardType: TextInputType.number,
-                                      validationText: "يجب ادخال هذا الحقل",
+                                      validationText: "s_this_field_is_required".tr(),
                                       onTap: () async {
                                         final DateTime? picked = await showDatePicker(
                                           context: context,
@@ -856,12 +857,12 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                   SizedBox(width: AppConstants.width20(context)),
                                   Expanded(
                                     child: CustomCouponField(
-                                      title: "تاريخ الانتهاء",
-                                      hint: "تاريخ الانتهاء",
+                                      title: "s_end_date".tr(),
+                                      hint: "s_end_date".tr(),
                                       readOnly: true,
                                       controller: couponAssetsCubit.endDateController,
                                       keyboardType: TextInputType.number,
-                                      validationText: "يجب ادخال هذا الحقل",
+                                      validationText: "s_this_field_is_required".tr(),
                                       onTap: () async {
                                         final DateTime? picked = await showDatePicker(
                                           context: context,
@@ -886,16 +887,16 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                               ),
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
-                                title: "مرات الاستخدام الكلية",
-                                hint: "مرات الاستخدام الكلية",
+                                title: "s_total_uses".tr(),
+                                hint: "s_total_uses".tr(),
                                 controller: couponAssetsCubit.usageLimitController,
                                 keyboardType: TextInputType.number,
-                                validationText: "من فضلك ادخل مرات الاستخدام الكلية",
+                                validationText: "s_please_enter_the_total_uses".tr(),
                               ),
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
-                                title: "مرات الاستخدام للمستخدم الواحد",
-                                hint: "مرات الاستخدام للمستخدم الواحد",
+                                title: "s_uses_per_user".tr(),
+                                hint: "s_uses_per_user".tr(),
                                 controller: couponAssetsCubit.usageLimitPerUserController,
                                 onChange: (value){
                                  setState(() {
@@ -917,32 +918,32 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                  });
                                 },
                                 keyboardType: TextInputType.number,
-                                validationText: "من فضلك ادخل مرات الاستخدام للمستخدم الواحد",
+                                validationText: "s_please_enter_the_uses_per_user".tr(),
                               ),
                              if(couponAssetsCubit.couponType=="fixed_split")...[ SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
-                                title: "قيمة الخصم في المرة الواحده",
-                                hint: "قيمة الخصم في المرة الواحده",
+                                title: "s_discount_per_use".tr(),
+                                hint: "s_discount_per_use".tr(),
                                 controller: couponAssetsCubit.splitValueController,
                                 keyboardType: TextInputType.number,
                                 readOnly: true,
-                                validationText: "من فضلك ادخل قيمة الخصم في المرة الواحده",
+                                validationText: "s_please_enter_the_discount_per_use".tr(),
                               ),],
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
-                                title: "وصف الكوبون (AR) ",
-                                hint: "وصف الكوبون (AR) ",
+                                title: "s_coupon_description_ar".tr(),
+                                hint: "s_coupon_description_ar".tr(),
                                 controller: couponAssetsCubit.descriptionArController,
                                 keyboardType: TextInputType.text,
-                                validationText: "من فضلك ادخل وصف الكوبون",
+                                validationText: "s_please_enter_the_coupon_description".tr(),
                               ),
                               SizedBox(height: AppConstants.height15(context)),
                               CustomCouponField(
-                                title: "وصف الكوبون (EN) ",
-                                hint: "وصف الكوبون (EN) ",
+                                title: "s_coupon_description_en".tr(),
+                                hint: "s_coupon_description_en".tr(),
                                 controller: couponAssetsCubit.descriptionEnController,
                                 keyboardType: TextInputType.text,
-                                validationText: "من فضلك ادخل وصف الكوبون",
+                                validationText: "s_please_enter_the_coupon_description".tr(),
                               ),
                             ],
                           ),
@@ -963,7 +964,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                     child: BlocConsumer<EditCouponCubit, EditCouponStates>(
                       listener: (context, state) {
                         if (state is EditCouponSuccessState) {
-                          toast(text: state.message, color: Colors.green);
+                          toast(text: state.message, color: DsColor.success);
                           couponAssetsCubit.clearAllData();
                           context.read<GetCouponsCubit>().getCoupons();
                           NavigationUtils.navigateBack(context: context);
@@ -983,7 +984,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     );
                                   }
                                 },
-                                text: "حفظ التعديلات",
+                                text: "s_save_changes".tr(),
                                 borderRadius: AppConstants.sp10(context),
                                 height: AppConstants.height15(context),
                               );
@@ -995,7 +996,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                     child: BlocConsumer<CreateCouponCubit, CreateCouponStates>(
                       listener: (context, state) {
                         if (state is CreateCouponSuccessState) {
-                          toast(text: state.message, color: Colors.green);
+                          toast(text: state.message, color: DsColor.success);
                           couponAssetsCubit.clearAllData();
                           context.read<GetCouponsCubit>().getCoupons();
                           NavigationUtils.navigateBack(context: context);
@@ -1014,7 +1015,7 @@ class _CreateCouponViewBodyState extends State<CreateCouponViewBody> {
                                     );
                                   }
                                 },
-                                text: "انشاء الكوبون",
+                                text: "s_create_the_coupon".tr(),
                                 borderRadius: AppConstants.sp10(context),
                                 height: AppConstants.height15(context),
                               );

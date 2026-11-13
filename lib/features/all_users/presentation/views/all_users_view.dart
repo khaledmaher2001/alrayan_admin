@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/utils/colors/colors.dart';
 import '../../../../core/utils/services/remote_services/service_locator.dart';
 import '../../data/repo/all_users_repo_impl.dart';
 import '../view_models/get_all_users/get_all_users_cubit.dart';
@@ -22,8 +21,7 @@ class AllUsersView extends StatelessWidget {
       ),
       child: BlocProvider(
         create: (context) =>
-            GetAllUsersCubit(getIt<AllUsersRepoImpl>())
-              ..getAllUsers(data: {"page": 1, 'limit': 12}),
+            GetAllUsersCubit(getIt<AllUsersRepoImpl>())..getAllUsers(),
 
         child: const Scaffold(body: AllUsersViewBody()),
       ),

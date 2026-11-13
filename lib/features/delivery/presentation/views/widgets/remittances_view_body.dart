@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -19,34 +20,23 @@ class RemittancesViewBody extends StatefulWidget {
 
 class _RemittancesViewBodyState extends State<RemittancesViewBody> {
   final ScrollController scrollController = ScrollController();
-  bool isLoadingMore = false;
 
-  Future<void> _pagination() async {
-    final cubit = context.read<GetRemittancesCubit>();
-    final totalPages = cubit.remittancesModel?.data?.metadata?.totalPages;
-    if (totalPages == null) return;
-
-    if (cubit.page < totalPages &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoadingMore) {
-      isLoadingMore = true;
-      cubit.page++;
-      await cubit
-          .getRemittances(withLoading: false)
-          .then((_) => setState(() => isLoadingMore = false));
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetRemittancesCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(_pagination);
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(_pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.dispose();
   }
@@ -66,7 +56,7 @@ class _RemittancesViewBodyState extends State<RemittancesViewBody> {
                 children: [
                   Icon(
                     Icons.error_outline,
-                    color: Colors.red.shade300,
+                    color: DsColor.danger,
                     size: 48,
                   ),
                   SizedBox(height: AppConstants.height10(context)),
@@ -108,7 +98,8 @@ class _RemittancesViewBodyState extends State<RemittancesViewBody> {
                     if (index == 0)
                       SizedBox(height: AppConstants.height5(context)),
                     RemittanceItem(remittance: list[index]),
-                    if (isLoadingMore && index == list.length - 1)
+                    if (context.read<GetRemittancesCubit>().isLoadingMore &&
+                        index == list.length - 1)
                       Padding(
                         padding: EdgeInsets.all(AppConstants.sp10(context)),
                         child: CustomLoadingItem(

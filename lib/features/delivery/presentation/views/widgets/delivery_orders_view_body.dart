@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/search_widget.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
@@ -43,23 +44,12 @@ const List<_StatusFilter> _statusFilters = [
 class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
   final ScrollController scrollController = ScrollController();
   final searchController = TextEditingController();
-  bool isLoadingMore = false;
   int selectedStatusFilter = 0;
 
-  Future<void> _pagination() async {
-    final cubit = context.read<GetDeliveryOrdersCubit>();
-    final totalPages = cubit.ordersModel?.data?.metadata?.totalPages;
-    if (totalPages == null) return;
-
-    if (cubit.page < totalPages &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoadingMore) {
-      isLoadingMore = true;
-      cubit.page++;
-      await cubit
-          .getDeliveryOrders(withLoading: false)
-          .then((_) => setState(() => isLoadingMore = false));
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetDeliveryOrdersCubit>().loadMore();
     }
   }
 
@@ -77,12 +67,12 @@ class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(_pagination);
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(_pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     searchController.dispose();
     super.dispose();
@@ -133,7 +123,7 @@ class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
                     border: Border.all(
                       color: selected
                           ? AppColors.primaryColor
-                          : Colors.grey.shade300,
+                          : DsColor.border,
                     ),
                     borderRadius: BorderRadius.circular(
                       AppConstants.sp30(context),
@@ -142,7 +132,7 @@ class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
                   child: Text(
                     _statusFilters[index].labelKey.tr(),
                     style: Styles.inter14500black(context).copyWith(
-                      color: selected ? Colors.white : Colors.grey.shade700,
+                      color: selected ? Colors.white : DsColor.text2,
                     ),
                   ),
                 ),
@@ -165,7 +155,7 @@ class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
                       children: [
                         Icon(
                           Icons.error_outline,
-                          color: Colors.red.shade300,
+                          color: DsColor.danger,
                           size: 48,
                         ),
                         SizedBox(height: AppConstants.height10(context)),
@@ -207,7 +197,10 @@ class _DeliveryOrdersViewBodyState extends State<DeliveryOrdersViewBody> {
                           if (index == 0)
                             SizedBox(height: AppConstants.height5(context)),
                           DeliveryOrderItem(order: list[index]),
-                          if (isLoadingMore && index == list.length - 1)
+                          if (context
+                                  .read<GetDeliveryOrdersCubit>()
+                                  .isLoadingMore &&
+                              index == list.length - 1)
                             Padding(
                               padding: EdgeInsets.all(
                                 AppConstants.sp10(context),

@@ -1,7 +1,5 @@
-import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
-import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/main_layout/view_model/change_nav_bar_status/change_nav_bar_status_cubit.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_cubit.dart';
@@ -18,7 +16,11 @@ class BottomNavBarItem extends StatelessWidget {
     required this.activeIcon,
     required this.title,
     this.showNewBadge = false,
+    this.iconData,
   });
+
+  /// Material icon used instead of the SVG pair (e.g. the "More" tab).
+  final IconData? iconData;
 
   final String icon;
   final String activeIcon;
@@ -32,8 +34,14 @@ class BottomNavBarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    final selected = ChangeNavBarStatusCubit.get(context).currentIndex == index;
     return Expanded(
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: title,
+        excludeSemantics: true,
+        child: InkWell(
         onTap: (){
           context.read<ChangeNavBarStatusCubit>().changeNavBarIndex(index);
         },
@@ -44,6 +52,9 @@ class BottomNavBarItem extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
+                if (iconData != null)
+                  Icon(iconData, color: selected ? AppColors.primaryColor : const Color(0xff8A8F98), size: MediaQuery.of(context).size.height * .03)
+                else
                 SvgPicture.asset(
                   ChangeNavBarStatusCubit.get(context).currentIndex == index
                       ? activeIcon
@@ -85,11 +96,12 @@ class BottomNavBarItem extends StatelessWidget {
                 ChangeNavBarStatusCubit.get(context).currentIndex ==
                     index
                     ? null
-                    : const Color(0xffC8C8C8),
+                    : const Color(0xff8A8F98),
               ),
             ),
           ],
         )
+      ),
       ),
     );
   }

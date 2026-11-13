@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_cubit.dart';
 import 'package:alrayan_admin/features/products/presentation/view_model/get_products/get_products_states.dart';
@@ -98,7 +100,7 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                   ),
                   SizedBox(height: AppConstants.height10(context)),
                   Text(
-                    "أختر المنتجات",
+                    "s_choose_products".tr(),
                     style: Styles.inter16400white(
                       context,
                     ).copyWith(color: Colors.black),
@@ -107,7 +109,7 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                   DefaultTextFormField(
                     textInputType: TextInputType.text,
                     controller: searchController,
-                    hintText: "ابحث عن المنتج...",
+                    hintText: "s_search_for_a_product".tr(),
                     onFilledSubmit: (value) {
                       print(value.trim());
                       context.read<GetProductsCubit>().getProducts(
@@ -197,16 +199,7 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                                                   ),
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Color(
-                                                          0x33000000,
-                                                        ),
-                                                        blurRadius: 6,
-                                                        spreadRadius: 0,
-                                                        offset: Offset(0, 0),
-                                                      ),
-                                                    ],
+                                                    border: Border.all(color: DsColor.border),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           AppConstants.sp10(
@@ -271,7 +264,7 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                                                                   ),
                                                             ),
                                                             Text(
-                                                              "${context.read<GetProductsCubit>().productsList[index].price.toString()} جنية",
+                                                              "${context.read<GetProductsCubit>().productsList[index].price.toString()} ${"s_egp".tr()}",
                                                               style:
                                                                   Styles.inter16500black(
                                                                     context,
@@ -328,9 +321,9 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                                     )
                                   : EmptyWidget(
                                       icon: AssetData.search,
-                                      title: "لا يوجد حلقات",
+                                      title: "s_no_items".tr(),
                                       description:
-                                          "سيتم اشعارك في حين اضافتك في حلقة او اكثر",
+                                          "s_you_ll_be_notified_when_items_are_ad".tr(),
                                     ),
                             ),
                             if (isLoading)
@@ -356,15 +349,15 @@ class _SelectProductBottomSheetState extends State<SelectProductBottomSheet> {
                                   AppConstants.sp10(context),
                                 ),
                                 child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[200]!,
+                                  baseColor: DsColor.border!,
+                                  highlightColor: DsColor.border!,
                                   child: Container(
                                     height:
                                         MediaQuery.of(context).size.height *
                                         .11,
                                     width: MediaQuery.of(context).size.width,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey,
+                                      color: DsColor.textMuted,
                                       borderRadius: BorderRadius.circular(
                                         AppConstants.sp5(context),
                                       ),

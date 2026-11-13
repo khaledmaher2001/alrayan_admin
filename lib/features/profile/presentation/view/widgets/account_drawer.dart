@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:alrayan_admin/features/ads/presentation/views/ads_view.dart';
 import 'package:alrayan_admin/features/auth/presentation/view_model/logout/logout_cubit.dart';
@@ -79,7 +80,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
+                    color: DsColor.dangerBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -96,7 +97,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
               children: [
                 Expanded(
                   child: Text(
-                    "تسجيل الخروج",
+                    "s_log_out".tr(),
                     textAlign: TextAlign.center,
                     style: Styles.inter16500black(context),
                   ),
@@ -105,10 +106,10 @@ class _AccountDrawerState extends State<AccountDrawer> {
             ),
             SizedBox(height: AppConstants.height10(context)),
             Text(
-              "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+              "s_are_you_sure_you_want_to_log_out".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.grey.shade700),
+              ).copyWith(color: DsColor.text2),
             ),
             SizedBox(height: AppConstants.height20(context)),
             Row(
@@ -116,7 +117,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -127,7 +128,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                       context.read<LogoutCubit>().logout();
                     },
                     child: Text(
-                      "تسجيل الخروج",
+                      "s_log_out".tr(),
                       style: Styles.inter16500black(
                         context,
                       ).copyWith(color: Colors.white),
@@ -137,10 +138,10 @@ class _AccountDrawerState extends State<AccountDrawer> {
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   child: Text(
-                    "إلغاء",
+                    "s_cancel".tr(),
                     style: Styles.inter16500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ),
               ],
@@ -195,7 +196,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                                   shape: BoxShape.circle,
                                 ),
                                 child: Image.asset(
-                                  AssetData.logoBackWhite,
+                                  AssetData.logo,
                                   fit: BoxFit.scaleDown,
                                 ),
                               ),
@@ -230,7 +231,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                                         ),
                                       ),
                                       child: Text(
-                                        "مدير المتجر",
+                                        "s_store_manager".tr(),
                                         style: Styles.inter10400grey(context)
                                             .copyWith(
                                               color: Colors.white,
@@ -319,7 +320,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
                         _DrawerItem(
                           icon: Icons.location_on_outlined,
-                          label: "مناطق التوصيل",
+                          label: "s_delivery_zones".tr(),
                           selected: _selected == _DrawerSection.zones,
                           onTap: () => _select(
                             _DrawerSection.zones,
@@ -331,7 +332,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
                         _DrawerItem(
                           icon: Icons.settings_outlined,
-                          label: "اعدادات النظام",
+                          label: "s_system_settings".tr(),
                           selected: _selected == _DrawerSection.systemSettings,
                           onTap: () => _select(
                             _DrawerSection.systemSettings,
@@ -343,7 +344,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
 
                         _DrawerDivider(),
-                        _DrawerSectionLabel("التسويق والعروض"),
+                        _DrawerSectionLabel("s_marketing_offers".tr()),
                         _DrawerItem(
                           icon: Icons.confirmation_number_outlined,
                           label: "my_coupons".tr(),
@@ -358,7 +359,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
                         _DrawerItem(
                           icon: Icons.campaign_outlined,
-                          label: "ادارة الاعلانات".tr(),
+                          label: "s_ads_management".tr(),
                           selected: _selected == _DrawerSection.ads,
                           onTap: () => _select(
                             _DrawerSection.ads,
@@ -370,7 +371,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
                         _DrawerItem(
                           icon: Icons.casino_outlined,
-                          label: "عجلة الحظ",
+                          label: "s_lucky_wheel".tr(),
                           selected: _selected == _DrawerSection.wheel,
                           onTap: () => _select(
                             _DrawerSection.wheel,
@@ -382,7 +383,7 @@ class _AccountDrawerState extends State<AccountDrawer> {
                         ),
 
                         _DrawerDivider(),
-                        _DrawerSectionLabel("الحماية"),
+                        _DrawerSectionLabel("s_security".tr()),
                         _DrawerItem(
                           icon: Icons.lock_outline,
                           label: "change_password".tr(),
@@ -432,11 +433,11 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tint = Colors.grey.shade700;
+    final tint = DsColor.text2;
     return Padding(
       padding: EdgeInsets.only(bottom: AppConstants.height5(context)),
       child: Material(
-        color:  Colors.grey.shade200,
+        color:  DsColor.border,
         borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
@@ -474,7 +475,7 @@ class _DrawerItem extends StatelessWidget {
                 SizedBox(width: AppConstants.width10(context)),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color:Colors.grey,
+                  color:DsColor.textMuted,
                   size: AppConstants.sp15(context),
                 ),
                 SizedBox(width: AppConstants.width10(context)),
@@ -503,7 +504,7 @@ class _LogoutDrawerItem extends StatelessWidget {
           GoRouter.of(context).go("/loginView");
         } else if (state is LogoutError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(state.message), backgroundColor: DsColor.danger),
           );
         }
       },
@@ -591,7 +592,7 @@ class _DrawerSectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: Styles.inter10400grey(context).copyWith(
-          color: Colors.grey.shade500,
+          color: DsColor.textMuted,
           fontWeight: FontWeight.w700,
           letterSpacing: .5,
         ),
@@ -607,7 +608,7 @@ class _DrawerDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppConstants.height10(context)),
-      child: Divider(color: Colors.grey.shade200, height: 1),
+      child: Divider(color: DsColor.border, height: 1),
     );
   }
 }
@@ -630,10 +631,10 @@ class _AppVersionFooter extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              "الإصدار $version",
+              "i_version_x_85".tr(namedArgs: {"a": "${version}"}),
               style: Styles.inter10400grey(
                 context,
-              ).copyWith(color: Colors.grey.shade400),
+              ).copyWith(color: DsColor.textSubtle),
             ),
           ),
         );

@@ -1,6 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 
 abstract class Failure {
   final String errMessage;
@@ -28,7 +26,7 @@ class ServerFailure extends Failure {
       case DioExceptionType.cancel:
         return ServerFailure("requestCanceled");
       case DioExceptionType.unknown:
-        if (dioException.error!.toString().contains("SocketException")) {
+        if (dioException.error?.toString().contains("SocketException") ?? false) {
           return ServerFailure("noInternet");
         } else {
           return ServerFailure("unexpectedError");

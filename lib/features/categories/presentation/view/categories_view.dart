@@ -1,4 +1,7 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
+import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -13,7 +16,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CategoriesView extends StatelessWidget {
-  const CategoriesView({super.key});
+  const CategoriesView({super.key, this.asPage = false});
+
+  /// Opened from "More" as its own page (needs a back button) rather than as a tab.
+  final bool asPage;
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +33,15 @@ class CategoriesView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          SizedBox(height: AppConstants.height10(context)),
-          Text("التصنيفات", textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+          if (asPage)
+            SafeArea(
+              bottom: false,
+              child: CustomAppBar(title: "more_categories".tr(), hasBack: true, withNotifications: false, textColor: Colors.black),
+            )
+          else ...[
+            SizedBox(height: AppConstants.height10(context)),
+            Text("s_categories".tr(), textAlign: TextAlign.center, style: Styles.inter18500Black(context)),
+          ],
           SizedBox(height: AppConstants.height20(context)),
           Expanded(
             child: Padding(
@@ -43,10 +56,10 @@ class CategoriesView extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                          const Icon(Icons.error_outline, size: 48, color: DsColor.danger),
                           SizedBox(height: AppConstants.height10(context)),
                           Text(
-                            "حدث خطأ في تحميل التصنيفات",
+                            "s_couldn_t_load_categories".tr(),
                             style: Styles.inter16500black(context),
                             textAlign: TextAlign.center,
                           ),
@@ -54,7 +67,7 @@ class CategoriesView extends StatelessWidget {
                           ElevatedButton.icon(
                             onPressed: () => context.read<GetCategoriesCubit>().getCategories(),
                             icon: const Icon(Icons.refresh),
-                            label: const Text("إعادة المحاولة"),
+                            label: Text("s_retry".tr()),
                           ),
                         ],
                       ),

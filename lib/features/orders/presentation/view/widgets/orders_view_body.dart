@@ -1,3 +1,7 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'dart:async';
+
+import 'package:alrayan_admin/features/orders/data/models/orders_model.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -11,6 +15,7 @@ import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders
 import 'package:alrayan_admin/features/orders/presentation/view_model/get_orders/get_orders_states.dart';
 import 'package:alrayan_admin/features/orders/presentation/view_model/order_status_filter/order_status_filter_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -24,42 +29,30 @@ class OrdersViewBody extends StatefulWidget {
 class _OrdersViewBodyState extends State<OrdersViewBody> {
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
-  bool isLoading = false;
   bool isSearching = false;
   String searchQuery = "";
+  Timer? _searchDebounce;
+  late final GetOrdersCubit _ordersCubit = context.read<GetOrdersCubit>();
 
-  Future<void> pagination() async {
-    final cubit = context.read<GetOrdersCubit>();
-    final filterCubit = context.read<OrderStatusFilterCubit>();
+  void _onSearchChanged(String value) {
+    setState(() => searchQuery = value);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      _ordersCubit.searchOrders(value);
+    });
+  }
 
-    if (cubit.ordersModel == null) return;
-
-    if (cubit.page < cubit.ordersModel!.data!.metadata!.totalPages! &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoading) {
-      isLoading = true;
-
-      setState(() {
-        cubit.page++;
-      });
-
-      await cubit
-          .getOrders(
-        withLoading: false,
-        status: filterCubit.status[filterCubit.selectedFilterIndex],
-      )
-          .then((value) {
-        setState(() {
-          isLoading = false;
-        });
-      });
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetOrdersCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
-    scrollController.addListener(pagination);
+    scrollController.addListener(_onScroll);
     // The status-filter card counts come from the home dashboard stats,
     // which are otherwise only fetched once at app startup — refresh them
     // here too so a newly-created order shows up in the counts as soon as
@@ -70,13 +63,18 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
 
   @override
   void dispose() {
-    scrollController.removeListener(pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     searchController.dispose();
+    _searchDebounce?.cancel();
+    // The cubit outlives this tab: don't leave a stale server search behind.
+    if (_ordersCubit.searchTerm.isNotEmpty) _ordersCubit.searchOrders("");
     super.dispose();
   }
 
   void _closeSearch() {
+    _searchDebounce?.cancel();
+    _ordersCubit.searchOrders("");
     setState(() {
       isSearching = false;
       searchQuery = "";
@@ -94,9 +92,9 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
             padding: EdgeInsetsDirectional.symmetric(horizontal: AppConstants.width15(context)),
             child: isSearching ? _buildSearchBar(context) : _buildHeader(context),
           ),
-          SizedBox(height: AppConstants.height20(context)),
+          const SizedBox(height: DsSpace.md),
           const StatusFilterList(),
-          SizedBox(height: AppConstants.height15(context)),
+          const SizedBox(height: DsSpace.sm),
 
           Expanded(
             child: BlocBuilder<GetOrdersCubit, GetOrdersStates>(
@@ -109,11 +107,26 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                   filterCubit.status[filterCubit.selectedFilterIndex];
 
                   final query = searchQuery.trim().toLowerCase();
-                  final displayOrders = query.isEmpty
-                      ? List.of(getOrdersCubit.ordersList)
-                      : getOrdersCubit.ordersList
-                      .where((o) => (o.orderNumber ?? '').toLowerCase().contains(query))
-                      .toList();
+                  final List<Items> displayOrders;
+                  if (query.isEmpty) {
+                    displayOrders = List.of(getOrdersCubit.ordersList);
+                  } else {
+                    // Server matches by order number (any page) first, then
+                    // name/phone matches among the orders already loaded.
+                    final serverMatches = getOrdersCubit.searchTerm.toLowerCase() == query
+                        ? getOrdersCubit.searchResults
+                        : const <Items>[];
+                    final seen = serverMatches.map((o) => o.id).toSet();
+                    displayOrders = [
+                      ...serverMatches,
+                      ...getOrdersCubit.ordersList.where((o) =>
+                          !seen.contains(o.id) &&
+                          ((o.orderNumber ?? '').toLowerCase().contains(query) ||
+                              (o.shippingAddress?.user?.fullName ?? '').toLowerCase().contains(query) ||
+                              (o.shippingAddress?.phone1 ?? '').contains(query) ||
+                              (o.shippingAddress?.user?.phoneNumber ?? '').contains(query))),
+                    ];
+                  }
 
                   final today = DateTime.now();
                   final todayCount = getOrdersCubit.ordersList.where((o) {
@@ -132,7 +145,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                   return Column(
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.only(bottom: AppConstants.height15(context)),
+                        padding: const EdgeInsetsDirectional.only(bottom: DsSpace.sm),
                         child: OrdersStatsRow(totalDisplayed: totalDisplayed, todayCount: todayCount),
                       ),
                       Expanded(
@@ -163,23 +176,22 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
                                 ],
                               );
                             },
-                            separatorBuilder: (context, index) =>
-                                SizedBox(
-                                  height: AppConstants.height15(context),
-                                ),
+                            separatorBuilder: (context, index) => const SizedBox(height: DsSpace.sm),
                             itemCount: displayOrders.length,
                           ),
                         )
                             : Center(
                           child: query.isEmpty
                               ? SvgPicture.asset(AssetData.emptyCategory)
+                              : getOrdersCubit.isSearchLoading || _searchDebounce?.isActive == true
+                              ? const CustomLoadingItem()
                               : Text(
-                            "لا توجد طلبات مطابقة",
+                            "s_no_matching_orders".tr(),
                             style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
                           ),
                         ),
                       ),
-                      if (isLoading)
+                      if (getOrdersCubit.isLoadingMore)
                         Padding(
                           padding: EdgeInsets.all(
                             AppConstants.sp10(context),
@@ -212,7 +224,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
               children: [
                 Expanded(
                   child: Text(
-                    "الطلبات",
+                    "s_orders_2".tr(),
                     textAlign: TextAlign.center,
                     style: Styles.inter18500Black(context),
                   ),
@@ -221,7 +233,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
             ),
             SizedBox(height: AppConstants.height5(context) / 2),
             Text(
-              "متابعة وإدارة طلبات المتجر",
+              "s_follow_and_manage_store_orders".tr(),
               textAlign: TextAlign.center,
               style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
             ),
@@ -233,6 +245,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
             children: [
               _HeaderIconButton(
                 asset: AssetData.search,
+                label: "ord_search_open".tr(),
                 onTap: () => setState(() => isSearching = true),
               ),
             ],
@@ -244,6 +257,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
             children: [
               _HeaderIconButton(
                 asset: AssetData.filter,
+                label: "ord_filter_open".tr(),
                 onTap: () => showOrderStatusFilterSheet(context),
               ),
             ],
@@ -256,7 +270,7 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
   Widget _buildSearchBar(BuildContext context) {
     return Row(
       children: [
-        _HeaderIconButton(icon: Icons.arrow_forward_rounded, onTap: _closeSearch),
+        _HeaderIconButton(icon: Icons.arrow_forward_rounded, label: "a11y_back".tr(), onTap: _closeSearch),
         SizedBox(width: AppConstants.width10(context)),
         Expanded(
           child: Container(
@@ -271,10 +285,10 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
               autofocus: true,
               textAlign: TextAlign.right,
               style: Styles.inter14500black(context),
-              onChanged: (value) => setState(() => searchQuery = value),
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: "ابحث برقم الطلب",
+                hintText: "ord_search".tr(),
                 hintStyle: Styles.hintText(context),
               ),
             ),
@@ -286,7 +300,9 @@ class _OrdersViewBodyState extends State<OrdersViewBody> {
 }
 
 class _HeaderIconButton extends StatelessWidget {
-  const _HeaderIconButton({this.asset, this.icon, required this.onTap});
+  const _HeaderIconButton({this.asset, this.icon, required this.label, required this.onTap});
+
+  final String label;
 
   final String? asset;
   final IconData? icon;
@@ -294,11 +310,15 @@ class _HeaderIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
-        width: AppConstants.width50(context) * 0.9,
-        height: AppConstants.width50(context) * 0.9,
+        width: DsSize.touch,
+        height: DsSize.touch,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -308,6 +328,7 @@ class _HeaderIconButton extends StatelessWidget {
         child: asset != null
             ? SvgPicture.asset(asset!, width: AppConstants.width20(context),color: Colors.black87,)
             : Icon(icon, size: AppConstants.width20(context), color: Colors.black87),
+      ),
       ),
     );
   }

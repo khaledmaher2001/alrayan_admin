@@ -68,7 +68,7 @@ class OrderProductRow extends StatelessWidget {
                     SizedBox(width: AppConstants.width10(context)),
                     Expanded(
                       child: Text(
-                        "الوحدة  ${item.unit ?? ''}",
+                        "i_unit".tr(namedArgs: {"a": item.unit ?? ""}),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),

@@ -72,19 +72,12 @@ class OrderDetailsItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Styles.inter14600black(context).copyWith(fontWeight: FontWeight.w600),
                       ),
-                      SizedBox(height: AppConstants.height5(context)),
-                      Text(
-                        "هنا هيكون وصف المنتج هنا هيكون وصف المنتج",
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Styles.inter10400grey(context),
-                      ),
                       SizedBox(height: AppConstants.height10(context)),
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                            "التكلفة الكلية",
+                            "s_total_2".tr(),
                               style: Styles.inter14600black(context).copyWith(
                                 color: AppColors.gray
                               ),

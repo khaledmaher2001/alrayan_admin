@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/colors/colors.dart';
@@ -20,7 +21,7 @@ class PaymentAmountItem extends StatelessWidget {
           Expanded(
             child: Text(title,style: isTotal?Styles.inter14600black(context):Styles.inter12600Black(context)),
           ),
-          Text("$amount ج.م",style:isTotal?Styles.inter14600black(context).copyWith(color: AppColors.primaryColor): Styles.inter12600Black(context)),
+          Text("$amount ${"s_egp".tr()}",style:isTotal?Styles.inter14600black(context).copyWith(color: AppColors.primaryColor): Styles.inter12600Black(context)),
 
         ],
       ),

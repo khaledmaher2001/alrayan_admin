@@ -1,9 +1,9 @@
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/presentation/views/sales_report_details_view.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -45,7 +45,8 @@ List<DailyRevenue> dashboardDailyWindow(List<DailyRevenue>? daily, DashboardPeri
 String _dateKey(DateTime date) =>
     "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 
-/// "اليوم / 7 أيام / 30 يوم" pill selector.
+/// "اليوم / 7 أيام / 30 يوم" as one segmented control (a single decision,
+/// so a single object — not three loose pills).
 class DashboardPeriodSelector extends StatelessWidget {
   const DashboardPeriodSelector({
     super.key,
@@ -57,68 +58,67 @@ class DashboardPeriodSelector extends StatelessWidget {
   final ValueChanged<DashboardPeriod> onChanged;
 
   static const _labels = {
-    DashboardPeriod.today: "اليوم",
-    DashboardPeriod.week: "7 أيام",
-    DashboardPeriod.month: "30 يوم",
+    DashboardPeriod.today: "home_period_today",
+    DashboardPeriod.week: "home_period_week",
+    DashboardPeriod.month: "home_period_month",
   };
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: DashboardPeriod.values.map((period) {
-        final isSelected = period == selected;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsetsDirectional.only(
-              end: period == DashboardPeriod.month
-                  ? 0
-                  : AppConstants.width10(context),
-            ),
-            child: GestureDetector(
-              onTap: () => onChanged(period),
-              child: Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(
-                  vertical: AppConstants.height10(context),
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryColor : Colors.white,
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primaryColor
-                        : Colors.grey.shade300,
-                  ),
-                  borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
-                ),
-                child: Text(
-                  _labels[period]!,
-                  style: Styles.inter14500black(context).copyWith(
-                    color: isSelected ? Colors.white : Colors.grey.shade700,
-                    fontWeight: FontWeight.w600,
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: DsColor.fill, borderRadius: BorderRadius.circular(DsRadius.md)),
+      child: Row(
+        children: [
+          for (final period in DashboardPeriod.values)
+            Expanded(
+              child: Semantics(
+                button: true,
+                selected: period == selected,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onChanged(period),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: period == selected ? DsColor.surface : Colors.transparent,
+                      borderRadius: BorderRadius.circular(DsRadius.sm),
+                      border: period == selected ? Border.all(color: DsColor.border) : null,
+                    ),
+                    child: Text(
+                      _labels[period]!.tr(),
+                      style: DsText.label.copyWith(color: period == selected ? DsColor.text : DsColor.textMuted),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 }
 
-/// The dark "إجمالي المبيعات" hero card, with a period-over-period growth
-/// badge and a minimal sparkline built from the matching `trends` series.
+/// Revenue panel: the one number the owner opens the app for, with its trend.
+/// Orders and customers (all-time totals from `overview`) sit underneath as
+/// supporting figures instead of competing coloured tiles.
 class TotalSalesHeroCard extends StatelessWidget {
   const TotalSalesHeroCard({
     super.key,
     required this.period,
     required this.recentStats,
     required this.trends,
+    this.totalOrders,
+    this.totalCustomers,
   });
 
   final DashboardPeriod period;
   final RecentStats? recentStats;
   final Trends? trends;
+  final num? totalOrders;
+  final num? totalCustomers;
 
   num _revenue() {
     switch (period) {
@@ -138,70 +138,120 @@ class TotalSalesHeroCard extends StatelessWidget {
   }
 
   double? _growthPercent(List<double> series) {
-    if (series.length < 2) return null;
+    // The series is daily, so the badge compares today with yesterday; for the
+    // 7/30-day views there is no previous-period total to compare against.
+    if (period != DashboardPeriod.today || series.length < 2) return null;
     final previous = series[series.length - 2];
     final last = series.last;
     if (previous == 0) return null;
-    return ((last - previous) / previous) * 100;
+    final growth = ((last - previous) / previous) * 100;
+    // A tiny "yesterday" makes the percentage meaningless (e.g. 50,073,230%).
+    return growth.abs() > 999 ? null : growth;
   }
 
   @override
   Widget build(BuildContext context) {
     final series = _series();
     final growth = _growthPercent(series);
+    final up = (growth ?? 0) >= 0;
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppConstants.sp20(context)),
       decoration: BoxDecoration(
-        color: AppColors.secondaryColor,
-        borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
+        color: DsColor.surface,
+        borderRadius: BorderRadius.circular(DsRadius.lg),
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "إجمالي المبيعات",
-            style: Styles.inter14500black(context).copyWith(color: Colors.white70),
-          ),
-          SizedBox(height: AppConstants.height10(context)),
-          Text(
-            "${_formatMoney(_revenue())} ج.م",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Styles.inter24600black(context).copyWith(color: Colors.white),
-          ),
-          if (growth != null) ...[
-            SizedBox(height: AppConstants.height5(context)),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(DsSpace.lg, DsSpace.lg, DsSpace.lg, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  growth >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: growth >= 0 ? Colors.greenAccent : Colors.redAccent,
-                  size: AppConstants.sp15(context),
-                ),
-                Text(
-                  "${growth.abs().toStringAsFixed(1)}%",
-                  style: Styles.inter14600black(context).copyWith(
-                    color: growth >= 0 ? Colors.greenAccent : Colors.redAccent,
-                  ),
+                Text("home_total_sales".tr(), style: DsText.label.copyWith(color: DsColor.textMuted)),
+                const SizedBox(height: DsSpace.xs),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text("home_money".tr(namedArgs: {"v": formatMoney(_revenue())}), maxLines: 1, style: DsText.display),
+                      ),
+                    ),
+                    if (growth != null) ...[
+                      const SizedBox(width: DsSpace.sm),
+                      DsStatusBadge(
+                        status: null,
+                        icon: up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                        label: "home_vs_yesterday".tr(namedArgs: {"p": growth.abs().toStringAsFixed(1)}),
+                        fg: up ? DsColor.success : DsColor.danger,
+                        bg: up ? DsColor.successBg : DsColor.dangerBg,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
-          ],
-          if (series.length >= 2) ...[
-            SizedBox(height: AppConstants.height10(context)),
+          ),
+          if (series.length >= 2)
             SizedBox(
               width: double.infinity,
-              height: MediaQuery.of(context).size.height * .06,
-              child: _Sparkline(series: series),
+              height: 56,
+              child: Padding(padding: const EdgeInsets.only(top: DsSpace.sm), child: _Sparkline(series: series)),
+            )
+          else
+            const SizedBox(height: DsSpace.lg),
+          if (totalOrders != null || totalCustomers != null) ...[
+            const Divider(height: 1),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(child: _PanelFigure(icon: Icons.receipt_long_outlined, label: "home_orders_count".tr(), value: formatCount(totalOrders))),
+                  const VerticalDivider(width: 1, color: DsColor.divider),
+                  Expanded(child: _PanelFigure(icon: Icons.people_outline_rounded, label: "home_customers_count".tr(), value: formatCount(totalCustomers))),
+                ],
+              ),
             ),
           ],
         ],
       ),
     );
   }
+}
+
+class _PanelFigure extends StatelessWidget {
+  const _PanelFigure({required this.icon, required this.label, required this.value});
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: DsSpace.lg, vertical: DsSpace.md),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: DsColor.textMuted),
+            const SizedBox(width: DsSpace.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(value, maxLines: 1, style: DsText.number.copyWith(fontSize: 16)),
+                  ),
+                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsText.caption),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _Sparkline extends StatelessWidget {
@@ -216,6 +266,7 @@ class _Sparkline extends StatelessWidget {
     ];
     return LineChart(
       LineChartData(
+        minY: 0,
         gridData: const FlGridData(show: false),
         titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
@@ -224,10 +275,18 @@ class _Sparkline extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: Colors.white,
+            preventCurveOverShooting: true,
+            color: DsColor.primary,
             barWidth: 2,
             dotData: const FlDotData(show: false),
-            belowBarData: BarAreaData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [DsColor.primary.withValues(alpha: .14), DsColor.primary.withValues(alpha: 0)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
           ),
         ],
       ),
@@ -235,7 +294,7 @@ class _Sparkline extends StatelessWidget {
   }
 }
 
-/// Small white card used for "عدد الطلبات" / "عدد العملاء".
+/// Kept for compatibility: a small figure card (orders / customers).
 class DashboardStatCard extends StatelessWidget {
   const DashboardStatCard({
     super.key,
@@ -251,50 +310,57 @@ class DashboardStatCard extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(AppConstants.sp15(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 6),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppConstants.sp5(context)),
-            decoration: BoxDecoration(
-              color: iconBackground,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: AppConstants.sp20(context)),
-          ),
-          SizedBox(width: AppConstants.height10(context)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value, style: Styles.inter18500Black(context)),
-                SizedBox(height: AppConstants.height5(context) / 2),
-                Text(
-                  title,
-                  style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
+  Widget build(BuildContext context) => DsCard(child: _PanelFigure(icon: icon, label: title, value: value));
+}
 
+/// "Needs action" row: what is waiting, how many, and where to go.
+/// A non-zero count is a tinted pill in the row's tone; zero stays quiet.
+class DashboardActionRow extends StatelessWidget {
+  const DashboardActionRow({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.count,
+    this.tone = DsColor.primary,
+    this.toneBg = DsColor.primarySoft,
+    this.extra,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final num count;
+  final Color tone;
+  final Color toneBg;
+  final Widget? extra;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = count > 0;
+    return DsRow(
+      icon: icon,
+      title: title,
+      onTap: onTap,
+      showChevron: onTap != null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (extra != null) ...[extra!, const SizedBox(width: DsSpace.sm)],
+          Container(
+            constraints: const BoxConstraints(minWidth: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: active ? toneBg : Colors.transparent, borderRadius: BorderRadius.circular(DsRadius.pill)),
+            child: Text(formatCount(count), style: DsText.bodyStrong.copyWith(color: active ? tone : DsColor.textSubtle, fontFeatures: const [FontFeature.tabularFigures()])),
+          ),
         ],
       ),
     );
   }
 }
 
-/// "طلبات جديدة" / "قيد التوصيل" / "مخزون منخفض" quick-access row.
+/// Kept for compatibility with older call sites.
 class DashboardQuickStatCard extends StatelessWidget {
   const DashboardQuickStatCard({
     super.key,
@@ -312,46 +378,12 @@ class DashboardQuickStatCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(AppConstants.sp10(context)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 4),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.chevron_left, color: Colors.grey.shade400, size: AppConstants.sp15(context)),
-                const Spacer(),
-                Icon(icon, color: iconColor, size: AppConstants.sp20(context)),
-              ],
-            ),
-            SizedBox(height: AppConstants.height5(context)),
-            Text(value, style: Styles.inter18500Black(context)),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Styles.inter10400grey(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => DsGroup(children: [DsRow(icon: icon, title: title, value: value, onTap: onTap)]);
 }
 
 /// "أداء المبيعات" line chart + average order value / completion rate.
 class SalesPerformanceSection extends StatelessWidget {
-  const SalesPerformanceSection({
+  SalesPerformanceSection({
     super.key,
     required this.period,
     required this.trends,
@@ -376,7 +408,7 @@ class SalesPerformanceSection extends StatelessWidget {
   static String _shortDate(String? iso) {
     final date = DateTime.tryParse(iso ?? '');
     if (date == null) return '';
-    const days = ['اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت', 'أحد'];
+    final days = ["s_mon".tr(), "s_tue".tr(), "s_wed".tr(), "s_thu".tr(), "s_fri".tr(), "s_sat".tr(), "s_sun".tr()];
     return days[date.weekday - 1];
   }
 
@@ -398,8 +430,8 @@ class SalesPerformanceSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           HomeSectionHeader(
-            title: "أداء المبيعات",
-            subtitle: "اتجاه المبيعات خلال الفترة المختارة",
+            title: "s_sales_performance".tr(),
+            subtitle: "s_sales_trend_over_the_selected_period".tr(),
             trailing: HomeViewAllButton(
               onTap: () => NavigationUtils.navigateTo(
                 context: context,
@@ -413,8 +445,8 @@ class SalesPerformanceSection extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: AppConstants.height20(context)),
               child: Center(
                 child: Text(
-                  "لا توجد بيانات كافية لعرض الرسم البياني",
-                  style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
+                  "s_not_enough_data_to_show_the_chart".tr(),
+                  style: DsText.label.copyWith(color: DsColor.textMuted),
                 ),
               ),
             )
@@ -428,18 +460,18 @@ class SalesPerformanceSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniMetric(
-                  title: "متوسط قيمة الطلب",
-                  value: "${_formatMoney(overview?.averageOrderValue as num?)} ج.م",
+                  title: "s_average_order_value".tr(),
+                  value: "home_money".tr(namedArgs: {"v": formatMoney(overview?.averageOrderValue as num?)}),
                   icon: Icons.trending_up,
                 ),
               ),
-              Container(width: 1, height: AppConstants.height30(context), color: Colors.grey.shade200),
+              Container(width: 1, height: AppConstants.height30(context), color: DsColor.border),
               Expanded(
                 child: _MiniMetric(
-                  title: "نسبة اكتمال الطلبات",
+                  title: "s_order_completion_rate".tr(),
                   value: "${_formatPercent(overview?.completionRate as num?)}%",
                   icon: Icons.check_circle_outline,
-                  valueColor: Colors.green,
+                  valueColor: DsColor.success,
                 ),
               ),
             ],
@@ -476,7 +508,7 @@ class _TrendChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: maxY == 0 ? 1 : maxY / 3,
-          getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => FlLine(color: DsColor.border, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
@@ -498,7 +530,7 @@ class _TrendChart extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
                     points[index].label,
-                    style: Styles.inter10400grey(context),
+                    style: DsText.caption,
                   ),
                 );
               },
@@ -507,20 +539,20 @@ class _TrendChart extends StatelessWidget {
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => AppColors.secondaryColor,
+            getTooltipColor: (_) => DsColor.text,
           ),
         ),
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: AppColors.primaryColor,
-            barWidth: 3,
+            color: DsColor.primary,
+            barWidth: 2.5,
             dotData: FlDotData(
               show: true,
               getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                radius: 4,
-                color: AppColors.primaryColor,
+                radius: 3,
+                color: DsColor.primary,
                 strokeColor: Colors.white,
                 strokeWidth: 2,
               ),
@@ -529,8 +561,8 @@ class _TrendChart extends StatelessWidget {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryColor.withOpacity(.25),
-                  AppColors.primaryColor.withOpacity(0),
+                  DsColor.primary.withValues(alpha: .25),
+                  DsColor.primary.withValues(alpha: 0),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -561,16 +593,16 @@ class _MiniMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: Styles.inter10400grey(context)),
+        Text(title, style: DsText.caption),
         SizedBox(height: AppConstants.height5(context) / 2),
         Row(
           children: [
             Text(
               value,
-              style: Styles.inter16500black(context).copyWith(color: valueColor),
+              style: DsText.subheading.copyWith(color: valueColor),
             ),
             SizedBox(width: AppConstants.width5(context)),
-            Icon(icon, size: AppConstants.sp15(context), color: valueColor ?? AppColors.primaryColor),
+            Icon(icon, size: AppConstants.sp15(context), color: valueColor ?? DsColor.primary),
           ],
         ),
       ],
@@ -613,9 +645,9 @@ class OrderStatusDonutSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (ordersByStatus.isEmpty) {
-      return const HomeFeatureEmptyCard(
-        title: "حالة الطلبات",
-        message: "لا توجد بيانات كافية حاليا",
+      return HomeFeatureEmptyCard(
+        title: "s_order_status".tr(),
+        message: "s_not_enough_data_yet".tr(),
       );
     }
 
@@ -625,7 +657,7 @@ class OrderStatusDonutSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("حالة الطلبات", style: Styles.inter16500black(context)),
+          Text("s_order_status".tr(), style: DsText.subheading),
           SizedBox(height: AppConstants.height20(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -655,10 +687,10 @@ class OrderStatusDonutSection extends StatelessWidget {
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("$totalOrders", style: Styles.inter18500Black(context)),
+                        Text("$totalOrders", style: DsText.number),
                         Text(
-                          "الإجمالي",
-                          style: Styles.inter10400grey(context),
+                          "s_total".tr(),
+                          style: DsText.caption,
                         ),
                       ],
                     ),
@@ -687,10 +719,10 @@ class OrderStatusDonutSection extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 AppConstants.getStatusText(s.status),
-                                style: Styles.inter12500Black(context),
+                                style: DsText.label,
                               ),
                             ),
-                            Text("${s.count ?? 0}", style: Styles.inter14600black(context)),
+                            Text("${s.count ?? 0}", style: DsText.bodyStrong),
                           ],
                         ),
                       ),
@@ -705,12 +737,11 @@ class OrderStatusDonutSection extends StatelessWidget {
   }
 }
 
-String _formatMoney(num? value) {
-  if (value == null) return '0';
-  final v = value.toDouble();
-  if (v == v.roundToDouble()) return v.toInt().toString();
-  return v.toStringAsFixed(1);
-}
+/// 1234567.5 → "1,234,567.5" (Latin digits, like the rest of the app).
+String formatMoney(num? value) => NumberFormat('#,##0.##', 'en').format(value ?? 0);
+
+/// 12345 → "12,345".
+String formatCount(num? value) => NumberFormat('#,##0', 'en').format(value ?? 0);
 
 String _formatPercent(num? value) {
   if (value == null) return '0';

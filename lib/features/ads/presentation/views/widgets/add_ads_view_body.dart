@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/toast.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
@@ -90,13 +92,22 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
     });
   }
 
+  /// A "discount" banner must point at a product (the dropdown/image are form validators).
+  bool _productChosen(BuildContext context) {
+    final assets = context.read<AdsAssetsCubit>();
+    if (assets.adsType == "discount" && assets.selectedProduct == null) {
+      toast(text: "s_please_select_the_ad_product".tr(), color: DsColor.danger);
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height20(context)),
-          CustomAppBar(title: isEditing ? "تعديل الاعلان" : "اضافة اعلان او عرض", textColor: Colors.black, hasBack: true, withNotifications: false),
+          CustomAppBar(title: isEditing ? "s_edit_ad".tr() : "s_add_an_ad_or_offer".tr(), textColor: Colors.black, hasBack: true, withNotifications: false),
           SizedBox(height: AppConstants.height20(context)),
           Expanded(
             child: SingleChildScrollView(
@@ -115,37 +126,37 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             children: [
                               Row(
                                 children: [
-                                  Text("نوع الاعلان", style: Styles.inter14600black(context)),
+                                  Text("s_ad_type".tr(), style: Styles.inter14600black(context)),
                                   Text("*", style: Styles.inter14600black(context).copyWith(color: AppColors.redColor)),
                                 ],
                               ),
                               SizedBox(height: AppConstants.height5(context)),
                               CustomDropDownButton(
-                                hintText: "اختر نوع الاعلان",
-                                items: ['اعلان عادي', 'عرض علي منتج'],
+                                hintText: "s_choose_the_ad_type".tr(),
+                                items: ['إعلان عادي', 'عرض على منتج'],
                                 borderRadius: AppConstants.sp10(context),
                                 hasBorder: true,
                                 height: MediaQuery.of(context).size.height * .06,
                                 onChanged: (v) {
                                   switch (v) {
-                                    case 'عرض علي منتج':
+                                    case 'عرض على منتج':
                                       context.read<AdsAssetsCubit>().selectAdsType(type: "discount");
                                       break;
-                                    case 'اعلان عادي':
+                                    case 'إعلان عادي':
                                       context.read<AdsAssetsCubit>().selectAdsType(type: "new");
                                       break;
                                   }
                                 },
                                 validator: (String? value) {
                                   if (value == null) {
-                                    return "من فضلك اختر نوع الاعلان";
+                                    return "s_please_choose_the_ad_type".tr();
                                   }
                                   return null;
                                 },
                                 value: context.read<AdsAssetsCubit>().adsType == "discount"
-                                    ? 'عرض علي منتج'
+                                    ? 'عرض على منتج'
                                     : context.read<AdsAssetsCubit>().adsType == "new"
-                                        ? 'اعلان عادي'
+                                        ? 'إعلان عادي'
                                         : null,
                               ),
                             ],
@@ -156,7 +167,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(child: Text("المنتج المختار", style: Styles.inter14600black(context))),
+                                    Expanded(child: Text("s_selected_product".tr(), style: Styles.inter14600black(context))),
                                     if (context.read<AdsAssetsCubit>().selectedProduct != null)
                                       InkWell(
                                         onTap: () {
@@ -193,7 +204,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               SvgPicture.asset(AssetData.addCircle, color: AppColors.gray),
-                                              Text("اضافة المنتج", style: Styles.inter14600gray(context)),
+                                              Text("s_add_product".tr(), style: Styles.inter14600gray(context)),
                                             ],
                                           ),
                                         ),
@@ -203,14 +214,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                         decoration: BoxDecoration(
                                           color: Color(0xffF7F7F8),
                                           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(.1),
-                                              blurRadius: 5,
-                                              spreadRadius: 1,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
+                                          border: Border.all(color: DsColor.border),
                                         ),
                                         child: Row(
                                           children: [
@@ -256,9 +260,9 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                             ),
                                             Column(
                                               children: [
-                                                Text("السعر", style: Styles.inter16500black(context)),
+                                                Text("s_price".tr(), style: Styles.inter16500black(context)),
                                                 Text(
-                                                  "${context.read<AdsAssetsCubit>().selectedProduct!.price ?? ''} جنيه",
+                                                  "${context.read<AdsAssetsCubit>().selectedProduct!.price ?? ''} ${"s_egp".tr()}",
                                                   style: Styles.inter16500black(
                                                     context,
                                                   ).copyWith(color: AppColors.primaryColor),
@@ -272,15 +276,15 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             ),
                             SizedBox(height: AppConstants.height20(context)),
                           ],
-                          Text("عنوان الاعلان", style: Styles.inter14500black(context)),
+                          Text("s_ad_title".tr(), style: Styles.inter14500black(context)),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
                             validation: (value) {
                               if (value == null || value.isEmpty) {
-                                return "يجب ادخال هذا الحقل";
+                                return "s_this_field_is_required".tr();
                               }
                             },
-                            hintText: "اضافة عنوان الاعلان",
+                            hintText: "s_add_the_ad_title".tr(),
                             borderRadius: AppConstants.sp10(context),
                             hasBorder: true,
                             borderSideColor: AppColors.gray,
@@ -291,16 +295,14 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             controller: newTitle,
                           ),
                           SizedBox(height: AppConstants.height20(context)),
-                          Text("وصف الاعلان", style: Styles.inter14500black(context)),
+                          // Optional on the server (create and update); an empty value on edit clears it.
+                          Text("s_ad_description_optional".tr(), style: Styles.inter14500black(context)),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
-                            readOnly: isEditing,
                             validation: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "يجب ادخال هذا الحقل";
-                              }
+                              return null;
                             },
-                            hintText: "اضافة وصف الاعلان",
+                            hintText: "s_add_the_ad_description".tr(),
                             borderRadius: AppConstants.sp10(context),
                             hasBorder: true,
                             borderSideColor: AppColors.gray,
@@ -311,18 +313,11 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                             textInputType: TextInputType.emailAddress,
                             controller: newDescription,
                           ),
-                          if (isEditing) ...[
-                            SizedBox(height: AppConstants.height5(context)),
-                            Text(
-                              "وصف الاعلان غير قابل للتعديل حاليًا",
-                              style: Styles.inter12500Black(context).copyWith(color: Colors.grey.shade600),
-                            ),
-                          ],
                          if(context.read<AdsAssetsCubit>().adsType == "new")...[ SizedBox(height: AppConstants.height20(context)),
-                          Text("رابط الاعلان ان وجد", style: Styles.inter14500black(context)),
+                          Text("s_ad_link_optional".tr(), style: Styles.inter14500black(context)),
                           SizedBox(height: AppConstants.height5(context)),
                           DefaultTextFormField(
-                            hintText: "اضافة رابط الاعلان",
+                            hintText: "s_add_the_ad_link".tr(),
                             borderRadius: AppConstants.sp10(context),
                             hasBorder: true,
                             validation: (value) {
@@ -343,13 +338,13 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("اضافة صورة او مرفق", style: Styles.inter14500black(context)),
+                                  Text("s_add_an_image_or_attachment".tr(), style: Styles.inter14500black(context)),
                                   SizedBox(height: AppConstants.height10(context)),
                                   FormField(
                                     validator: (value) {
                                       final assets = context.read<AdsAssetsCubit>();
                                       if (assets.newImage == null && assets.existingImageUrl == null) {
-                                        return "يجب اضافة صورة او مرفق";
+                                        return "s_an_image_or_attachment_is_required".tr();
                                       }
                                       return null;
                                     },
@@ -381,7 +376,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                                           borderRadius: BorderRadius.circular(
                                                             AppConstants.sp10(context),
                                                           ),
-                                                          color: Colors.grey[200],
+                                                          color: DsColor.border,
                                                         ),
                                                         child: ClipRRect(
                                                           clipBehavior: Clip.hardEdge,
@@ -401,7 +396,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                                           borderRadius: BorderRadius.circular(
                                                             AppConstants.sp10(context),
                                                           ),
-                                                          color: Colors.grey[200],
+                                                          color: DsColor.border,
                                                         ),
                                                         child: ClipRRect(
                                                           clipBehavior: Clip.hardEdge,
@@ -439,7 +434,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                                                 state.errorText!,
                                                 style: Styles.inter16500black(context).copyWith(
                                                   fontWeight: FontWeight.w100,
-                                                  color: Colors.red,
+                                                  color: DsColor.danger,
                                                   fontSize: MediaQuery.of(context).size.height * .012,
                                                 ),
                                               ),
@@ -469,28 +464,31 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                       return state is EditBannerLoading
                           ? DefaultButton(
                               onPress: () {},
-                              text: "جاري حفظ التعديلات....",
+                              text: "s_saving_changes".tr(),
                               backgroundColor: AppColors.gray,
                               borderRadius: AppConstants.sp10(context),
                             )
                           : DefaultButton(
                               onPress: () async {
-                                if (formNewKey.currentState!.validate()) {
+                                if (formNewKey.currentState!.validate() && _productChosen(context)) {
                                   final assets = context.read<AdsAssetsCubit>();
                                   context.read<EditBannerCubit>().updateBanner(
                                     id: widget.editingBanner!.id!,
                                     data: {
                                       "title": newTitle.text.trim(),
+                                      "description": newDescription.text.trim(),
                                       "type": assets.adsType,
-                                      if (assets.adsType == "new") "link": link.text.trim(),
-                                      if (assets.adsType == "discount") "productId": assets.selectedProduct!.id,
+                                      // "" clears the field that no longer applies when the type changes.
+                                      "link": assets.adsType == "new" ? link.text.trim() : "",
+                                      "productId": assets.adsType == "discount" ? assets.selectedProduct!.id : "",
+                                      // PATCH /banners/:id reads the upload from the "file" field (POST uses "imagePath").
                                       if (assets.newImage != null)
-                                        "imagePath": await MultipartFile.fromFile(assets.newImage!.path),
+                                        "file": await MultipartFile.fromFile(assets.newImage!.path),
                                     },
                                   );
                                 }
                               },
-                              text: "حفظ التعديلات",
+                              text: "s_save_changes".tr(),
                               borderRadius: AppConstants.sp10(context),
                             );
                     },
@@ -498,7 +496,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                       if (state is EditBannerSuccess) {
                         context.read<AdsAssetsCubit>().newImage = null;
                         context.read<OfferBannerCubit>().fetchOfferBanners();
-                        toast(text: "تم تعديل الاعلان بنجاح", color: Colors.green);
+                        toast(text: "s_ad_updated".tr(), color: DsColor.success);
                         NavigationUtils.navigateBack(context: context);
                       } else if (state is EditBannerError) {
                         customSnackBar(message: state.error, color: AppColors.redColor, context: context);
@@ -510,30 +508,30 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                       return state is AddAdsLoading
                           ? DefaultButton(
                               onPress: () {},
-                              text: "جاري اضافة الاعلان....",
+                              text: "s_adding_the_ad".tr(),
                               backgroundColor: AppColors.gray,
                               borderRadius: AppConstants.sp10(context),
                             )
                           : DefaultButton(
                               onPress: () async {
-                                if (formNewKey.currentState!.validate()) {
-                                  context.read<AddAdsCubit>().addAds(
+                                if (formNewKey.currentState!.validate() && _productChosen(context)) {
+                                  final assets = context.read<AdsAssetsCubit>();
+                                  final addCubit = context.read<AddAdsCubit>();
+                                  addCubit.addAds(
                                     data: {
                                       "title": newTitle.text.trim(),
-                                      "description": newDescription.text.trim(),
-                                      "type": context.read<AdsAssetsCubit>().adsType,
-                                      if(context.read<AdsAssetsCubit>().adsType == "new")
-                                      "link":link.text.trim(),
-                                      if(context.read<AdsAssetsCubit>().adsType == "discount")
-                                        "productId": context.read<AdsAssetsCubit>().selectedProduct!.id,
-                                      "imagePath": await MultipartFile.fromFile(
-                                        context.read<AdsAssetsCubit>().newImage?.path ?? "",
-                                      ),
+                                      if (newDescription.text.trim().isNotEmpty)
+                                        "description": newDescription.text.trim(),
+                                      "type": assets.adsType,
+                                      if (assets.adsType == "new") "link": link.text.trim(),
+                                      if (assets.adsType == "discount") "productId": assets.selectedProduct!.id,
+                                      // The image FormField above guarantees one was picked.
+                                      "imagePath": await MultipartFile.fromFile(assets.newImage!.path),
                                     },
                                   );
                                 }
                               },
-                              text: "اضافة الاعلان",
+                              text: "s_add_ad".tr(),
                               borderRadius: AppConstants.sp10(context),
                             );
                     },
@@ -541,7 +539,7 @@ class _AddAdsViewBodyState extends State<AddAdsViewBody> {
                       if (state is AddAdsSuccess) {
                         context.read<AdsAssetsCubit>().newImage = null;
                         context.read<OfferBannerCubit>().fetchOfferBanners();
-                        toast(text: "تم أضافة الاعلان بنجاح", color: Colors.green);
+                        toast(text: "s_ad_added".tr(), color: DsColor.success);
                         NavigationUtils.navigateBack(context: context);
                       } else if (state is AddAdsError) {
                         customSnackBar(message: state.error, color: AppColors.redColor, context: context);

@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/cherry_toast.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/shared_widgets/default_text_form_field.dart';
@@ -115,7 +116,7 @@ class _DeliveryAccountFormSheetState extends State<DeliveryAccountFormSheet> {
           "discard_changes_message".tr(),
           style: Styles.inter14500black(
             context,
-          ).copyWith(color: Colors.grey.shade700),
+          ).copyWith(color: DsColor.text2),
         ),
         actions: [
           TextButton(
@@ -126,7 +127,7 @@ class _DeliveryAccountFormSheetState extends State<DeliveryAccountFormSheet> {
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               "discard".tr(),
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(color: DsColor.danger),
             ),
           ),
         ],
@@ -188,7 +189,7 @@ class _DeliveryAccountFormSheetState extends State<DeliveryAccountFormSheet> {
               width: MediaQuery.of(context).size.width * 0.15,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-                color: Colors.grey.shade300,
+                color: DsColor.border,
               ),
             ),
           ),
@@ -217,7 +218,7 @@ class _DeliveryAccountFormSheetState extends State<DeliveryAccountFormSheet> {
               ],
             ),
           ),
-          Divider(color: Colors.grey.shade100),
+          Divider(color: DsColor.fill),
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(

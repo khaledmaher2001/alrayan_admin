@@ -87,9 +87,9 @@ class Overview {
 
   Overview.fromJson(Map<String, dynamic> json) {
     totalRevenue = json['totalRevenue'];
-    totalOrders = json['totalOrders'];
-    totalProducts = json['totalProducts'];
-    totalCustomers = json['totalCustomers'];
+    totalOrders = _asInt(json['totalOrders']);
+    totalProducts = _asInt(json['totalProducts']);
+    totalCustomers = _asInt(json['totalCustomers']);
     averageOrderValue = json['averageOrderValue'];
     completionRate = json['completionRate'];
   }
@@ -124,11 +124,11 @@ class RecentStats {
 
   RecentStats.fromJson(Map<String, dynamic> json) {
     todayRevenue = json['todayRevenue'];
-    todayOrders = json['todayOrders'];
+    todayOrders = _asInt(json['todayOrders']);
     weeklyRevenue = json['weeklyRevenue'];
-    weeklyOrders = json['weeklyOrders'];
+    weeklyOrders = _asInt(json['weeklyOrders']);
     monthlyRevenue = json['monthlyRevenue'];
-    monthlyOrders = json['monthlyOrders'];
+    monthlyOrders = _asInt(json['monthlyOrders']);
   }
 
   Map<String, dynamic> toJson() {
@@ -201,8 +201,8 @@ class OrdersByStatus {
 
   OrdersByStatus.fromJson(Map<String, dynamic> json) {
     status = json['status'];
-    count = json['count'];
-    percentage = json['percentage'];
+    count = _asInt(json['count']);
+    percentage = _asInt(json['percentage']);
   }
 
   Map<String, dynamic> toJson() {
@@ -223,8 +223,8 @@ class OrdersByPaymentStatus {
 
   OrdersByPaymentStatus.fromJson(Map<String, dynamic> json) {
     status = json['status'];
-    count = json['count'];
-    percentage = json['percentage'];
+    count = _asInt(json['count']);
+    percentage = _asInt(json['percentage']);
   }
 
   Map<String, dynamic> toJson() {
@@ -245,8 +245,8 @@ class OrdersByPaymentMethod {
 
   OrdersByPaymentMethod.fromJson(Map<String, dynamic> json) {
     method = json['method'];
-    count = json['count'];
-    percentage = json['percentage'];
+    count = _asInt(json['count']);
+    percentage = _asInt(json['percentage']);
   }
 
   Map<String, dynamic> toJson() {
@@ -319,13 +319,13 @@ class TopSellingProducts {
       {this.id, this.name, this.image,this.totalSold, this.revenue, this.averagePrice});
 
   TopSellingProducts.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _asInt(json['id']);
     name = json['name'];
     // API sends this field as lowercase 'image' like every other field
     // here (camelCase) — keeping the old 'Image' key as a fallback in
     // case some responses still use it.
     image = json['image'] ?? json['Image'];
-    totalSold = json['totalSold'];
+    totalSold = _asInt(json['totalSold']);
     revenue = json['revenue'];
     averagePrice = json['averagePrice'];
   }
@@ -353,10 +353,10 @@ class LowStockProducts {
       {this.id, this.name, this.currentStock, this.sold, this.isRecommended});
 
   LowStockProducts.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _asInt(json['id']);
     name = json['name'];
-    currentStock = json['currentStock'];
-    sold = json['sold'];
+    currentStock = _asInt(json['currentStock']);
+    sold = _asInt(json['sold']);
     isRecommended = json['isRecommended'];
   }
 
@@ -386,10 +386,10 @@ class CategoryPerformance {
         this.revenue});
 
   CategoryPerformance.fromJson(Map<String, dynamic> json) {
-    categoryId = json['categoryId'];
+    categoryId = _asInt(json['categoryId']);
     categoryName = json['categoryName'];
-    totalProducts = json['totalProducts'];
-    totalSold = json['totalSold'];
+    totalProducts = _asInt(json['totalProducts']);
+    totalSold = _asInt(json['totalSold']);
     revenue = json['revenue'];
   }
 
@@ -459,7 +459,7 @@ class DailyRevenue {
   DailyRevenue.fromJson(Map<String, dynamic> json) {
     date = json['date'];
     revenue = json['revenue'];
-    orders = json['orders'];
+    orders = _asInt(json['orders']);
   }
 
   Map<String, dynamic> toJson() {
@@ -481,7 +481,7 @@ class WeeklyRevenue {
   WeeklyRevenue.fromJson(Map<String, dynamic> json) {
     week = json['week'];
     revenue = json['revenue'];
-    orders = json['orders'];
+    orders = _asInt(json['orders']);
   }
 
   Map<String, dynamic> toJson() {
@@ -503,7 +503,7 @@ class MonthlyRevenue {
   MonthlyRevenue.fromJson(Map<String, dynamic> json) {
     month = json['month'];
     revenue = json['revenue'];
-    orders = json['orders'];
+    orders = _asInt(json['orders']);
   }
 
   Map<String, dynamic> toJson() {
@@ -534,11 +534,11 @@ class TopCustomers {
         this.averageOrderValue});
 
   TopCustomers.fromJson(Map<String, dynamic> json) {
-    userId = json['userId'];
+    userId = _asInt(json['userId']);
     fullName = json['fullName'];
     email = json['email'];
     phoneNumber = json['phoneNumber'];
-    orderCount = json['orderCount'];
+    orderCount = _asInt(json['orderCount']);
     totalSpent = json['totalSpent'];
     averageOrderValue = json['averageOrderValue'];
   }
@@ -565,7 +565,7 @@ class ReviewStats {
 
   ReviewStats.fromJson(Map<String, dynamic> json) {
     averageRating = json['averageRating'];
-    totalReviews = json['totalReviews'];
+    totalReviews = _asInt(json['totalReviews']);
     ratingDistribution = json['ratingDistribution'] != null
         ? new RatingDistribution.fromJson(json['ratingDistribution'])
         : null;
@@ -592,11 +592,11 @@ class RatingDistribution {
   RatingDistribution({this.i1, this.i2, this.i3, this.i4, this.i5});
 
   RatingDistribution.fromJson(Map<String, dynamic> json) {
-    i1 = json['1'];
-    i2 = json['2'];
-    i3 = json['3'];
-    i4 = json['4'];
-    i5 = json['5'];
+    i1 = _asInt(json['1']);
+    i2 = _asInt(json['2']);
+    i3 = _asInt(json['3']);
+    i4 = _asInt(json['4']);
+    i5 = _asInt(json['5']);
   }
 
   Map<String, dynamic> toJson() {
@@ -609,3 +609,6 @@ class RatingDistribution {
     return data;
   }
 }
+/// Counts and percentages may arrive as decimals (e.g. 17.27 %); a strict int
+/// cast made the whole dashboard fail to load.
+int? _asInt(dynamic v) => v == null ? null : (v is num ? v.round() : int.tryParse(v.toString()));

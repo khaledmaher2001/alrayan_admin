@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/errors/failure.dart';
 import 'package:alrayan_admin/core/utils/services/remote_services/api_service.dart';
 import 'package:alrayan_admin/core/utils/services/remote_services/endpoints.dart';
@@ -42,7 +43,7 @@ class ProfileRepoImpl implements ProfileRepo {
         data: data,
         sendToken: true,
       );
-      return Right("تم تغيير الرقم السرى بنجاح");
+      return Right("s_password_changed".tr());
     } catch (e) {
       if (e is DioException) {
         return left(ServerFailure.fromDioError(e));

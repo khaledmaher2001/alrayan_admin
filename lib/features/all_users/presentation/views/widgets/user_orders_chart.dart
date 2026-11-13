@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -23,17 +24,17 @@ class UserOrdersChart extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   switch (value.toInt()) {
                     case 2:
-                      return  Text('فبراير', style:Styles.inter10400grey(context));
+                      return  Text("s_february".tr(), style:Styles.inter10400grey(context));
                     case 4:
-                      return  Text('ابريل', style:Styles.inter10400grey(context));
+                      return  Text("s_april".tr(), style:Styles.inter10400grey(context));
                     case 6:
-                      return  Text('يونيو', style:Styles.inter10400grey(context));
+                      return  Text("s_june".tr(), style:Styles.inter10400grey(context));
                       case 8:
-                      return  Text('اغسطس', style: Styles.inter10400grey(context));
+                      return  Text("s_august".tr(), style: Styles.inter10400grey(context));
                       case 10:
-                      return  Text('اكتوبر', style:Styles.inter10400grey(context));
+                      return  Text("s_october".tr(), style:Styles.inter10400grey(context));
                       case 12:
-                      return  Text('ديسمبر', style:Styles.inter10400grey(context));
+                      return  Text("s_december".tr(), style:Styles.inter10400grey(context));
                     default:
                       return  SizedBox();
                   }

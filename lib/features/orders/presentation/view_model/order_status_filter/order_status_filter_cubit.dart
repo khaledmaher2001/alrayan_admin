@@ -6,9 +6,9 @@ class OrderStatusFilterCubit extends Cubit<OrderStatusFilterStates> {
 
   List<String?> status = [null, "pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"];
 
-  // Open on "pending" by default — that's where newly-arrived orders land,
-  // instead of "الكل" which buries them among everything else.
-  int selectedFilterIndex = 1;
+  // Open on "الكل" (all statuses) by default, like the dashboard — an empty
+  // "pending" tab looked like there were no orders at all.
+  int selectedFilterIndex = 0;
 
   void selectIndex({required int index}) {
     selectedFilterIndex = index;

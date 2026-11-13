@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/default_cached_network_image.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/get_categories/get_categories_cubit.dart';
 import 'package:alrayan_admin/features/categories/presentation/view_model/get_categories/get_categories_states.dart';
@@ -70,7 +72,7 @@ class _SelectCategoriesBottomSheetState
                   ),
                   SizedBox(height: AppConstants.height10(context)),
                   Text(
-                    "أختر الاقسام",
+                    "s_choose_categories".tr(),
                     style: Styles.inter16400white(
                       context,
                     ).copyWith(color: Colors.black),
@@ -132,14 +134,7 @@ class _SelectCategoriesBottomSheetState
                                   Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Color(0x33000000),
-                                          blurRadius: 6,
-                                          spreadRadius: 0,
-                                          offset: Offset(0, 0),
-                                        ),
-                                      ],
+                                      border: Border.all(color: DsColor.border),
                                       borderRadius: BorderRadius.circular(
                                         AppConstants.sp10(context),
                                       ),
@@ -189,7 +184,6 @@ class _SelectCategoriesBottomSheetState
                                         AssetData.uncheck,
                                         color: AppColors.gray,
                                         width: MediaQuery.of(context).size.width*.06,
-
                                       ),
                                     ),
                                   ),
@@ -200,8 +194,8 @@ class _SelectCategoriesBottomSheetState
                         )
                             : EmptyWidget(
                           icon: AssetData.search,
-                          title: "لا يوجد اقسام",
-                          description: "ابدأ في اضافة الاقسام اولا",
+                          title: "s_no_categories".tr(),
+                          description: "s_add_categories_first".tr(),
                         );
 
                       } else {
@@ -216,15 +210,15 @@ class _SelectCategoriesBottomSheetState
                                   AppConstants.sp10(context),
                                 ),
                                 child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[200]!,
+                                  baseColor: DsColor.border!,
+                                  highlightColor: DsColor.border!,
                                   child: Container(
                                     height:
                                         MediaQuery.of(context).size.height *
                                         .11,
                                     width: MediaQuery.of(context).size.width,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey,
+                                      color: DsColor.textMuted,
                                       borderRadius: BorderRadius.circular(
                                         AppConstants.sp5(context),
                                       ),

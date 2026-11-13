@@ -1,5 +1,6 @@
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/data/models/inventory_analytics_model.dart';
+import 'package:alrayan_admin/features/home/data/models/item_analytics_model.dart';
 import 'package:alrayan_admin/features/home/data/models/low_stock_config_model.dart';
 import 'package:alrayan_admin/features/home/data/models/low_stock_product_model.dart';
 import 'package:alrayan_admin/features/home/data/models/sales_report_model.dart';
@@ -17,9 +18,15 @@ class HomeRepoImpl implements HomeRepo {
   HomeRepoImpl(this.apiService);
 
   @override
-  Future<Either<Failure, HomeStatisticsModel>> getHomeStatistics() async {
+  Future<Either<Failure, HomeStatisticsModel>> getHomeStatistics({
+    CancelToken? cancelToken,
+  }) async {
     try {
-      var response = await apiService!.get(endPoint: EndPoints.homeStatistics, sendToken: true);
+      var response = await apiService!.get(
+        endPoint: EndPoints.homeStatistics,
+        sendToken: true,
+        cancelToken: cancelToken,
+      );
       var result = HomeStatisticsModel.fromJson(response.data);
       return right(result);
     } catch (e) {
@@ -39,11 +46,13 @@ class HomeRepoImpl implements HomeRepo {
     int page = 1,
     int limit = 20,
     String? search,
+    CancelToken? cancelToken,
   }) async {
     try {
       var response = await apiService!.get(
         endPoint: EndPoints.inventoryAnalytics,
         sendToken: true,
+        cancelToken: cancelToken,
         query: {
           'page': page,
           'limit': limit,
@@ -64,16 +73,50 @@ class HomeRepoImpl implements HomeRepo {
   }
 
   @override
+  Future<Either<Failure, ItemAnalyticsModel>> getItemAnalytics({
+    required int productId,
+    String? groupBy,
+    String? startDate,
+    String? endDate,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final response = await apiService!.get(
+        endPoint: EndPoints.itemAnalytics(productId),
+        sendToken: true,
+        cancelToken: cancelToken,
+        query: {
+          // `groupBy` and an explicit date range are mutually exclusive on the
+          // API — only forward whichever the caller supplied.
+          if (groupBy != null && groupBy.isNotEmpty) 'groupBy': groupBy,
+          if (startDate != null) 'startDate': startDate,
+          if (endDate != null) 'endDate': endDate,
+        },
+      );
+      return right(ItemAnalyticsModel.fromJson(response.data));
+    } catch (e) {
+      debugPrint(e.toString());
+      if (e is DioException) {
+        debugPrint(e.response.toString());
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, LowStockProductsResponseModel>> getLowStockProducts({
     int? threshold,
     int page = 1,
     int limit = 20,
     String? search,
+    CancelToken? cancelToken,
   }) async {
     try {
       var response = await apiService!.get(
         endPoint: EndPoints.lowStockProducts,
         sendToken: true,
+        cancelToken: cancelToken,
         query: {
           // Omitted so the server falls back to the configured low-stock
           // threshold instead of a hardcoded default.
@@ -148,11 +191,13 @@ class HomeRepoImpl implements HomeRepo {
     required String startDate,
     required String endDate,
     String type = '',
+    CancelToken? cancelToken,
   }) async {
     try {
       var response = await apiService!.get(
         endPoint: EndPoints.salesReport,
         sendToken: true,
+        cancelToken: cancelToken,
         query: {
           'startDate': startDate,
           'endDate': endDate,

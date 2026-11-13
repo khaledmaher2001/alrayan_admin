@@ -1,14 +1,17 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:alrayan_admin/features/auth/presentation/view/forget_password_view.dart';
 import 'package:alrayan_admin/features/auth/presentation/view/login_view.dart';
-import '../../../features/auth/presentation/view/otp_view.dart';
-import '../../../features/auth/presentation/view/register_view.dart';
 import '../../../features/main_layout/presentation/views/main_layout_view.dart';
 import '../../../features/onboarding/presentation/views/onboarding_view.dart';
 import '../../../features/splash/presentation/views/splash_view.dart';
 
 abstract class AppRouter {
-  static final router = GoRouter(routes: [
+  /// The router's root navigator, so code outside the widget tree (a push
+  /// notification tap) can push screens.
+  static final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+  static final router = GoRouter(navigatorKey: rootNavigatorKey, routes: [
     //Splash Roots
     GoRoute(
       path: "/",
@@ -29,10 +32,6 @@ abstract class AppRouter {
       builder: (context, state) => const LoginView(),
     ),
     //  Register Routes
-    GoRoute(
-      path: "/registerView",
-      builder: (context, state) =>  RegisterView(),
-    ),
     //  Register Routes
     GoRoute(
       path: "/forgetPasswordView",

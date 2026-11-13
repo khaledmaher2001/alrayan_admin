@@ -1,8 +1,5 @@
-import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
-import 'package:alrayan_admin/core/utils/colors/colors.dart';
-import 'package:alrayan_admin/core/utils/constants.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/delivery/data/models/delivery_statistics_model.dart';
 import 'package:alrayan_admin/features/delivery/presentation/view_models/get_delivery_statistics/get_delivery_statistics_cubit.dart';
 import 'package:alrayan_admin/features/delivery/presentation/view_models/get_delivery_statistics/get_delivery_statistics_states.dart';
@@ -11,9 +8,9 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// `GET /delivery/statistics` overview — shown on the delivery management
-/// home screen so an admin can see the whole operation at a glance before
-/// drilling into couriers/orders/remittances.
+/// `GET /delivery/statistics` overview for the delivery hub, ordered by what
+/// an admin acts on: cash waiting for review → team → money.
+/// Every figure comes from the API; nothing is derived or invented.
 class DeliveryStatisticsSection extends StatelessWidget {
   const DeliveryStatisticsSection({super.key});
 
@@ -21,380 +18,178 @@ class DeliveryStatisticsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<GetDeliveryStatisticsCubit, GetDeliveryStatisticsStates>(
       builder: (context, state) {
-        if (state is GetDeliveryStatisticsLoadingState ||
-            state is GetDeliveryStatisticsInitState) {
-          return const _StatisticsLoadingCard();
-        }
         if (state is GetDeliveryStatisticsErrorState) {
-          return _StatisticsErrorCard(message: state.errMessage);
+          return DsCard(
+            child: DsMessage(
+              icon: Icons.cloud_off_rounded,
+              title: state.errMessage,
+              actionLabel: "retry".tr(),
+              onAction: () => context.read<GetDeliveryStatisticsCubit>().getStatistics(),
+            ),
+          );
         }
-        final overview =
-            (state as GetDeliveryStatisticsSuccessState).model.overview;
+        if (state is! GetDeliveryStatisticsSuccessState) return const _Loading();
+        final overview = state.model.overview;
         if (overview == null) return const SizedBox.shrink();
-        return _StatisticsContent(overview: overview);
+        return _Content(overview: overview);
       },
     );
   }
 }
 
-class _StatisticsLoadingCard extends StatelessWidget {
-  const _StatisticsLoadingCard();
+class _Loading extends StatelessWidget {
+  const _Loading();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: AppConstants.height30(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-        border: Border.all(color: const Color(0xffE3E7EC)),
-      ),
-      child: CustomLoadingItem(
-        size: MediaQuery.of(context).size.width * .08,
-      ),
-    );
-  }
-}
-
-class _StatisticsErrorCard extends StatelessWidget {
-  const _StatisticsErrorCard({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(AppConstants.sp15(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-        border: Border.all(color: const Color(0xffE3E7EC)),
-      ),
-      child: Column(
+  Widget build(BuildContext context) => const Column(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: AppColors.redColor,
-            size: AppConstants.sp30(context),
-          ),
-          SizedBox(height: AppConstants.height10(context)),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Styles.inter12500Black(
-              context,
-            ).copyWith(color: Colors.grey.shade600),
-          ),
-          SizedBox(height: AppConstants.height10(context)),
-          TextButton(
-            onPressed: () =>
-                context.read<GetDeliveryStatisticsCubit>().getStatistics(),
-            child: Text("retry".tr(), style: Styles.inter14600black(context)),
-          ),
+          SizedBox(height: DsSpace.md),
+          DsSkeleton(height: 64, radius: DsRadius.lg),
+          SizedBox(height: DsSpace.lg),
+          DsSkeleton(height: 84, radius: DsRadius.lg),
+          SizedBox(height: DsSpace.lg),
+          DsSkeleton(height: 150, radius: DsRadius.lg),
         ],
-      ),
-    );
-  }
+      );
 }
 
-/// "الملخص المالي" — two separate cards, because the API separates them too:
-/// "هذا الشهر" ([DeliveryStatisticsOverview.thisMonth], resets every month)
-/// and "الإجمالي" (the `total*` overview fields, running since day one).
-class _StatisticsContent extends StatelessWidget {
-  const _StatisticsContent({required this.overview});
-
+class _Content extends StatelessWidget {
+  const _Content({required this.overview});
   final DeliveryStatisticsOverview overview;
 
   @override
   Widget build(BuildContext context) {
     final pending = overview.pendingRemittances;
-    final thisMonth = overview.thisMonth;
-
+    final month = overview.thisMonth;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (thisMonth != null) ...[
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(AppConstants.sp15(context)),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-              border: Border.all(color: const Color(0xffE3E7EC)),
+        if (pending != null) ...[const SizedBox(height: DsSpace.md), _PendingRemittances(pending: pending)],
+        DsSectionHeader(title: "delivery_couriers".tr()),
+        DsMetricStrip(
+          items: [
+            DsMetric(
+              label: "s_active_couriers".tr(),
+              value: '${DsFormat.count(overview.activeCouriers ?? 0)} / ${DsFormat.count(overview.totalCouriers ?? 0)}',
+              color: DsColor.success,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "delivery_stat_this_month".tr(),
-                  style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-                ),
-                SizedBox(height: AppConstants.height10(context)),
-                IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _MiniStat(
-                          label: "delivery_stat_remitted".tr(),
-                          value: _formatMoney(thisMonth.remitted),
-                        ),
-                      ),
-                      VerticalDivider(width: 1, color: Colors.grey.shade200),
-                      Expanded(
-                        child: _MiniStat(
-                          label: "delivery_stat_gross_collected".tr(),
-                          value: _formatMoney(thisMonth.grossCollected),
-                        ),
-                      ),
-                      VerticalDivider(width: 1, color: Colors.grey.shade200),
-                      Expanded(
-                        child: _MiniStat(
-                          label: "delivery_stat_earnings".tr(),
-                          value: _formatMoney(thisMonth.earnings),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            DsMetric(label: "s_delivered_orders".tr(), value: DsFormat.count(overview.totalDeliveredOrders ?? 0)),
+          ],
+        ),
+        DsSectionHeader(title: "s_financial_summary".tr()),
+        _MoneyPanel(
+          rows: [
+            if (month != null) ...[
+              _Heading("delivery_stat_this_month".tr()),
+              [
+                DsMetric(label: "delivery_stat_remitted".tr(), value: DsFormat.money(month.remitted)),
+                DsMetric(label: "delivery_stat_gross_collected".tr(), value: DsFormat.money(month.grossCollected)),
               ],
-            ),
-          ),
-          SizedBox(height: AppConstants.height15(context)),
-        ],
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(AppConstants.sp15(context)),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppConstants.sp15(context)),
-            border: Border.all(color: const Color(0xffE3E7EC)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "الإجمالي",
-                style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
-              ),
-              SizedBox(height: AppConstants.height10(context)),
-              IntrinsicHeight(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _FinanceCell(
-                        label: "delivery_stat_remitted".tr(),
-                        value: _formatMoney(overview.totalRemitted),
-                        icon: Icons.price_check_rounded,
-                        emphasize: true,
-                      ),
-                    ),
-                    SizedBox(width: AppConstants.width5(context)),
-                    VerticalDivider(width: 1, color: Colors.grey.shade200),
-                    SizedBox(width: AppConstants.width5(context)),
-                    Expanded(
-                      child: _FinanceCell(
-                        label: "delivery_stat_gross_collected".tr(),
-                        value: _formatMoney(overview.totalGrossCollected),
-                        icon: Icons.payments_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(height: AppConstants.height20(context), color: Colors.grey.shade200),
-              IntrinsicHeight(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _FinanceCell(
-                        label: "delivery_stat_owed_to_store".tr(),
-                        value: _formatMoney(overview.totalOwedToStore),
-                        icon: Icons.account_balance_wallet_rounded,
-                      ),
-                    ),
-                    SizedBox(width: AppConstants.width5(context)),
-                    VerticalDivider(width: 1, color: Colors.grey.shade200),
-                    SizedBox(width: AppConstants.width5(context)),
-                    Expanded(
-                      child: _FinanceCell(
-                        label: "delivery_stat_earnings".tr(),
-                        value: _formatMoney(overview.totalEarnings),
-                        icon: Icons.trending_up_rounded,
-                        emphasize: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+              [DsMetric(label: "delivery_stat_earnings".tr(), value: DsFormat.money(month.earnings), color: DsColor.primary)],
             ],
-          ),
-        ),
-        if (pending != null) ...[
-          SizedBox(height: AppConstants.height10(context)),
-          _PendingRemittancesBanner(pending: pending),
-        ],
-      ],
-    );
-  }
-}
-
-/// Compact centered value+label pair used in the "هذا الشهر" strip — lighter
-/// weight than [_FinanceCell] since it's the secondary card.
-class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Styles.inter16500black(context),
-        ),
-        SizedBox(height: AppConstants.height5(context) / 2),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB), fontSize: 11),
+            _Heading("s_total".tr()),
+            [
+              DsMetric(label: "delivery_stat_remitted".tr(), value: DsFormat.money(overview.totalRemitted)),
+              DsMetric(label: "delivery_stat_gross_collected".tr(), value: DsFormat.money(overview.totalGrossCollected)),
+            ],
+            [
+              DsMetric(label: "delivery_stat_owed_to_store".tr(), value: DsFormat.money(overview.totalOwedToStore)),
+              DsMetric(label: "delivery_stat_earnings".tr(), value: DsFormat.money(overview.totalEarnings), color: DsColor.primary),
+            ],
+          ],
         ),
       ],
     );
   }
 }
 
-class _FinanceCell extends StatelessWidget {
-  const _FinanceCell({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.emphasize = false,
-  });
+class _Heading {
+  const _Heading(this.text);
+  final String text;
+}
 
-  final String label;
-  final String value;
-  final IconData icon;
-
-  /// Pink icon + red value for the two "headline" figures (remitted /
-  /// platform earnings), matching the design; the other two stay neutral.
-  final bool emphasize;
+/// One white surface: small headings and two-up figures separated by hairlines.
+class _MoneyPanel extends StatelessWidget {
+  const _MoneyPanel({required this.rows});
+  final List<Object> rows;
 
   @override
   Widget build(BuildContext context) {
-    final iconBg = emphasize ? AppColors.primaryColor.shade50 : const Color(0xffF5F6FA);
-    final iconColor = emphasize ? AppColors.primaryColor : AppColors.secondaryColor;
-    final valueColor = emphasize ? AppColors.primaryColor : const Color(0xff0F0F0E);
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppConstants.height5(context)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppConstants.sp10(context)),
-            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(AppConstants.sp10(context))),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          SizedBox(width: AppConstants.width5(context),),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final children = <Widget>[];
+    for (final r in rows) {
+      if (r is _Heading) {
+        if (children.isNotEmpty) children.add(const Divider(height: 1));
+        children.add(Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(DsSpace.lg, DsSpace.md, DsSpace.lg, 0),
+          child: Text(r.text, style: DsText.label.copyWith(color: DsColor.textMuted)),
+        ));
+      } else if (r is List<DsMetric>) {
+        children.add(Padding(
+          padding: const EdgeInsets.symmetric(vertical: DsSpace.sm),
+          child: IntrinsicHeight(
+            child: Row(
               children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB), fontSize: 12),
-                ),
-                SizedBox(height: AppConstants.height5(context) / 2),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Styles.inter18500Black(context).copyWith(color: valueColor),
-                ),
+                for (var i = 0; i < 2; i++) ...[
+                  if (i == 1) const VerticalDivider(width: 1, color: DsColor.divider),
+                  Expanded(child: i < r.length ? Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: r[i]) : const SizedBox()),
+                ],
               ],
             ),
           ),
-
-        ],
+        ));
+      }
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: DsColor.surface,
+        borderRadius: BorderRadius.circular(DsRadius.lg),
+        border: Border.all(color: DsColor.border),
       ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
     );
   }
 }
 
-class _PendingRemittancesBanner extends StatelessWidget {
-  const _PendingRemittancesBanner({required this.pending});
-
+/// Cash handovers waiting for review: the one thing on this screen that needs
+/// a decision, so it leads and links straight to the review list.
+class _PendingRemittances extends StatelessWidget {
+  const _PendingRemittances({required this.pending});
   final PendingRemittances pending;
 
   @override
   Widget build(BuildContext context) {
-    final hasPending = (pending.count ?? 0) > 0;
-    final color = hasPending ? Colors.orange : Colors.green;
-
-    return GestureDetector(
-      onTap: () => NavigationUtils.navigateTo(
-        context: context,
-        destinationScreen: const RemittancesView(),
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(AppConstants.sp10(context)),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: .1),
-          borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          border: Border.all(color: color.shade200),
+    final has = (pending.count ?? 0) > 0;
+    void open() => NavigationUtils.navigateTo(context: context, destinationScreen: const RemittancesView());
+    if (!has) {
+      return DsGroup(children: [
+        DsRow(
+          icon: Icons.check_circle_outline_rounded,
+          title: "s_no_cash_handovers_waiting_for_review".tr(),
+          onTap: open,
         ),
-        child: Row(
-          children: [
-            Icon(
-              hasPending ? Icons.notifications_active_rounded : Icons.check_circle_rounded,
-              color: color.shade700,
-              size: AppConstants.sp20(context),
+      ]);
+    }
+    return DsCard(
+      highlight: DsColor.warning,
+      onTap: open,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(color: DsColor.warningBg, borderRadius: BorderRadius.circular(DsRadius.md)),
+            child: const Icon(Icons.payments_outlined, color: DsColor.warning, size: 22),
+          ),
+          const SizedBox(width: DsSpace.md),
+          Expanded(
+            child: Text(
+              "delivery_stat_pending_remittances".tr(namedArgs: {'count': DsFormat.count(pending.count), 'amount': DsFormat.money(pending.amount)}),
+              style: DsText.body.copyWith(fontWeight: FontWeight.w600),
             ),
-            SizedBox(width: AppConstants.width10(context)),
-            Expanded(
-              child: Text(
-                hasPending
-                    ? "delivery_stat_pending_remittances".tr(
-                        namedArgs: {
-                          'count': "${pending.count}",
-                          'amount': _formatMoney(pending.amount),
-                        },
-                      )
-                    : "لا توجد طلبات تسليم فلوس بانتظار المراجعة حاليًا",
-                style: Styles.inter12500Black(
-                  context,
-                ).copyWith(color: color.shade900),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: color.shade700,
-              size: AppConstants.sp20(context),
-            ),
-          ],
-        ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: DsColor.textSubtle),
+        ],
       ),
     );
   }
-}
-
-String _formatMoney(num? value) {
-  if (value == null) return '0';
-  final v = value.toDouble();
-  final formatted = v == v.roundToDouble()
-      ? v.toInt().toString()
-      : v.toStringAsFixed(1);
-  return "$formatted ج.م";
 }

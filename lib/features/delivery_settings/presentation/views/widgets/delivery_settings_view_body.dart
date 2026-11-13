@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_button.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -77,12 +78,12 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
+                    color: DsColor.warningBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.warning_amber_rounded,
-                    color: Colors.orange.shade400,
+                    color: DsColor.warning,
                     size: MediaQuery.of(context).size.width * .08,
                   ),
                 ),
@@ -106,7 +107,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
               "disable_delivery_message".tr(),
               style: Styles.inter14500black(
                 context,
-              ).copyWith(color: Colors.grey.shade700),
+              ).copyWith(color: DsColor.text2),
             ),
             SizedBox(height: AppConstants.height20(context)),
             Row(
@@ -114,7 +115,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: DsColor.warning,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -135,7 +136,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                     "cancel".tr(),
                     style: Styles.inter16500black(
                       context,
-                    ).copyWith(color: Colors.grey.shade600),
+                    ).copyWith(color: DsColor.textMuted),
                   ),
                 ),
               ],
@@ -151,7 +152,6 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
     return SafeArea(
       child: Column(
         children: [
-          SizedBox(height: AppConstants.height20(context)),
           CustomAppBar(
             title: "delivery_settings".tr(),
             textColor: Colors.black,
@@ -189,15 +189,15 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                               ),
                               decoration: BoxDecoration(
                                 color: deliveryEnabled
-                                    ? Colors.green.shade50
-                                    : Colors.grey.shade100,
+                                    ? DsColor.successBg
+                                    : DsColor.fill,
                                 borderRadius: BorderRadius.circular(
                                   AppConstants.sp10(context),
                                 ),
                                 border: Border.all(
                                   color: deliveryEnabled
-                                      ? Colors.green
-                                      : Colors.grey,
+                                      ? DsColor.success
+                                      : DsColor.textMuted,
                                 ),
                               ),
                               child: Row(
@@ -220,8 +220,8 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                                           style: Styles.inter12500Black(context)
                                               .copyWith(
                                                 color: deliveryEnabled
-                                                    ? Colors.green
-                                                    : Colors.grey.shade600,
+                                                    ? DsColor.success
+                                                    : DsColor.textMuted,
                                               ),
                                         ),
                                       ],
@@ -229,7 +229,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                                   ),
                                   Switch(
                                     value: deliveryEnabled,
-                                    activeThumbColor: Colors.green,
+                                    activeThumbColor: DsColor.success,
                                     onChanged: _handleDeliveryToggle,
                                   ),
                                 ],
@@ -311,7 +311,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("update_delivery_settings_success".tr()),
-                      backgroundColor: Colors.green,
+                      backgroundColor: DsColor.success,
                     ),
                   );
                   context.read<GetAppSettingsCubit>().getAppSettings();
@@ -319,7 +319,7 @@ class _DeliverySettingsViewBodyState extends State<DeliverySettingsViewBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.errorMessage),
-                      backgroundColor: Colors.red,
+                      backgroundColor: DsColor.danger,
                     ),
                   );
                 }

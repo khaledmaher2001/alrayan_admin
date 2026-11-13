@@ -38,11 +38,14 @@ class AdsRepoImpl implements AdsRepo{
     String? search,
     String? sortBy,
     String? sortOrder,
+    CancelToken? cancelToken,
   }) async {
     try {
       final response = await apiService.get(
-        endPoint: EndPoints.getOfferBanner,
+        // Admin list: every banner incl. hidden/scheduled/expired (public "banners" returns live ones only).
+        endPoint: "${EndPoints.getOfferBanner}/manage",
         sendToken: true,
+        cancelToken: cancelToken,
         query: {
           'page': page,
           'limit': limit,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/features/categories/data/models/categories_model.dart';
 
 abstract class GetCategoriesStates{}
@@ -11,5 +12,5 @@ class GetCategoriesSuccessState extends GetCategoriesStates{
 }
 class GetCategoriesErrorState extends GetCategoriesStates{
   final String error;
-  GetCategoriesErrorState({this.error = "حدث خطأ، يرجى المحاولة مجددًا"});
+  GetCategoriesErrorState({String? error}) : error = error ?? "s_something_went_wrong_please_try_agai".tr();
 }

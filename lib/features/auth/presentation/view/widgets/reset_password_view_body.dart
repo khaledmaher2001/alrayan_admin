@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,8 +9,6 @@ import '../../../../../core/shared_widgets/custom_snackbar.dart';
 import '../../../../../core/shared_widgets/default_text_form_field.dart';
 import '../../../../../core/shared_widgets/main_structure_widget.dart';
 import '../../../../../core/shared_widgets/success_popup.dart';
-import '../../../../../core/utils/assets/assets.dart';
-import '../../../../../core/utils/colors/colors.dart';
 import '../../../../../core/utils/constants.dart';
 import '../../../../../core/utils/navigation_utility.dart';
 import '../../../../../core/utils/services/remote_services/service_locator.dart';
@@ -35,7 +35,7 @@ class _ResetPasswordViewBodyState extends State<ResetPasswordViewBody> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: MainStructureWidget(
-        title: "تأكيد كلمة المرور",
+        title: "s_confirm_password".tr(),
         widget: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -56,20 +56,20 @@ class _ResetPasswordViewBodyState extends State<ResetPasswordViewBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AuthLogoWidget(
-                                title: "إعادة تعيين كلمة المرور",
-                                description: "أدخل كلمة المرور الجديدة",
+                                title: "s_reset_password_2".tr(),
+                                description: "s_enter_your_new_password".tr(),
                               ),
                               SizedBox(height: AppConstants.height20(context)),
 
                               Text(
-                                "كلمة المرور الجديدة",
+                                "s_new_password".tr(),
                                 style: Styles.inter16500black(context),
                               ),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 validation: (val) {
                                   if (val.isEmpty || val == null) {
-                                    return 'من فضلك ادخل كلمة المرور الجديده';
+                                    return "s_please_enter_the_new_password".tr();
                                   }
                                 },
                                 contentPaddingHorizontal: AppConstants.width15(
@@ -83,17 +83,17 @@ class _ResetPasswordViewBodyState extends State<ResetPasswordViewBody> {
                               ),
                               SizedBox(height: AppConstants.height30(context)),
                               Text(
-                                "تاكيد كلمة المرور",
+                                "s_confirm_password_2".tr(),
                                 style: Styles.inter14600black(context),
                               ),
                               SizedBox(height: AppConstants.height5(context)),
                               DefaultTextFormField(
                                 validation: (val) {
                                   if (val.isEmpty || val == null) {
-                                    return 'يجب تأكيد كلمة المرور';
+                                    return "s_please_confirm_the_password".tr();
                                   } else if (passwordConfirmController.text !=
                                       passwordController.text) {
-                                    return 'كلمتا المرور غير متطابقتين';
+                                    return "s_the_passwords_don_t_match".tr();
                                   }
                                 },
                                 contentPaddingHorizontal: AppConstants.width15(
@@ -127,16 +127,16 @@ class _ResetPasswordViewBodyState extends State<ResetPasswordViewBody> {
                         return SuccessPopup(
                           withWidget: true,
                           message:
-                          'صوتك مسموع، واقتراحاتك مهمة… تواصل مع نائب دائرتك بسهولة',
-                          title: 'تم تغيير كلمة المرور بنجاح سجل مرة اخرى',
+                          "s_password_reset_done_hint".tr(),
+                          title: "s_password_changed_please_sign_in_agai".tr(),
                           widget: DefaultButton(onPress: () {
                             NavigationUtils.navigateReplacement(context: context, destinationScreen: LoginView());
-                          }, text: "الذهاب لتسجيل دخول",borderRadius: AppConstants.sp10(context),),
+                          }, text: "s_go_to_sign_in".tr(),borderRadius: AppConstants.sp10(context),),
                         );
                       },
                     );
                   } else if (state is ResetPasswordErrorState) {
-                   customSnackBar(message: state.error, color: Colors.red, context: context);
+                   customSnackBar(message: state.error, color: DsColor.danger, context: context);
                   }
                 }, builder: (context, state) {
                   return state is ResetPasswordLoadingState
@@ -147,10 +147,11 @@ class _ResetPasswordViewBodyState extends State<ResetPasswordViewBody> {
                         context.read<ResetPasswordCubit>().resetPassword(data: {
                           "email": widget.email,
                           "newPassword": passwordController.text,
+                          "otpAgin": widget.otp,
                         });
                       }
                     },
-                    text: "تأكيد كلمة المرور",
+                    text: "s_confirm_password".tr(),
                     height: AppConstants.height15(context),
                     borderRadius: AppConstants.sp10(context),
                   );

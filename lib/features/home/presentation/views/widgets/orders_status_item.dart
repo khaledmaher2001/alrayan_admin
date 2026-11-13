@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/features/home/data/models/home_statistics_model.dart';
 import 'package:alrayan_admin/features/home/presentation/views/widgets/pie_chart_item.dart';
 import 'package:flutter/material.dart';
@@ -16,27 +18,17 @@ class OrdersStatusItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(
           AppConstants.sp10(context),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 3,
-            offset: const Offset(
-              0,
-              0,
-            ), // changes position of shadow
-          ),
-        ],
+        border: Border.all(color: DsColor.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "متابعة حالة الطلبات",
+            "s_order_status_overview".tr(),
             style: Styles.inter16500black(context),
           ),
           Text(
-            "رسم توضيحي يوضح نسب الطلبات حتي الان",
+            "s_chart_showing_the_share_of_orders_so".tr(),
             style: Styles.inter10400grey(context),
           ),
           SizedBox(height: AppConstants.height20(context)),

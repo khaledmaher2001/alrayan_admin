@@ -1,3 +1,5 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/shared_widgets/custom_app_bar.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
@@ -111,14 +113,13 @@ class _SalesReportDetailsBodyState extends State<_SalesReportDetailsBody> {
         statusBarBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: DsColor.page,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: AppConstants.height20(context)),
-              const CustomAppBar(
-                title: "تقارير المبيعات",
+              CustomAppBar(
+                title: "s_sales_reports".tr(),
                 textColor: Colors.black,
                 withNotifications: false,
                 hasBack: true,
@@ -164,10 +165,10 @@ class _SalesReportDetailsBodyState extends State<_SalesReportDetailsBody> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.error_outline,
-                                  color: Colors.red.shade400, size: 48),
+                                  color: DsColor.danger, size: 48),
                               SizedBox(height: AppConstants.height10(context)),
                               Text(
-                                "تعذر تحميل التقرير",
+                                "s_couldn_t_load_the_report".tr(),
                                 style: Styles.inter16500black(context),
                               ),
                               SizedBox(height: AppConstants.height5(context)),
@@ -187,7 +188,7 @@ class _SalesReportDetailsBodyState extends State<_SalesReportDetailsBody> {
                                         endDate: _fmt(_endDate),
                                       );
                                 },
-                                child: const Text("إعادة المحاولة"),
+                                child: Text("s_retry".tr()),
                               ),
                             ],
                           ),
@@ -273,31 +274,31 @@ class _DateFilterSection extends StatelessWidget {
             child: Row(
               children: [
                 _QuickChip(
-                  label: "هذا اليوم",
+                  label: "s_today".tr(),
                   isActive: activeFilter == _QuickFilter.today,
                   onTap: () => onQuickFilter(_QuickFilter.today),
                 ),
                 SizedBox(width: AppConstants.width10(context)),
                 _QuickChip(
-                  label: "آخر 7 أيام",
+                  label: "s_last_7_days".tr(),
                   isActive: activeFilter == _QuickFilter.last7Days,
                   onTap: () => onQuickFilter(_QuickFilter.last7Days),
                 ),
                 SizedBox(width: AppConstants.width10(context)),
                 _QuickChip(
-                  label: "آخر 30 يوم",
+                  label: "s_last_30_days".tr(),
                   isActive: activeFilter == _QuickFilter.last30Days,
                   onTap: () => onQuickFilter(_QuickFilter.last30Days),
                 ),
                 SizedBox(width: AppConstants.width10(context)),
                 _QuickChip(
-                  label: "هذا الشهر",
+                  label: "s_this_month".tr(),
                   isActive: activeFilter == _QuickFilter.thisMonth,
                   onTap: () => onQuickFilter(_QuickFilter.thisMonth),
                 ),
                 SizedBox(width: AppConstants.width10(context)),
                 _QuickChip(
-                  label: "هذا العام",
+                  label: "s_this_year".tr(),
                   isActive: activeFilter == _QuickFilter.thisYear,
                   onTap: () => onQuickFilter(_QuickFilter.thisYear),
                 ),
@@ -309,7 +310,7 @@ class _DateFilterSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _DatePickerButton(
-                  label: "من",
+                  label: "s_from".tr(),
                   date: startDate,
                   onTap: onPickStart,
                 ),
@@ -325,7 +326,7 @@ class _DateFilterSection extends StatelessWidget {
               ),
               Expanded(
                 child: _DatePickerButton(
-                  label: "إلى",
+                  label: "s_to".tr(),
                   date: endDate,
                   onTap: onPickEnd,
                 ),
@@ -360,12 +361,12 @@ class _QuickChip extends StatelessWidget {
           vertical: AppConstants.height10(context) / 1.5,
         ),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryColor : Colors.grey.shade100,
+          color: isActive ? AppColors.primaryColor : DsColor.fill,
           borderRadius: BorderRadius.circular(AppConstants.sp30(context)),
           border: Border.all(
             color: isActive
                 ? AppColors.primaryColor
-                : Colors.grey.shade300,
+                : DsColor.border,
           ),
         ),
         child: Text(
@@ -400,9 +401,9 @@ class _DatePickerButton extends StatelessWidget {
           vertical: AppConstants.height10(context) / 1.5,
         ),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: DsColor.fill,
           borderRadius: BorderRadius.circular(AppConstants.sp10(context)),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: DsColor.border),
         ),
         child: Row(
           children: [

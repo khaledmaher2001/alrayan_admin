@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -8,9 +9,9 @@ const List<String> releaseTypes = ['courier_voluntary', 'customer_unreachable'];
 String releaseTypeLabel(String? type) {
   switch (type) {
     case 'courier_voluntary':
-      return "مشكلة من عامل التوصيل";
+      return "s_problem_from_the_courier".tr();
     case 'customer_unreachable':
-      return "تعذّر التواصل مع العميل";
+      return "s_couldn_t_reach_the_customer".tr();
     default:
       return type == null || type.isEmpty ? '-' : type;
   }
@@ -22,11 +23,11 @@ String releaseTypeLabel(String? type) {
 Color releaseTypeColor(String? type) {
   switch (type) {
     case 'courier_voluntary':
-      return Colors.orange.shade700;
+      return DsColor.warning;
     case 'customer_unreachable':
-      return Colors.amber.shade800;
+      return DsColor.warning;
     default:
-      return Colors.grey.shade600;
+      return DsColor.textMuted;
   }
 }
 
@@ -38,14 +39,14 @@ Color releaseOutcomeColor(String? status) {
     case 'reopened':
     case 'confirmed':
     case 'awaiting_courier':
-      return Colors.green.shade700;
+      return DsColor.success;
     case 'cancelled':
     case 'refunded':
-      return Colors.red.shade700;
+      return DsColor.danger;
     case 'awaiting_customer':
-      return Colors.amber.shade800;
+      return DsColor.warning;
     default:
-      return Colors.grey.shade600;
+      return DsColor.textMuted;
   }
 }
 

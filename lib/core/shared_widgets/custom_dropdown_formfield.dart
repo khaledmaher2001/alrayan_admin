@@ -1,10 +1,10 @@
+import 'package:alrayan_admin/core/design/ds.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
 import 'package:alrayan_admin/core/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
-import '../utils/assets/assets.dart';
 import '../utils/text_styles/styles.dart';
 
 class CustomDropDownButton extends StatelessWidget {
@@ -17,10 +17,10 @@ class CustomDropDownButton extends StatelessWidget {
   this.onTap,
   this.height,
   this.hasBorder=true,
-    this.borderRadius = 10,
+    this.borderRadius = DsRadius.md,
   this.borderSideColor,
   this.borderSideEnabledColor,
-    this.borderSideWidth = 1.0,  this.enabledBorderRadiusColor = Colors.grey,
+    this.borderSideWidth = 1.0,  this.enabledBorderRadiusColor = DsColor.textMuted,
     this.prefixIcon, required this.value,
   });
 
@@ -88,7 +88,7 @@ class CustomDropDownButton extends StatelessWidget {
           borderSide: (!hasBorder)
               ? BorderSide.none
               : BorderSide(
-            color: borderSideEnabledColor?? Colors.grey.shade300,
+            color: borderSideEnabledColor?? DsColor.border,
             width: borderSideWidth,
           ),
         ),
@@ -103,15 +103,16 @@ class CustomDropDownButton extends StatelessWidget {
           .map((item) => DropdownMenuItem<String>(
                 onTap: onTap,
                 value: item.toString(),
+                // Internal option values are shown in the current language.
                 child: Text(
-                  item.toString(),
+                  item.toString().tr(),
                   style: Styles.inter14500black(context),
                 ),
               ))
           .toList(),
       validator: validator,
       iconStyleData: IconStyleData(
-        icon: SvgPicture.asset(AssetData.dropDown),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DsColor.textMuted),
       ),
       onChanged: onChanged,
     );

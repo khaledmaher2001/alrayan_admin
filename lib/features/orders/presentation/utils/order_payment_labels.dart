@@ -1,7 +1,10 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 String paymentStatusLabel(String? status) {
+  if (status == 'partially_paid') return "s_partially_paid".tr();
+  if (status == 'partially_refunded') return "s_partially_refunded".tr();
   const known = ['pending', 'paid', 'failed', 'refunded'];
   if (status == null || !known.contains(status)) return status ?? '-';
   return 'payment_status_$status'.tr();
@@ -10,26 +13,26 @@ String paymentStatusLabel(String? status) {
 Color paymentStatusColor(String? status) {
   switch (status) {
     case 'paid':
-      return Colors.green.withValues(alpha: 0.15);
+      return DsColor.success.withValues(alpha: 0.15);
     case 'pending':
-      return Colors.orange.withValues(alpha: 0.15);
+      return DsColor.warning.withValues(alpha: 0.15);
     case 'failed':
-      return Colors.red.withValues(alpha: 0.15);
+      return DsColor.danger.withValues(alpha: 0.15);
     default:
-      return Colors.grey.withValues(alpha: 0.15);
+      return DsColor.textMuted.withValues(alpha: 0.15);
   }
 }
 
 Color paymentStatusTextColor(String? status) {
   switch (status) {
     case 'paid':
-      return Colors.green.shade800;
+      return DsColor.success;
     case 'pending':
-      return Colors.orange.shade800;
+      return DsColor.warning;
     case 'failed':
-      return Colors.red.shade800;
+      return DsColor.danger;
     default:
-      return Colors.grey.shade800;
+      return DsColor.text2;
   }
 }
 

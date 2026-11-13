@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/utils/assets/assets.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -20,34 +21,23 @@ class ReleaseLogsViewBody extends StatefulWidget {
 
 class _ReleaseLogsViewBodyState extends State<ReleaseLogsViewBody> {
   final ScrollController scrollController = ScrollController();
-  bool isLoadingMore = false;
 
-  Future<void> _pagination() async {
-    final cubit = context.read<GetReleaseLogsCubit>();
-    final totalPages = cubit.logsModel?.data?.metadata?.totalPages;
-    if (totalPages == null) return;
-
-    if (cubit.page < totalPages &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoadingMore) {
-      isLoadingMore = true;
-      cubit.page++;
-      await cubit
-          .getReleaseLogs(withLoading: false)
-          .then((_) => setState(() => isLoadingMore = false));
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetReleaseLogsCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(_pagination);
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(_pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.dispose();
   }
@@ -78,7 +68,7 @@ class _ReleaseLogsViewBodyState extends State<ReleaseLogsViewBody> {
                       children: [
                         Icon(
                           Icons.error_outline,
-                          color: Colors.red.shade300,
+                          color: DsColor.danger,
                           size: 48,
                         ),
                         SizedBox(height: AppConstants.height10(context)),
@@ -119,7 +109,10 @@ class _ReleaseLogsViewBodyState extends State<ReleaseLogsViewBody> {
                       return Column(
                         children: [
                           ReleaseLogItem(log: list[index]),
-                          if (isLoadingMore && index == list.length - 1)
+                          if (context
+                                  .read<GetReleaseLogsCubit>()
+                                  .isLoadingMore &&
+                              index == list.length - 1)
                             Padding(
                               padding: EdgeInsets.all(AppConstants.sp10(context)),
                               child: CustomLoadingItem(
@@ -175,7 +168,7 @@ class _SummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("سجل التحرير", style: Styles.inter16500black(context)),
+                Text("s_release_log".tr(), style: Styles.inter16500black(context)),
                 SizedBox(height: AppConstants.height5(context) / 2),
                 RichText(
                   text: TextSpan(
@@ -185,7 +178,7 @@ class _SummaryCard extends StatelessWidget {
                         style: Styles.inter14500black(context).copyWith(color: AppColors.primaryColor, fontWeight: FontWeight.w700),
                       ),
                       TextSpan(
-                        text: "عملية تحرير",
+                        text: "s_release".tr(),
                         style: Styles.inter14500black(context).copyWith(color: const Color(0xff9CA4AB)),
                       ),
                     ],
@@ -194,7 +187,7 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(width: 1, height: AppConstants.height30(context), color: Colors.grey.shade200),
+          Container(width: 1, height: AppConstants.height30(context), color: DsColor.border),
           SizedBox(width: AppConstants.width10(context)),
           Icon(Icons.edit_note_rounded, size: AppConstants.sp30(context), color: Colors.black87),
         ],

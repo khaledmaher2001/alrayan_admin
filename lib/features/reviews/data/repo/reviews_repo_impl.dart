@@ -29,11 +29,17 @@ class ReviewRepoImpl implements ReviewsRepo {
   }
 
   @override
-  Future<Either<Failure, ReviewsModel>> getReviews({required int page}) async {
+  Future<Either<Failure, ReviewsModel>> getReviews({
+    required int page,
+    CancelToken? cancelToken,
+  }) async {
     try {
-      var response = await apiService.get(endPoint: EndPoints.reviews, query: {
-        "page": page,
-      },sendToken: true);
+      var response = await apiService.get(
+        endPoint: EndPoints.reviews,
+        query: {"page": page},
+        sendToken: true,
+        cancelToken: cancelToken,
+      );
       var result = ReviewsModel.fromJson(response.data);
       return right(result);
     } catch (e) {

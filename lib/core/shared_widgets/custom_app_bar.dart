@@ -1,12 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/navigation_utility.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 import 'notification_bell_button.dart';
-import '../utils/assets/assets.dart';
-import '../utils/colors/colors.dart';
-import '../utils/constants.dart';
 
+/// Top bar of a pushed screen (design system: back + start-aligned title).
+/// Kept under its old name and parameters so every existing screen adopts it.
 class CustomAppBar extends StatelessWidget {
   const CustomAppBar({
     super.key,
@@ -23,58 +23,34 @@ class CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.width20(context)),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontFamily: "Inter",
-                  color: textColor ?? Colors.white,
-                  fontSize: MediaQuery.of(context).size.height * .018,
-                ),
+    // Only an explicit non-white colour is honoured; the bar sits on light surfaces.
+    final ink = textColor != null && textColor != Colors.white ? textColor! : DsColor.text;
+    return SizedBox(
+      height: 56,
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(start: hasBack! ? 4 : DsSpace.page, end: DsSpace.sm),
+        child: Row(
+          children: [
+            if (hasBack!) ...[
+              IconButton(
+                tooltip: "a11y_back".tr(),
+                onPressed: () => NavigationUtils.navigateBack(context: context),
+                constraints: const BoxConstraints.tightFor(width: DsSize.touch, height: DsSize.touch),
+                icon: Icon(Icons.arrow_back_rounded, color: ink),
               ),
+              const SizedBox(width: 4),
             ],
-          ),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: hasBack!
-                ? InkWell(
-                    onTap: () {
-                      NavigationUtils.navigateBack(context: context);
-                    },
-                    child: Container(
-                      height: AppConstants.width20(context) * 2.2,
-                      width: AppConstants.width20(context) * 2.2,
-                      padding: EdgeInsets.all(AppConstants.sp5(context)),
-                      decoration:  BoxDecoration(shape: BoxShape.circle, color: AppColors.gray.withOpacity(.2)),
-                      child: RotatedBox(
-                        quarterTurns: 2,
-                        child: SvgPicture.asset(AssetData.back, color: Colors.black, fit: BoxFit.scaleDown),
-                      ),
-                    ),
-                  )
-                : Image.asset(
-                    AssetData.logo,
-                    height: AppConstants.width20(context) * 2.2,
-                    width: AppConstants.width20(context) * 2.2,
-                    color: Colors.white,
-                  ),
-          ),
-          if (withNotifications!) ...[
-            const Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: NotificationBellButton(),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: (hasBack! ? DsText.heading : DsText.title).copyWith(color: ink),
+              ),
             ),
+            if (withNotifications!) const NotificationBellButton(),
           ],
-        ],
+        ),
       ),
     );
   }

@@ -1,20 +1,21 @@
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
-
-subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
-}
+// Workaround for file_picker (pub) under AGP >= 9.
+//
+// file_picker's own android/build.gradle skips applying the legacy
+// `org.jetbrains.kotlin.android` plugin once it detects AGP 9+, assuming
+// AGP's built-in Kotlin compiler will pick up its .kt sources instead. This
+// project has that built-in compiler turned off project-wide
+// (`android.builtInKotlin=false` in android/gradle.properties) because
+// Flutter's own Gradle plugin still needs the legacy path for `:app` on
+// Flutter 3.47.2. With built-in Kotlin off, nobody compiles file_picker's
+// Kotlin sources, so `FilePickerPlugin` never lands in its output jar and
+// `:app`'s GeneratedPluginRegistrant fails with "cannot find symbol".
+//
+// Force the legacy plugin onto :file_picker specifically — the same thing
+// firebase_core / package_info_plus already do unconditionally, which is
+// why they build fine. The applied Kotlin version comes from the
+// `pluginManagement { plugins { ... } }` block in settings.gradle.kts.
+// Safe to remove once file_picker checks android.builtInKotlin itself
+// instead of only the AGP major version.
 subprojects {
     // Force third-party Flutter plugins that still apply the Kotlin Gradle Plugin
     // (file_picker, fluttertoast, package_info_plus, shared_preferences_android, ...)

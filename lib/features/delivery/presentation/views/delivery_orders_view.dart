@@ -1,10 +1,8 @@
-import 'package:alrayan_admin/core/utils/constants.dart';
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/utils/services/remote_services/service_locator.dart';
-import 'package:alrayan_admin/core/utils/text_styles/styles.dart';
 import 'package:alrayan_admin/features/delivery/presentation/view_models/get_delivery_orders/get_delivery_orders_cubit.dart';
 import 'package:alrayan_admin/features/delivery/presentation/views/widgets/delivery_orders_filter_sheet.dart';
 import 'package:alrayan_admin/features/delivery/presentation/views/widgets/delivery_orders_view_body.dart';
-import 'package:alrayan_admin/features/delivery/presentation/views/widgets/delivery_round_icon_button.dart';
 import 'package:alrayan_admin/features/orders/data/repo/orders_repo_impl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -32,31 +30,20 @@ class DeliveryOrdersView extends StatelessWidget {
           body: SafeArea(
             child: Column(
               children: [
-                SizedBox(height: AppConstants.height10(context)),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppConstants.width15(context),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      DeliveryRoundIconButton.back(context),
-                      Text(
-                        "delivery_orders_title".tr(),
-                        textAlign: TextAlign.center,
-                        style: Styles.inter18500Black(context),
+                DsTopBar(
+                  title: "delivery_orders_title".tr(),
+                  actions: [
+                    DsIconButton(
+                      icon: Icons.tune_rounded,
+                      label: "filters".tr(),
+                      onPressed: () => showDeliveryOrdersFilterSheet(
+                        context: context,
+                        ordersCubit: context.read<GetDeliveryOrdersCubit>(),
                       ),
-                      DeliveryRoundIconButton(
-                        icon: Icons.filter_alt,
-                        onTap: () => showDeliveryOrdersFilterSheet(
-                          context: context,
-                          ordersCubit: context.read<GetDeliveryOrdersCubit>(),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppConstants.height10(context)),
+                const SizedBox(height: DsSpace.xs),
                 const Expanded(child: DeliveryOrdersViewBody()),
               ],
             ),

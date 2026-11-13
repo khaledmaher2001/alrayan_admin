@@ -1,5 +1,5 @@
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:alrayan_admin/core/utils/services/local_services/cache_helper.dart';
-import 'package:alrayan_admin/core/utils/services/local_services/cache_keys.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/repo/auth_repo.dart';
@@ -26,7 +26,7 @@ class LoginCubit extends Cubit<LoginStates> {
       // Only block when the server actually reports a non-admin role;
       // if it's missing we can't verify it, so let the login through.
       if (role != null && role.toLowerCase() != 'admin') {
-        emit(LoginErrorState("غير مصرح لك بالدخول"));
+        emit(LoginErrorState("s_you_re_not_allowed_to_sign_in".tr()));
         return;
       }
       await CacheHelper.saveData(key: "token", value: data.data!.accessToken);

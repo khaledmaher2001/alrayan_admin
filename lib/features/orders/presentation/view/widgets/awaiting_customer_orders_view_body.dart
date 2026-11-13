@@ -1,3 +1,4 @@
+import 'package:alrayan_admin/core/design/ds.dart';
 import 'package:alrayan_admin/core/shared_widgets/custom_loading_item.dart';
 import 'package:alrayan_admin/core/shared_widgets/search_widget.dart';
 import 'package:alrayan_admin/core/utils/colors/colors.dart';
@@ -22,34 +23,23 @@ class _AwaitingCustomerOrdersViewBodyState
     extends State<AwaitingCustomerOrdersViewBody> {
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
-  bool isLoadingMore = false;
 
-  Future<void> _pagination() async {
-    final cubit = context.read<GetAwaitingCustomerOrdersCubit>();
-    final totalPages = cubit.ordersModel?.data?.metadata?.totalPages;
-    if (totalPages == null) return;
-
-    if (cubit.page < totalPages &&
-        scrollController.position.maxScrollExtent ==
-            scrollController.position.pixels &&
-        !isLoadingMore) {
-      isLoadingMore = true;
-      cubit.page++;
-      await cubit
-          .getOrders(withLoading: false)
-          .then((_) => setState(() => isLoadingMore = false));
+  void _onScroll() {
+    final position = scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      context.read<GetAwaitingCustomerOrdersCubit>().loadMore();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    scrollController.addListener(_pagination);
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    scrollController.removeListener(_pagination);
+    scrollController.removeListener(_onScroll);
     scrollController.dispose();
     searchController.dispose();
     super.dispose();
@@ -64,7 +54,7 @@ class _AwaitingCustomerOrdersViewBodyState
             horizontal: AppConstants.width20(context),
           ),
           child: SearchWidget(
-            hint: "ابحث برقم الطلب أو اسم العميل أو الهاتف",
+            hint: "s_search_by_order_number_customer_name".tr(),
             searchController: searchController,
             onSearch: (value) => setState(
               () =>
@@ -124,7 +114,10 @@ class _AwaitingCustomerOrdersViewBodyState
                                           AwaitingCustomerOrderItem(
                                             order: list[index],
                                           ),
-                                          if (isLoadingMore &&
+                                          if (context
+                                                  .read<
+                                                      GetAwaitingCustomerOrdersCubit>()
+                                                  .isLoadingMore &&
                                               index == list.length - 1)
                                             Padding(
                                               padding: EdgeInsets.all(
@@ -197,7 +190,7 @@ class _SummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "طلبات بانتظار العميل",
+                  "s_orders_waiting_for_the_customer".tr(),
                   style: Styles.inter16500black(context),
                 ),
                 SizedBox(height: AppConstants.height5(context) / 2),
@@ -212,7 +205,7 @@ class _SummaryCard extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: "طلب يحتاج تدخل الإدارة",
+                        text: "s_order_needs_admin_action".tr(),
                         style: Styles.inter14500black(
                           context,
                         ).copyWith(color: const Color(0xff9CA4AB)),
@@ -244,7 +237,7 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
+            Icon(Icons.error_outline, color: DsColor.danger, size: 48),
             SizedBox(height: AppConstants.height10(context)),
             Text(
               message,
@@ -280,12 +273,12 @@ class _EmptyView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.inbox_rounded, size: 64, color: Colors.grey.shade400),
+              Icon(Icons.inbox_rounded, size: 64, color: DsColor.textSubtle),
               SizedBox(height: AppConstants.height15(context)),
               Text(
                 isSearching
-                    ? "لا توجد طلبات مطابقة"
-                    : "لا توجد طلبات بانتظار العميل حاليًا",
+                    ? "s_no_matching_orders".tr()
+                    : "s_no_orders_waiting_for_the_customer_r".tr(),
                 textAlign: TextAlign.center,
                 style: Styles.inter14500black(
                   context,

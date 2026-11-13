@@ -13,7 +13,10 @@ class ApiService {
   ApiService(this._dio) {
     _dio.interceptors.add(InterceptorsWrapper(
       onError: (DioException e, ErrorInterceptorHandler handler) async {
-        if (e.response?.statusCode == 401) {
+        // A wrong current password on change-password also answers 401 —
+        // that is a form error, not an expired session.
+        if (e.response?.statusCode == 401 &&
+            !e.requestOptions.path.endsWith(EndPoints.changePassword)) {
           await CacheHelper.removeData(key: "token");
           AppRouter.router.go('/loginView');
         }
@@ -34,23 +37,39 @@ class ApiService {
     }
   }
 
+  /// Builds the per-request header map. Kept off `_dio.options.headers` so
+  /// concurrent requests can't overwrite each other's headers on the shared
+  /// [Dio] instance (a multipart upload racing a GET, etc.).
+  Map<String, dynamic> _headers({
+    required bool sendToken,
+    String accept = "application/json",
+    String contentType = "application/json",
+    String? lang,
+    Map<String, dynamic>? extra,
+  }) {
+    return {
+      "Accept": accept,
+      "Content-Type": contentType,
+      "lang": lang ?? "ar",
+      if (sendToken)
+        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}",
+      ...?extra,
+    };
+  }
+
   Future<Response> postData({
     required String endPoint,
     bool sendToken = false,
     dynamic data,
     Map<String,dynamic>? query,
+    CancelToken? cancelToken,
   }) async {
-    _dio.options.headers = {
-      "Accept":"application/json",
-      "Content-Type": "application/json",
-      "lang":"ar",
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     var response = await _dio.post(
       "${EndPoints.baseUrl}$endPoint",
       data: data,
       queryParameters: query,
+      cancelToken: cancelToken,
+      options: Options(headers: _headers(sendToken: sendToken)),
     );
     return response;
   }
@@ -61,102 +80,107 @@ class ApiService {
     dynamic data,
     dynamic query,
     String? baseUrl,
+    CancelToken? cancelToken,
   }) async {
-    _dio.options.headers = {
-      "Content-Type": "application/json",
-      "lang":"ar",
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     var response = await _dio.get(
       '${baseUrl ?? EndPoints.baseUrl}$endPoint',
       queryParameters: query,
       data: data,
+      cancelToken: cancelToken,
+      options: Options(headers: _headers(sendToken: sendToken)),
     );
     return response;
   }
+
   Future<Response> putData({
     required String endPoint,
     dynamic data,
     dynamic query,
-
+    CancelToken? cancelToken,
   }) async {
-    _dio.options.headers = {
-      "accept":"*/*",
-      "Content-Type": "application/json",
-      "Authorization":"Bearer ${CacheKeysManger.tokenStatus()}",
-      "lang":"ar",
-    };
     var response = await _dio.put(
       '${EndPoints.baseUrl}$endPoint',
       data: data,
-      queryParameters: query
+      queryParameters: query,
+      cancelToken: cancelToken,
+      options: Options(headers: _headers(sendToken: true, accept: "*/*")),
     );
     return response;
   }
+
   Future<Response> postDataWithImage({required String endPoint,
     bool sendToken = true,
     FormData? data,
     String? baseUrl,
     Map<String, dynamic>? query,
+    CancelToken? cancelToken,
     void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress}) async {
-    _dio.options.headers = {
-      "accept":"*/*",
-      "Content-Type": "multipart/form-data",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     var response = await _dio.post(
       "${baseUrl ?? EndPoints.baseUrl}$endPoint",
       data: data,
       queryParameters: query,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+      options: Options(
+        headers: _headers(
+          sendToken: sendToken,
+          accept: "*/*",
+          contentType: "multipart/form-data",
+          lang: CacheKeysManger.getUserLanguageFromCache(),
+        ),
+      ),
     );
     return response;
   }
+
   Future<Response> patchDataWithImage({required String endPoint,
     bool sendToken = true,
     FormData? data,
     String? baseUrl,
     Map<String, dynamic>? query,
+    CancelToken? cancelToken,
     void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress}) async {
-    _dio.options.headers = {
-      "accept":"*/*",
-      "Content-Type": "multipart/form-data",
-      "lang":CacheKeysManger.getUserLanguageFromCache(),
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     var response = await _dio.patch(
       "${baseUrl ?? EndPoints.baseUrl}$endPoint",
       data: data,
       queryParameters: query,
+      cancelToken: cancelToken,
       onSendProgress: onSendProgress,
+      options: Options(
+        headers: _headers(
+          sendToken: sendToken,
+          accept: "*/*",
+          contentType: "multipart/form-data",
+          lang: CacheKeysManger.getUserLanguageFromCache(),
+        ),
+      ),
     );
     return response;
   }
+
   Future<Response> patchData({
     required String endPoint,
     bool sendToken = true,
     String? baseUrl,
     dynamic data,
     dynamic query,
-    Map<String, dynamic>? headers, void Function(int, int)? onSendProgress,
+    Map<String, dynamic>? headers,
+    CancelToken? cancelToken,
+    void Function(int, int)? onSendProgress,
     void Function(int, int)? onReceiveProgress
   }) async {
-    _dio.options.headers = {
-      "Accept":"application/json",
-      "Content-Type": "application/json",
-      "lang":"ar",
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     return await _dio.patch(
       '${baseUrl ?? EndPoints.baseUrl}$endPoint',
       data: data,
       queryParameters: query,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      options: Options(
+        headers: _headers(sendToken: sendToken, extra: headers),
+      ),
     );
   }
 
@@ -166,18 +190,14 @@ class ApiService {
     bool sendToken = false,
     dynamic data,
     Map<String,dynamic>? query,
+    CancelToken? cancelToken,
   }) async {
-    _dio.options.headers = {
-      "Accept":"application/json",
-      "Content-Type": "application/json",
-      "lang":"ar",
-      if (sendToken)
-        "Authorization": "Bearer ${CacheKeysManger.tokenStatus()}"
-    };
     var response = await _dio.delete(
       "${EndPoints.baseUrl}$endPoint",
       data: data,
       queryParameters: query,
+      cancelToken: cancelToken,
+      options: Options(headers: _headers(sendToken: sendToken)),
     );
     return response;
   }
